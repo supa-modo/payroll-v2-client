@@ -1,6 +1,7 @@
-import { FiMenu, FiBell, FiUser } from "react-icons/fi";
+import { FiMenu, FiUser } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
 import { useNavigate } from "react-router-dom";
+import NotificationCenter from "../notifications/NotificationCenter";
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -30,10 +31,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
-            <FiBell className="w-5 h-5 text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
+          <NotificationCenter />
 
           <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
             <div className="flex items-center gap-2">

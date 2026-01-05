@@ -39,6 +39,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     { path: "/expenses/categories", label: "Expense Categories", icon: FiTag },
     { path: "/admin/roles", label: "Roles", icon: FiShield },
     { path: "/admin/permissions", label: "Permissions", icon: FiSettings },
+    { path: "/admin/audit-logs", label: "Audit Logs", icon: FiDatabase },
+    { path: "/admin/settings", label: "Settings", icon: FiSettings },
+    { path: "/admin/statutory-rates", label: "Statutory Rates", icon: FiDollarSign },
   ];
 
   const isActive = (path: string) => {

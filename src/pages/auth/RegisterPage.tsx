@@ -110,7 +110,8 @@ const RegisterPage: React.FC = () => {
     });
 
     if (result.success) {
-      navigate("/dashboard");
+      // Redirect to onboarding for new tenants (optional - can be skipped)
+      navigate("/onboarding");
     }
   };
 

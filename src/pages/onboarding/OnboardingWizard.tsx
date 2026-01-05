@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FiCheck, FiArrowRight, FiArrowLeft, FiUsers, FiBriefcase, FiDollarSign } from "react-icons/fi";
 import Button from "../../components/ui/Button";
@@ -51,6 +52,27 @@ const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [checkingStatus, setCheckingStatus] = useState(true);
+
+  // Check if onboarding is already complete on mount
+  React.useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const response = await api.get("/auth/me");
+        const tenant = response.data.user?.tenant;
+        const isComplete = tenant?.settings?.onboardingComplete === true;
+        if (isComplete) {
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to check onboarding status:", error);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+    checkOnboardingStatus();
+  }, [navigate]);
 
   // Department form data
   const [departments, setDepartments] = useState<Array<{ name: string; code: string }>>([
@@ -93,7 +115,17 @@ const OnboardingWizard = () => {
 
   const handleNext = async () => {
     if (currentStep === steps.length - 1) {
-      navigate("/dashboard");
+      // Mark onboarding as complete and navigate to dashboard
+      setLoading(true);
+      try {
+        await api.post("/auth/onboarding/complete");
+        // Navigate to dashboard - don't block on verification
+        navigate("/dashboard", { replace: true });
+      } catch (error: any) {
+        console.error("Failed to mark onboarding as complete:", error);
+        // Even if marking complete fails, allow navigation - onboarding is optional
+        navigate("/dashboard", { replace: true });
+      }
       return;
     }
 
@@ -130,11 +162,25 @@ const OnboardingWizard = () => {
         // Create salary components
         for (const component of salaryComponents) {
           if (component.name.trim()) {
+            // Generate code from name (e.g., "Basic Salary" -> "BASIC_SALARY")
+            const code = component.name
+              .trim()
+              .toUpperCase()
+              .replace(/[^A-Z0-9]+/g, "_")
+              .replace(/^_+|_+$/g, "");
+            
+            // Set default category based on type
+            const category = component.isStatutory ? "Statutory" : "Basic";
+            
             await api.post("/salary-components", {
               name: component.name.trim(),
+              code,
               type: component.type,
+              category,
+              calculationType: "fixed",
               isTaxable: component.isTaxable,
               isStatutory: component.isStatutory,
+              isActive: true,
             });
           }
         }
@@ -154,9 +200,19 @@ const OnboardingWizard = () => {
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     if (currentStep === steps.length - 1) {
-      navigate("/dashboard");
+      // Mark onboarding as complete when skipping the last step
+      setLoading(true);
+      try {
+        await api.post("/auth/onboarding/complete");
+      } catch (error) {
+        // Ignore errors - onboarding is optional
+        console.error("Failed to mark onboarding as complete:", error);
+      }
+      // Always navigate to dashboard - onboarding is optional
+      navigate("/dashboard", { replace: true });
+      return;
     } else {
       setCurrentStep(currentStep + 1);
     }
@@ -464,6 +520,18 @@ const OnboardingWizard = () => {
         return null;
     }
   };
+
+  // Show loading while checking onboarding status
+  if (checkingStatus) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">

@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiMail, FiPhone, FiDollarSign } from "react-icons/fi";
+import {
+  FiPlus,
+  FiEdit2,
+  FiTrash2,
+  FiSearch,
+  FiMail,
+  FiPhone,
+  FiDollarSign,
+} from "react-icons/fi";
 import DataTable from "../../components/ui/DataTable";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -29,7 +37,13 @@ const EmployeesPage: React.FC = () => {
   useEffect(() => {
     fetchEmployees();
     fetchDepartments();
-  }, [currentPage, searchTerm, filterDepartment, filterStatus, filterEmploymentType]);
+  }, [
+    currentPage,
+    searchTerm,
+    filterDepartment,
+    filterStatus,
+    filterEmploymentType,
+  ]);
 
   const fetchEmployees = async () => {
     try {
@@ -132,12 +146,15 @@ const EmployeesPage: React.FC = () => {
             Manage your company's employees
           </p>
         </div>
-        <Button onClick={handleCreate} leftIcon={<FiPlus className="w-4 h-4" />}>
+        <Button
+          onClick={handleCreate}
+          leftIcon={<FiPlus className="w-4 h-4" />}
+        >
           Add Employee
         </Button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="font-source-sans-3 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-6 border-b border-gray-200 space-y-4">
           <Input
             type="text"
@@ -216,12 +233,12 @@ const EmployeesPage: React.FC = () => {
                       className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
+                    <div className="w-10 h-10 rounded-full border bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
                       {getInitials(emp.firstName, emp.lastName)}
                     </div>
                   )}
                   <div>
-                    <div className="font-medium text-gray-900">
+                    <div className="font-semibold text-base text-gray-900">
                       {emp.firstName} {emp.middleName} {emp.lastName}
                     </div>
                     <div className="text-sm text-gray-500">
@@ -259,7 +276,9 @@ const EmployeesPage: React.FC = () => {
                   {emp.workEmail && (
                     <div className="flex items-center gap-1 text-sm text-gray-600">
                       <FiMail className="w-3 h-3" />
-                      <span className="truncate max-w-[200px]">{emp.workEmail}</span>
+                      <span className="truncate max-w-[200px]">
+                        {emp.workEmail}
+                      </span>
                     </div>
                   )}
                   {emp.phonePrimary && (
@@ -268,7 +287,9 @@ const EmployeesPage: React.FC = () => {
                       <span>{emp.phonePrimary}</span>
                     </div>
                   )}
-                  {!emp.workEmail && !emp.phonePrimary && <span className="text-gray-400">—</span>}
+                  {!emp.workEmail && !emp.phonePrimary && (
+                    <span className="text-gray-400">—</span>
+                  )}
                 </div>
               ),
             },
@@ -337,7 +358,12 @@ const EmployeesPage: React.FC = () => {
           onPageChange={setCurrentPage}
           pageSize={pageSize}
           tableLoading={isLoading}
-          hasSearched={!!searchTerm || !!filterDepartment || !!filterStatus || !!filterEmploymentType}
+          hasSearched={
+            !!searchTerm ||
+            !!filterDepartment ||
+            !!filterStatus ||
+            !!filterEmploymentType
+          }
           showCheckboxes={false}
         />
       </div>
@@ -355,4 +381,3 @@ const EmployeesPage: React.FC = () => {
 };
 
 export default EmployeesPage;
-
