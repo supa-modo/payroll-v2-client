@@ -30,7 +30,9 @@ const EmployeeSalaryPage: React.FC = () => {
   const navigate = useNavigate();
   const [salary, setSalary] = useState<EmployeeSalary | null>(null);
   const [revisions, setRevisions] = useState<SalaryRevisionHistory[]>([]);
-  const [availableComponents, setAvailableComponents] = useState<SalaryComponent[]>([]);
+  const [availableComponents, setAvailableComponents] = useState<
+    SalaryComponent[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isRevisionFormOpen, setIsRevisionFormOpen] = useState(false);
@@ -42,6 +44,7 @@ const EmployeeSalaryPage: React.FC = () => {
   const [revisionData, setRevisionData] = useState<CreateSalaryRevisionInput>({
     effectiveFrom: new Date().toISOString().split("T")[0],
     reason: "",
+    components: [],
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +64,9 @@ const EmployeeSalaryPage: React.FC = () => {
       setSalary(response.data);
     } catch (error: any) {
       console.error("Failed to fetch employee salary:", error);
-      setError(error.response?.data?.error || "Failed to fetch employee salary");
+      setError(
+        error.response?.data?.error || "Failed to fetch employee salary"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -137,10 +142,43 @@ const EmployeeSalaryPage: React.FC = () => {
         effectiveFrom: new Date().toISOString().split("T")[0],
       });
     } catch (error: any) {
-      setError(error.response?.data?.error || "Failed to assign salary components");
+      setError(
+        error.response?.data?.error || "Failed to assign salary components"
+      );
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRevisionComponentChange = (
+    index: number,
+    field: string,
+    value: any
+  ) => {
+    const updated = [...(revisionData.components || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    setRevisionData({ ...revisionData, components: updated });
+  };
+
+  const handleAddRevisionComponent = () => {
+    setRevisionData({
+      ...revisionData,
+      components: [
+        ...(revisionData.components || []),
+        {
+          salaryComponentId: "",
+          amount: 0,
+          effectiveTo: null,
+        },
+      ],
+    });
+  };
+
+  const handleRemoveRevisionComponent = (index: number) => {
+    setRevisionData({
+      ...revisionData,
+      components: (revisionData.components || []).filter((_, i) => i !== index),
+    });
   };
 
   const handleCreateRevision = async (e: React.FormEvent) => {
@@ -163,9 +201,12 @@ const EmployeeSalaryPage: React.FC = () => {
       setRevisionData({
         effectiveFrom: new Date().toISOString().split("T")[0],
         reason: "",
+        components: [],
       });
     } catch (error: any) {
-      setError(error.response?.data?.error || "Failed to create salary revision");
+      setError(
+        error.response?.data?.error || "Failed to create salary revision"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -183,7 +224,11 @@ const EmployeeSalaryPage: React.FC = () => {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">Employee salary information not found</p>
-        <Button onClick={() => navigate("/employees")} variant="outline" className="mt-4">
+        <Button
+          onClick={() => navigate("/employees")}
+          variant="outline"
+          className="mt-4"
+        >
           Back to Employees
         </Button>
       </div>
@@ -232,7 +277,10 @@ const EmployeeSalaryPage: React.FC = () => {
           >
             Create Revision
           </Button>
-          <Button onClick={handleAddComponent} leftIcon={<FiPlus className="w-4 h-4" />}>
+          <Button
+            onClick={handleAddComponent}
+            leftIcon={<FiPlus className="w-4 h-4" />}
+          >
             Add Component
           </Button>
         </div>
@@ -243,7 +291,9 @@ const EmployeeSalaryPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-2">
             <FiTrendingUp className="w-5 h-5 text-green-600" />
-            <h3 className="text-sm font-medium text-gray-600">Total Earnings</h3>
+            <h3 className="text-sm font-medium text-gray-600">
+              Total Earnings
+            </h3>
           </div>
           <p className="text-2xl font-bold text-gray-900">
             {new Intl.NumberFormat("en-KE", {
@@ -256,7 +306,9 @@ const EmployeeSalaryPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-2">
             <FiTrendingDown className="w-5 h-5 text-red-600" />
-            <h3 className="text-sm font-medium text-gray-600">Total Deductions</h3>
+            <h3 className="text-sm font-medium text-gray-600">
+              Total Deductions
+            </h3>
           </div>
           <p className="text-2xl font-bold text-gray-900">
             {new Intl.NumberFormat("en-KE", {
@@ -303,7 +355,9 @@ const EmployeeSalaryPage: React.FC = () => {
         </div>
         <div className="p-6">
           {earnings.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No earnings configured</p>
+            <p className="text-gray-500 text-center py-8">
+              No earnings configured
+            </p>
           ) : (
             <div className="space-y-3">
               {earnings.map((esc) => (
@@ -316,7 +370,8 @@ const EmployeeSalaryPage: React.FC = () => {
                       {esc.salaryComponent?.name || "Unknown"}
                     </div>
                     <div className="text-sm text-gray-500">
-                      Effective: {new Date(esc.effectiveFrom).toLocaleDateString()}
+                      Effective:{" "}
+                      {new Date(esc.effectiveFrom).toLocaleDateString()}
                       {esc.effectiveTo &&
                         ` - ${new Date(esc.effectiveTo).toLocaleDateString()}`}
                     </div>
@@ -344,7 +399,9 @@ const EmployeeSalaryPage: React.FC = () => {
         </div>
         <div className="p-6">
           {deductions.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No deductions configured</p>
+            <p className="text-gray-500 text-center py-8">
+              No deductions configured
+            </p>
           ) : (
             <div className="space-y-3">
               {deductions.map((esc) => (
@@ -357,7 +414,8 @@ const EmployeeSalaryPage: React.FC = () => {
                       {esc.salaryComponent?.name || "Unknown"}
                     </div>
                     <div className="text-sm text-gray-500">
-                      Effective: {new Date(esc.effectiveFrom).toLocaleDateString()}
+                      Effective:{" "}
+                      {new Date(esc.effectiveFrom).toLocaleDateString()}
                       {esc.effectiveTo &&
                         ` - ${new Date(esc.effectiveTo).toLocaleDateString()}`}
                     </div>
@@ -445,7 +503,11 @@ const EmployeeSalaryPage: React.FC = () => {
                     label="Component"
                     value={comp.salaryComponentId}
                     onChange={(e) =>
-                      handleComponentChange(index, "salaryComponentId", e.target.value)
+                      handleComponentChange(
+                        index,
+                        "salaryComponentId",
+                        e.target.value
+                      )
                     }
                     options={[
                       { value: "", label: "Select component" },
@@ -467,7 +529,11 @@ const EmployeeSalaryPage: React.FC = () => {
                     min="0"
                     value={comp.amount.toString()}
                     onChange={(e) =>
-                      handleComponentChange(index, "amount", parseFloat(e.target.value) || 0)
+                      handleComponentChange(
+                        index,
+                        "amount",
+                        parseFloat(e.target.value) || 0
+                      )
                     }
                     required
                   />
@@ -477,7 +543,11 @@ const EmployeeSalaryPage: React.FC = () => {
                     name={`effectiveTo-${index}`}
                     value={comp.effectiveTo || ""}
                     onChange={(e) =>
-                      handleComponentChange(index, "effectiveTo", e.target.value || null)
+                      handleComponentChange(
+                        index,
+                        "effectiveTo",
+                        e.target.value || null
+                      )
                     }
                   />
                 </div>
@@ -488,7 +558,9 @@ const EmployeeSalaryPage: React.FC = () => {
               label="Reason (Optional)"
               name="reason"
               value={formData.reason || ""}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, reason: e.target.value })
+              }
               rows={3}
             />
 
@@ -519,7 +591,9 @@ const EmployeeSalaryPage: React.FC = () => {
         >
           <div className="space-y-4">
             {revisions.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No revision history</p>
+              <p className="text-gray-500 text-center py-8">
+                No revision history
+              </p>
             ) : (
               <div className="space-y-3">
                 {revisions.map((revision) => (
@@ -565,7 +639,9 @@ const EmployeeSalaryPage: React.FC = () => {
                       </div>
                     </div>
                     {revision.reason && (
-                      <p className="text-sm text-gray-600 mt-2">{revision.reason}</p>
+                      <p className="text-sm text-gray-600 mt-2">
+                        {revision.reason}
+                      </p>
                     )}
                   </div>
                 ))}
@@ -595,7 +671,10 @@ const EmployeeSalaryPage: React.FC = () => {
               name="effectiveFrom"
               value={revisionData.effectiveFrom}
               onChange={(e) =>
-                setRevisionData({ ...revisionData, effectiveFrom: e.target.value })
+                setRevisionData({
+                  ...revisionData,
+                  effectiveFrom: e.target.value,
+                })
               }
               required
             />
@@ -604,10 +683,99 @@ const EmployeeSalaryPage: React.FC = () => {
               label="Reason"
               name="reason"
               value={revisionData.reason}
-              onChange={(e) => setRevisionData({ ...revisionData, reason: e.target.value })}
+              onChange={(e) =>
+                setRevisionData({ ...revisionData, reason: e.target.value })
+              }
               rows={4}
               required
             />
+
+            {/* Salary Components Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Salary Components (Optional)
+                </label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddRevisionComponent}
+                >
+                  Add Component
+                </Button>
+              </div>
+
+              {(revisionData.components || []).map((comp, index) => (
+                <div
+                  key={index}
+                  className="p-4 border border-gray-200 rounded-lg space-y-3"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Component {index + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRevisionComponent(index)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <Select
+                    label="Component"
+                    value={comp.salaryComponentId}
+                    onChange={(e) =>
+                      handleRevisionComponentChange(
+                        index,
+                        "salaryComponentId",
+                        e.target.value
+                      )
+                    }
+                    options={[
+                      { value: "", label: "Select component" },
+                      ...availableComponents
+                        .filter((c) => c.isActive)
+                        .map((c) => ({
+                          value: c.id,
+                          label: `${c.name} (${c.type})`,
+                        })),
+                    ]}
+                  />
+
+                  <Input
+                    label="Amount"
+                    name={`revision-amount-${index}`}
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={comp.amount.toString()}
+                    onChange={(e) =>
+                      handleRevisionComponentChange(
+                        index,
+                        "amount",
+                        parseFloat(e.target.value) || 0
+                      )
+                    }
+                  />
+
+                  <DateInput
+                    label="Effective To (Optional)"
+                    name={`revision-effectiveTo-${index}`}
+                    value={comp.effectiveTo || ""}
+                    onChange={(e) =>
+                      handleRevisionComponentChange(
+                        index,
+                        "effectiveTo",
+                        e.target.value || null
+                      )
+                    }
+                  />
+                </div>
+              ))}
+            </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
               <Button
@@ -630,4 +798,3 @@ const EmployeeSalaryPage: React.FC = () => {
 };
 
 export default EmployeeSalaryPage;
-

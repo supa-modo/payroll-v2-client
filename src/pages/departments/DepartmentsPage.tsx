@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiEdit2, FiTrash2, FiUser, FiUsers } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiUser } from "react-icons/fi";
 import DataTable from "../../components/ui/DataTable";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -9,12 +9,15 @@ import Modal from "../../components/ui/Modal";
 import api from "../../services/api";
 import type { Department } from "../../types/department";
 import type { Employee } from "../../types/employee";
+import { PiUsersThreeDuotone } from "react-icons/pi";
 
 const DepartmentsPage: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(
+    null
+  );
 
   useEffect(() => {
     fetchDepartments();
@@ -64,64 +67,102 @@ const DepartmentsPage: React.FC = () => {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Departments</h1>
-          <p className="mt-2 text-sm text-gray-600">
+        <div className="flex items-center gap-6">
+          <h1 className="text-2xl font-bold text-gray-900">Departments</h1>
+          <div className="w-px h-6 bg-gray-300" />
+          <p className="text-[0.95rem] text-gray-600">
             Manage your company's organizational structure
           </p>
         </div>
-        <Button onClick={handleCreate} leftIcon={<FiPlus className="w-4 h-4" />}>
+        <Button
+          onClick={handleCreate}
+          leftIcon={<FiPlus className="w-4 h-4" />}
+        >
           Add Department
         </Button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden p-2">
         <DataTable
           columns={[
             {
               header: "Name",
               cell: (dept: Department) => (
                 <div>
-                  <div className="font-medium text-gray-900">{dept.name}</div>
+                  <div className="font-medium text-[0.95rem] text-gray-900">
+                    {dept.name}
+                  </div>
                   {dept.code && (
-                    <div className="text-xs text-gray-500">Code: {dept.code}</div>
+                    <div className="text-[0.78rem] text-gray-600">
+                      Code: {dept.code}
+                    </div>
                   )}
                 </div>
               ),
             },
             {
               header: "Manager",
-              cell: (dept: Department) => (
-                dept.manager ? (
+              cell: (dept: Department) => {
+                const getPhotoUrl = (photoUrl?: string) => {
+                  if (!photoUrl) return null;
+                  // If it's already a full URL, return as is
+                  if (photoUrl.startsWith("http")) return photoUrl;
+                  // Otherwise, construct the full URL
+                  const baseURL =
+                    api.defaults.baseURL?.replace("/api", "") || "";
+                  return `${baseURL}/uploads/${photoUrl}`;
+                };
+                return dept.manager ? (
                   <div className="flex items-center gap-2">
-                    {dept.manager.photoUrl ? (
-                      <img
-                        src={dept.manager.photoUrl}
-                        alt={`${dept.manager.firstName} ${dept.manager.lastName}`}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs">
-                        {dept.manager.firstName.charAt(0)}{dept.manager.lastName.charAt(0)}
-                      </div>
-                    )}
+                    {(() => {
+                      const photoUrl = getPhotoUrl(dept.manager.photoUrl);
+                      return photoUrl ? (
+                        <img
+                          src={photoUrl}
+                          alt={`${dept.manager.firstName} ${dept.manager.lastName}`}
+                          className="w-9 h-9 rounded-full object-cover"
+                          onError={(e) => {
+                            // Fallback to initials if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const fallback = document.createElement("div");
+                              fallback.className =
+                                "w-9 h-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-bold italic text-sm";
+                              fallback.textContent = `${dept.manager?.firstName?.charAt(0) || ""}${dept.manager?.lastName?.charAt(0) || ""}`;
+                              parent.appendChild(fallback);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-bold italic text-sm">
+                          {dept.manager.firstName.charAt(0)}
+                          {dept.manager.lastName.charAt(0)}
+                        </div>
+                      );
+                    })()}
                     <div>
                       <div className="text-sm font-medium text-gray-900">
                         {dept.manager.firstName} {dept.manager.lastName}
                       </div>
-                      <div className="text-xs text-gray-500">{dept.manager.jobTitle}</div>
+                      <div className="text-xs text-gray-500">
+                        {dept.manager.jobTitle}
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <span className="text-gray-400 italic">No Manager</span>
-                )
-              ),
+                );
+              },
             },
             {
               header: "Parent Department",
               cell: (dept: Department) => (
                 <span className="text-gray-600">
-                  {dept.parentDepartment ? dept.parentDepartment.name : "Top Level"}
+                  {dept.parentDepartment
+                    ? dept.parentDepartment.name
+                    : "Top Level"}
                 </span>
               ),
             },
@@ -129,7 +170,7 @@ const DepartmentsPage: React.FC = () => {
               header: "Employees",
               cell: (dept: Department) => (
                 <div className="flex items-center gap-1 text-gray-600">
-                  <FiUsers className="w-4 h-4" />
+                  <PiUsersThreeDuotone className="w-4 h-4" />
                   <span className="text-sm font-medium">
                     {dept.employees?.length || 0}
                   </span>
@@ -327,9 +368,7 @@ const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
           type="text"
           name="name"
           value={formData.name}
-          onChange={(e) =>
-            setFormData({ ...formData, name: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
 
@@ -388,7 +427,10 @@ const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
             }
             className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
           />
-          <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="isActive"
+            className="text-sm font-medium text-gray-700"
+          >
             Active
           </label>
         </div>
@@ -418,4 +460,3 @@ const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
 };
 
 export default DepartmentsPage;
-

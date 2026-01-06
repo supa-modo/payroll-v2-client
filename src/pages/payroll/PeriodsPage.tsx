@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiEdit2, FiPlay, FiCheck, FiLock, FiEye } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiPlay, FiCheck, FiLock, FiEye, FiTrash2 } from "react-icons/fi";
 import DataTable from "../../components/ui/DataTable";
 import Button from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
@@ -145,6 +145,19 @@ const PeriodsPage: React.FC = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this payroll period? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await api.delete(`/payroll-periods/${id}`);
+      fetchPeriods();
+    } catch (error: any) {
+      alert(error.response?.data?.error || "Failed to delete payroll period");
+    }
+  };
+
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "draft":
@@ -285,6 +298,13 @@ const PeriodsPage: React.FC = () => {
                         title="Process"
                       >
                         <FiPlay className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(period.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
                       </button>
                     </>
                   )}

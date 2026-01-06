@@ -9,6 +9,7 @@ import {
   FiTrendingUp,
   FiTrendingDown,
   FiFileText,
+  FiTrash2,
 } from "react-icons/fi";
 import Button from "../../components/ui/Button";
 import DataTable from "../../components/ui/DataTable";
@@ -70,6 +71,23 @@ const ReviewPayrollPage: React.FC = () => {
       fetchSummary();
     } catch (error: any) {
       alert(error.response?.data?.error || "Failed to lock payroll period");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!periodId) return;
+    if (!window.confirm("Are you sure you want to delete this payroll period? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      await api.delete(`/payroll-periods/${periodId}`);
+      navigate("/payroll/periods");
+    } catch (error: any) {
+      alert(error.response?.data?.error || "Failed to delete payroll period");
     } finally {
       setIsProcessing(false);
     }
@@ -153,14 +171,25 @@ const ReviewPayrollPage: React.FC = () => {
         </div>
         <div className="flex gap-3">
           {period.status === "draft" && (
-            <Button
-              onClick={handleProcess}
-              variant="primary"
-              isLoading={isProcessing}
-              leftIcon={<FiFileText className="w-4 h-4" />}
-            >
-              Process Payroll
-            </Button>
+            <>
+              <Button
+                onClick={handleProcess}
+                variant="primary"
+                isLoading={isProcessing}
+                leftIcon={<FiFileText className="w-4 h-4" />}
+              >
+                Process Payroll
+              </Button>
+              <Button
+                onClick={handleDelete}
+                variant="outline"
+                isLoading={isProcessing}
+                leftIcon={<FiTrash2 className="w-4 h-4" />}
+                className="text-red-600 border-red-600 hover:bg-red-50"
+              >
+                Delete Period
+              </Button>
+            </>
           )}
           {period.status === "pending_approval" && (
             <Button

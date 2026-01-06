@@ -168,10 +168,10 @@ const DataTable = <T extends Record<string, any> = any>({
   );
 
   return (
-    <div className="px-2">
+    <div className="p-2">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 bg-gray-100">
+        <table className="w-full text-sm text-left  text-gray-600">
+          <thead className="text-sm text-gray-700   bg-gray-200">
             <tr>
               {showCheckboxes && (
                 <th scope="col" className="pl-6 py-3">
@@ -206,7 +206,8 @@ const DataTable = <T extends Record<string, any> = any>({
               rows.map((row, rowIdx) => {
                 const rowId = getRowId(row);
                 const selected = isRowSelected(row);
-                const rowNumber = startIndex > 0 ? startIndex + rowIdx : rowIdx + 1;
+                const rowNumber =
+                  startIndex > 0 ? startIndex + rowIdx : rowIdx + 1;
 
                 return (
                   <tr
@@ -238,7 +239,7 @@ const DataTable = <T extends Record<string, any> = any>({
                     {columns.map((col, colIdx) => (
                       <td
                         key={`cell-${colIdx}-${rowId}`}
-                        className={`px-6 py-4 ${col.cellClassName || ""}`}
+                        className={`px-6 py-3 ${col.cellClassName || ""}`}
                       >
                         {col.cell
                           ? col.cell(row, rowIdx)
@@ -300,7 +301,10 @@ const DataTable = <T extends Record<string, any> = any>({
               {pageNumbers.map((pageNum, idx) => {
                 if (pageNum === "...") {
                   return (
-                    <span key={`ellipsis-${idx}`} className="px-2 text-gray-600">
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-2 text-gray-600"
+                    >
                       ...
                     </span>
                   );
@@ -337,4 +341,3 @@ const DataTable = <T extends Record<string, any> = any>({
 };
 
 export default DataTable;
-

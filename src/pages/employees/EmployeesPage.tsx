@@ -8,6 +8,7 @@ import {
   FiMail,
   FiPhone,
   FiDollarSign,
+  FiEye,
 } from "react-icons/fi";
 import DataTable from "../../components/ui/DataTable";
 import Button from "../../components/ui/Button";
@@ -224,29 +225,60 @@ const EmployeesPage: React.FC = () => {
           columns={[
             {
               header: "Employee",
-              cell: (emp: Employee) => (
-                <div className="flex items-center gap-3">
-                  {emp.photoUrl ? (
-                    <img
-                      src={emp.photoUrl}
-                      alt={`${emp.firstName} ${emp.lastName}`}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full border bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
-                      {getInitials(emp.firstName, emp.lastName)}
-                    </div>
-                  )}
-                  <div>
-                    <div className="font-semibold text-base text-gray-900">
-                      {emp.firstName} {emp.middleName} {emp.lastName}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {emp.employeeNumber}
+              cell: (emp: Employee) => {
+                const getPhotoUrl = (photoUrl?: string) => {
+                  if (!photoUrl) return null;
+                  // If it's already a full URL, return as is
+                  if (photoUrl.startsWith("http")) return photoUrl;
+                  // Otherwise, construct the full URL
+                  const baseURL =
+                    api.defaults.baseURL?.replace("/api", "") || "";
+                  return `${baseURL}/uploads/${photoUrl}`;
+                };
+                const photoUrl = getPhotoUrl(emp.photoUrl);
+                return (
+                  <div
+                    className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => navigate(`/employees/${emp.id}`)}
+                  >
+                    {photoUrl ? (
+                      <img
+                        src={photoUrl}
+                        alt={`${emp.firstName} ${emp.lastName}`}
+                        className="w-10 h-10 rounded-full object-cover"
+                        onError={(e) => {
+                          // Fallback to initials if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          const parent = target.parentElement;
+                          if (parent) {
+                            const fallback = document.createElement("div");
+                            fallback.className =
+                              "w-10 h-10 rounded-full border bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm";
+                            fallback.textContent = getInitials(
+                              emp.firstName,
+                              emp.lastName
+                            );
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full border bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
+                        {getInitials(emp.firstName, emp.lastName)}
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-semibold text-base text-gray-900">
+                        {emp.firstName} {emp.middleName} {emp.lastName}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {emp.employeeNumber}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ),
+                );
+              },
             },
             {
               header: "Role",
@@ -315,6 +347,16 @@ const EmployeesPage: React.FC = () => {
               header: "Actions",
               cell: (emp: Employee) => (
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/employees/${emp.id}`);
+                    }}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="View Details"
+                  >
+                    <FiEye className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

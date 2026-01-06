@@ -53,13 +53,13 @@ const Modal: React.FC<ModalProps> = ({
     >
       <div
         className={clsx(
-          'bg-white rounded-xl shadow-xl w-full',
+          'bg-white rounded-xl shadow-xl w-full max-h-[90vh] flex flex-col',
           sizeClasses[size]
         )}
         style={{ animation: 'zoomIn 0.2s ease-out' }}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             {title && (
               <h2 className="text-xl font-bold text-gray-900">{title}</h2>
             )}
@@ -73,7 +73,7 @@ const Modal: React.FC<ModalProps> = ({
             )}
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   )

@@ -20,6 +20,7 @@ import OnboardingWizard from "./pages/onboarding/OnboardingWizard";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import DepartmentsPage from "./pages/departments/DepartmentsPage";
 import EmployeesPage from "./pages/employees/EmployeesPage";
+import EmployeeDetailPage from "./pages/employees/EmployeeDetailPage";
 
 // Admin Pages
 import RolesPage from "./pages/admin/RolesPage";
@@ -167,6 +168,10 @@ function App() {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="employees" element={<EmployeesPage />} />
+          <Route
+            path="employees/:employeeId"
+            element={<EmployeeDetailPage />}
+          />
           <Route
             path="employees/:employeeId/salary"
             element={<EmployeeSalaryPage />}

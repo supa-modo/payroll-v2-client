@@ -43,6 +43,7 @@ const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   const [roles, setRoles] = useState<Role[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CreateEmployeeInput>({
@@ -178,6 +179,7 @@ const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
           userPassword: "",
         });
         setPhotoPreview(null);
+        setPhotoFile(null);
         setCurrentEmployeeId(null);
       }
       setErrors({});
@@ -225,11 +227,16 @@ const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       if (file.type.startsWith("image/")) {
+        // Store the file for upload
+        setPhotoFile(file);
+        // Create preview
         const reader = new FileReader();
         reader.onloadend = () => {
           setPhotoPreview(reader.result as string);
         };
         reader.readAsDataURL(file);
+      } else {
+        setErrors((prev) => ({ ...prev, photo: "Please select an image file" }));
       }
     }
   };
@@ -293,9 +300,38 @@ const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     setSubmitError("");
 
     try {
+      let employeeId = employee?.id;
+      let photoUrl = formData.photoUrl;
+
+      // Upload photo first if a file is selected
+      if (photoFile) {
+        try {
+          const formDataPhoto = new FormData();
+          formDataPhoto.append("photo", photoFile);
+
+          // If updating existing employee, upload to their ID
+          if (employee?.id) {
+            const photoResponse = await api.post(`/employees/${employee.id}/photo`, formDataPhoto, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            photoUrl = photoResponse.data.photoUrl;
+          }
+        } catch (photoError: any) {
+          setSubmitError(photoError.response?.data?.error || "Failed to upload photo");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       if (employee) {
         // Update existing employee
-        await api.put(`/employees/${employee.id}`, formData);
+        const updateData = { ...formData };
+        if (photoUrl) {
+          updateData.photoUrl = photoUrl;
+        }
+        await api.put(`/employees/${employee.id}`, updateData);
         setSubmitSuccess(true);
         setTimeout(() => {
           onSuccess?.();
@@ -303,17 +339,36 @@ const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
         }, 1500);
       } else {
         // Create new employee
-        const response = await api.post("/employees", formData);
+        const createData = { ...formData };
+        if (photoUrl) {
+          createData.photoUrl = photoUrl;
+        }
+        const response = await api.post("/employees", createData);
         // Set the newly created employee ID so bank details and documents sections can be shown
         if (response.data?.employee?.id) {
-          setCurrentEmployeeId(response.data.employee.id);
+          employeeId = response.data.employee.id;
+          setCurrentEmployeeId(employeeId || null);
+
+          // Upload photo after employee creation if not already uploaded
+          if (photoFile && !photoUrl) {
+            try {
+              const formDataPhoto = new FormData();
+              formDataPhoto.append("photo", photoFile);
+              await api.post(`/employees/${employeeId}/photo`, formDataPhoto, {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              });
+            } catch (photoError) {
+              console.error("Failed to upload photo after employee creation:", photoError);
+              // Don't fail the whole operation if photo upload fails
+            }
+          }
+
           // Fetch the full employee details to populate the form
           try {
-            const employeeResponse = await api.get(`/employees/${response.data.employee.id}`);
+            const employeeResponse = await api.get(`/employees/${employeeId}`);
             if (employeeResponse.data?.employee) {
-              // Update the form to show we're now editing
-              // The useEffect will handle updating the form when employee changes
-              // For now, just set the employee ID and let the user add bank details/docs
               // Refresh the employee list but keep modal open
               onSuccess?.();
             }
