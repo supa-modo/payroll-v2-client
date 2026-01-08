@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiEdit2, FiTrash2, FiUser } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiUser, FiSearch } from "react-icons/fi";
 import DataTable from "../../components/ui/DataTable";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -18,15 +18,21 @@ const DepartmentsPage: React.FC = () => {
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null
   );
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchDepartments();
-  }, []);
+  }, [searchTerm]);
 
   const fetchDepartments = async () => {
     try {
       setIsLoading(true);
-      const response = await api.get("/departments");
+      const params = new URLSearchParams();
+      if (searchTerm) {
+        params.append("search", searchTerm);
+      }
+      const url = searchTerm ? `/departments?${params.toString()}` : "/departments";
+      const response = await api.get(url);
       setDepartments(response.data.departments || []);
     } catch (error) {
       console.error("Failed to fetch departments:", error);
@@ -82,8 +88,19 @@ const DepartmentsPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden p-2">
-        <DataTable
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
+          <Input
+            type="text"
+            placeholder="Search departments by name, code, or manager..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            leftIcon={<FiSearch className="w-5 h-5" />}
+            wrapperClassName="mb-0"
+          />
+        </div>
+        <div className="p-2">
+          <DataTable
           columns={[
             {
               header: "Name",
@@ -236,6 +253,7 @@ const DepartmentsPage: React.FC = () => {
           tableLoading={isLoading}
           showCheckboxes={false}
         />
+        </div>
       </div>
 
       {isFormOpen && (

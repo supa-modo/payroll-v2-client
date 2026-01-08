@@ -89,11 +89,17 @@ export interface SalaryRevisionHistory {
 export interface CreateSalaryRevisionInput {
   effectiveFrom: string;
   reason: string;
-  components?: Array<{
+  modifiedComponents: Array<{
+    id: string;
+    amount: number;
+    effectiveTo?: string | null;
+  }>;
+  newComponents: Array<{
     salaryComponentId: string;
     amount: number;
     effectiveTo?: string | null;
   }>;
+  deletedComponentIds: string[];
 }
 
 export interface AssignSalaryComponentsInput {

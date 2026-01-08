@@ -28,9 +28,22 @@ const PayslipViewer: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await api.get(`/payrolls/${payrollId}`);
-      setPayroll(response.data.payroll);
+      if (response.data && response.data.payroll) {
+        setPayroll(response.data.payroll);
+      } else {
+        console.error("Invalid payroll data structure:", response.data);
+        setPayroll(null);
+      }
     } catch (error: any) {
       console.error("Failed to fetch payroll:", error);
+      setPayroll(null);
+      if (error.response?.status === 404) {
+        alert("Payslip not found. The payroll may not exist or you may not have access to it.");
+      } else if (error.response?.status === 403) {
+        alert("You do not have permission to view this payslip.");
+      } else {
+        alert("Failed to load payslip. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -85,10 +98,22 @@ const PayslipViewer: React.FC = () => {
     );
   }
 
-  const employee = payroll.employee;
-  const period = payroll.payrollPeriod;
-  const earnings = payroll.items?.filter((item) => item.type === "earning") || [];
-  const deductions = payroll.items?.filter((item) => item.type === "deduction") || [];
+  const employee = payroll?.employee;
+  const period = payroll?.payrollPeriod;
+  const earnings = payroll?.items?.filter((item) => item.type === "earning") || [];
+  const deductions = payroll?.items?.filter((item) => item.type === "deduction") || [];
+  
+  // Safety check - if critical data is missing, show error
+  if (!employee || !period) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600 mb-4">Unable to display payslip. Missing employee or period information.</p>
+        <Button onClick={() => navigate("/payroll/periods")} variant="outline">
+          Back to Periods
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -150,12 +175,12 @@ const PayslipViewer: React.FC = () => {
                 <p className="text-sm text-gray-600">
                   Pay Date: {period && new Date(period.payDate).toLocaleDateString()}
                 </p>
-                {payroll.paymentMethod && (
+                {payroll?.paymentMethod && (
                   <p className="text-sm text-gray-600">
                     Payment Method: {payroll.paymentMethod}
                   </p>
                 )}
-                {payroll.status && (
+                {payroll?.status && (
                   <p className="text-sm text-gray-600">Status: {payroll.status}</p>
                 )}
               </div>
@@ -194,7 +219,7 @@ const PayslipViewer: React.FC = () => {
                 {new Intl.NumberFormat("en-KE", {
                   style: "currency",
                   currency: "KES",
-                }).format(payroll.totalEarnings)}
+                }).format(payroll?.totalEarnings || payroll?.grossPay || 0)}
               </span>
             </div>
           </div>
@@ -222,7 +247,7 @@ const PayslipViewer: React.FC = () => {
                   </span>
                 </div>
               ))}
-            {payroll.payeAmount > 0 && (
+            {payroll?.payeAmount && parseFloat(payroll.payeAmount.toString()) > 0 && (
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-700">PAYE</span>
                 <span className="font-medium text-red-600">
@@ -233,7 +258,7 @@ const PayslipViewer: React.FC = () => {
                 </span>
               </div>
             )}
-            {payroll.nssfAmount > 0 && (
+            {payroll?.nssfAmount && parseFloat(payroll.nssfAmount.toString()) > 0 && (
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-700">NSSF</span>
                 <span className="font-medium text-red-600">
@@ -244,7 +269,7 @@ const PayslipViewer: React.FC = () => {
                 </span>
               </div>
             )}
-            {payroll.nhifAmount > 0 && (
+            {payroll?.nhifAmount && parseFloat(payroll.nhifAmount.toString()) > 0 && (
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-700">NHIF</span>
                 <span className="font-medium text-red-600">
@@ -261,7 +286,7 @@ const PayslipViewer: React.FC = () => {
                 {new Intl.NumberFormat("en-KE", {
                   style: "currency",
                   currency: "KES",
-                }).format(payroll.totalDeductions)}
+                }).format(payroll?.totalDeductions || 0)}
               </span>
             </div>
           </div>
@@ -275,7 +300,7 @@ const PayslipViewer: React.FC = () => {
               {new Intl.NumberFormat("en-KE", {
                 style: "currency",
                 currency: "KES",
-              }).format(payroll.netPay)}
+              }).format(payroll?.netPay || 0)}
             </span>
           </div>
         </div>
