@@ -22,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     ? [
         { path: "/system-admin/stats", label: "System Stats", icon: FiTrendingUp },
         { path: "/system-admin/tenants", label: "Tenants", icon: FiDatabase },
+        { path: "/system-admin/settings", label: "Settings", icon: FiSettings },
       ]
     : [
         { path: "/dashboard", label: "Dashboard", icon: FiHome },

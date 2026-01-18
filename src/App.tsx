@@ -55,6 +55,7 @@ import ExpenseReportsPage from "./pages/reports/ExpenseReportsPage";
 // System Admin Pages
 import TenantsPage from "./pages/system-admin/TenantsPage";
 import SystemStatsPage from "./pages/system-admin/SystemStatsPage";
+import SystemSettingsPage from "./pages/system-admin/SystemSettingsPage";
 
 // Settings Pages
 import NotificationPreferencesPage from "./pages/settings/NotificationPreferences";
@@ -229,6 +230,7 @@ function App() {
           />
           <Route path="stats" element={<SystemStatsPage />} />
           <Route path="tenants" element={<TenantsPage />} />
+          <Route path="settings" element={<SystemSettingsPage />} />
         </Route>
 
         {/* Catch all */}

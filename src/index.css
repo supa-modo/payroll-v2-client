@@ -43,12 +43,37 @@ html {
   --color-primary-800: #166534;
   --color-primary-900: #14532d;
 
+  /* Secondary Colors - Green for success/positive actions */
+  --color-secondary-50: #f0fdf4;
+  --color-secondary-100: #dcfce7;
+  --color-secondary-200: #bbf7d0;
+  --color-secondary-300: #86efac;
+  --color-secondary-400: #4ade80;
+  --color-secondary-500: #22c55e;
+  --color-secondary-600: #16a34a;
+  --color-secondary-700: #15803d;
+  --color-secondary-800: #166534;
+  --color-secondary-900: #14532d;
+
+  /* Tertiary Colors - Coral/warm for accents */
+  --color-tertiary-50: #fef2f2;
+  --color-tertiary-100: #fee2e2;
+  --color-tertiary-200: #fecaca;
+  --color-tertiary-300: #fca5a5;
+  --color-tertiary-400: #f87171;
+  --color-tertiary-500: #ef4444;
+  --color-tertiary-600: #dc2626;
+  --color-tertiary-700: #b91c1c;
+  --color-tertiary-800: #991b1b;
+  --color-tertiary-900: #7f1d1d;
+
   /* Font families */
   --font-outfit: "Outfit", sans-serif;
   --font-lexend: "Lexend", sans-serif;
   --font-google: "Google Sans Flex", sans-serif;
   --font-open: "Open Sans", sans-serif;
   --font-source-sans-3: "Source Sans 3", sans-serif;
+  --font-source: "Source Sans 3", sans-serif;
 }
 
 /* Custom CSS Variables for backward compatibility */
@@ -63,6 +88,28 @@ html {
   --color-primary-700: #15803d;
   --color-primary-800: #166534;
   --color-primary-900: #14532d;
+
+  --color-secondary-50: #f0fdf4;
+  --color-secondary-100: #dcfce7;
+  --color-secondary-200: #bbf7d0;
+  --color-secondary-300: #86efac;
+  --color-secondary-400: #4ade80;
+  --color-secondary-500: #22c55e;
+  --color-secondary-600: #16a34a;
+  --color-secondary-700: #15803d;
+  --color-secondary-800: #166534;
+  --color-secondary-900: #14532d;
+
+  --color-tertiary-50: #fef2f2;
+  --color-tertiary-100: #fee2e2;
+  --color-tertiary-200: #fecaca;
+  --color-tertiary-300: #fca5a5;
+  --color-tertiary-400: #f87171;
+  --color-tertiary-500: #ef4444;
+  --color-tertiary-600: #dc2626;
+  --color-tertiary-700: #b91c1c;
+  --color-tertiary-800: #991b1b;
+  --color-tertiary-900: #7f1d1d;
 }
 
 body {

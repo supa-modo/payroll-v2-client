@@ -7,6 +7,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   helperText?: string;
+  description?: string;
   wrapperClassName?: string;
 }
 
@@ -18,6 +19,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       leftIcon,
       rightIcon,
       helperText,
+      description,
       className,
       wrapperClassName,
       ...props
@@ -65,6 +67,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         {helperText && !error && (
           <p className="mt-1.5 text-sm text-gray-500">{helperText}</p>
+        )}
+        {description && !error && !helperText && (
+          <p className="mt-1.5 text-sm text-gray-500">{description}</p>
         )}
       </div>
     );
