@@ -51,6 +51,7 @@ import LoanDetailPage from "./pages/loans/LoanDetailPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import PayrollReportsPage from "./pages/reports/PayrollReportsPage";
 import ExpenseReportsPage from "./pages/reports/ExpenseReportsPage";
+import TaxRemittancesPage from "./pages/reports/TaxRemittancesPage";
 
 // System Admin Pages
 import TenantsPage from "./pages/system-admin/TenantsPage";
@@ -197,6 +198,7 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports/payroll" element={<PayrollReportsPage />} />
           <Route path="reports/expenses" element={<ExpenseReportsPage />} />
+          <Route path="reports/tax-remittances" element={<TaxRemittancesPage />} />
           <Route path="admin/roles" element={<RolesPage />} />
           <Route path="admin/permissions" element={<PermissionsPage />} />
           <Route path="admin/audit-logs" element={<AuditLogsPage />} />

@@ -3,16 +3,20 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ReportFilters from "../../components/reports/ReportFilters";
 import ReportChart from "../../components/reports/ReportChart";
 import ReportTable from "../../components/reports/ReportTable";
 import ExportButton from "../../components/reports/ExportButton";
+import RemittanceSummaryCards from "../../components/reports/RemittanceSummaryCards";
 import { getPayrollReports, exportReport } from "../../api/reports";
 import {
   PayrollReportType,
   ReportFilters as ReportFiltersType,
+  TaxSummary,
 } from "../../types/report";
 import { formatCurrency } from "../../utils/format";
+import Button from "../../components/ui/Button";
 
 const REPORT_TYPES: Array<{ value: PayrollReportType; label: string }> = [
   { value: "summary", label: "Monthly Summary" },
@@ -22,6 +26,7 @@ const REPORT_TYPES: Array<{ value: PayrollReportType; label: string }> = [
 ];
 
 export default function PayrollReportsPage() {
+  const navigate = useNavigate();
   const [reportType, setReportType] = useState<PayrollReportType>("summary");
   const [filters, setFilters] = useState<ReportFiltersType>({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
@@ -31,15 +36,17 @@ export default function PayrollReportsPage() {
   });
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [taxTab, setTaxTab] = useState<"overview" | "periods" | "departments" | "employees">("overview");
 
   useEffect(() => {
     loadReport();
-  }, [reportType, filters]);
+  }, [reportType, filters, taxTab]);
 
   const loadReport = async () => {
     setLoading(true);
     try {
-      const response = await getPayrollReports(reportType, filters);
+      const includeEmployeeBreakdown = reportType === "tax" && taxTab === "employees";
+      const response = await getPayrollReports(reportType, filters, includeEmployeeBreakdown);
       setReportData(response.report);
     } catch (error) {
       console.error("Failed to load report:", error);
@@ -170,46 +177,173 @@ export default function PayrollReportsPage() {
         );
 
       case "tax":
-        const taxData = (reportData as any).breakdown || [];
+        const taxSummary = reportData as TaxSummary;
+        const taxData = taxSummary?.breakdown || [];
+        const periodBreakdown = taxSummary?.periodBreakdown || [];
+        const departmentBreakdown = taxSummary?.departmentBreakdown || [];
+        const employeeBreakdown = taxSummary?.employeeBreakdown || [];
+        const remittanceStatus = taxSummary?.remittanceStatus || {
+          pendingPAYE: 0,
+          pendingNSSF: 0,
+          pendingNHIF: 0,
+          remittedPAYE: 0,
+          remittedNSSF: 0,
+          remittedNHIF: 0,
+        };
+
         return (
           <>
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Total PAYE</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {formatCurrency((reportData as any).totalPAYE || 0)}
-                </p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Total NSSF</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency((reportData as any).totalNSSF || 0)}
-                </p>
-              </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Total NHIF</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {formatCurrency((reportData as any).totalNHIF || 0)}
-                </p>
-              </div>
+            {/* Summary Cards */}
+            <div className="mb-6">
+              <RemittanceSummaryCards
+                pendingPAYE={remittanceStatus.pendingPAYE}
+                pendingNSSF={remittanceStatus.pendingNSSF}
+                pendingNHIF={remittanceStatus.pendingNHIF}
+                remittedPAYE={remittanceStatus.remittedPAYE}
+                remittedNSSF={remittanceStatus.remittedNSSF}
+                remittedNHIF={remittanceStatus.remittedNHIF}
+              />
             </div>
-            <ReportChart
-              data={taxData}
-              type="line"
-              dataKey="month"
-              valueKey="paye"
-              height={300}
-            />
-            <ReportTable
-              data={taxData}
-              columns={[
-                { header: "Month", accessor: "month" },
-                { header: "PAYE", accessor: "paye", format: formatCurrency },
-                { header: "NSSF", accessor: "nssf", format: formatCurrency },
-                { header: "NHIF", accessor: "nhif", format: formatCurrency },
-              ]}
-              onExport={handleExport}
-            />
+
+            {/* Link to Tax Remittances Page */}
+            <div className="mb-6 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/reports/tax-remittances")}
+              >
+                View All Remittances →
+              </Button>
+            </div>
+
+            {/* Tabs */}
+            <div className="mb-6 border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                {[
+                  { id: "overview", label: "Overview" },
+                  { id: "periods", label: "Period Breakdown" },
+                  { id: "departments", label: "Department Breakdown" },
+                  { id: "employees", label: "Employee Breakdown" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setTaxTab(tab.id as any)}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                      taxTab === tab.id
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            {taxTab === "overview" && (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p className="text-sm text-gray-600">Total PAYE</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {formatCurrency(taxSummary?.totalPAYE || 0)}
+                    </p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <p className="text-sm text-gray-600">Total NSSF</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatCurrency(taxSummary?.totalNSSF || 0)}
+                    </p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <p className="text-sm text-gray-600">Total NHIF</p>
+                    <p className="text-2xl font-bold text-purple-600">
+                      {formatCurrency(taxSummary?.totalNHIF || 0)}
+                    </p>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Monthly Breakdown
+                  </h3>
+                  <ReportChart
+                    data={taxData}
+                    type="line"
+                    dataKey="month"
+                    valueKey="paye"
+                    height={300}
+                  />
+                </div>
+                <ReportTable
+                  data={taxData}
+                  columns={[
+                    { header: "Month", accessor: "month" },
+                    { header: "PAYE", accessor: "paye", format: formatCurrency },
+                    { header: "NSSF", accessor: "nssf", format: formatCurrency },
+                    { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                  ]}
+                  onExport={handleExport}
+                />
+              </>
+            )}
+
+            {taxTab === "periods" && (
+              <>
+                <ReportTable
+                  data={periodBreakdown}
+                  columns={[
+                    { header: "Period", accessor: "periodName" },
+                    { header: "Start Date", accessor: "startDate" },
+                    { header: "End Date", accessor: "endDate" },
+                    { header: "Status", accessor: "status" },
+                    { header: "PAYE", accessor: "paye", format: formatCurrency },
+                    { header: "NSSF", accessor: "nssf", format: formatCurrency },
+                    { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                  ]}
+                  onExport={handleExport}
+                />
+              </>
+            )}
+
+            {taxTab === "departments" && (
+              <>
+                <ReportTable
+                  data={departmentBreakdown}
+                  columns={[
+                    { header: "Department", accessor: "departmentName" },
+                    { header: "PAYE", accessor: "paye", format: formatCurrency },
+                    { header: "NSSF", accessor: "nssf", format: formatCurrency },
+                    { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                  ]}
+                  onExport={handleExport}
+                />
+              </>
+            )}
+
+            {taxTab === "employees" && (
+              <>
+                {employeeBreakdown && employeeBreakdown.length > 0 ? (
+                  <ReportTable
+                    data={employeeBreakdown}
+                    columns={[
+                      { header: "Employee Number", accessor: "employeeNumber" },
+                      { header: "Employee Name", accessor: "employeeName" },
+                      { header: "PAYE", accessor: "paye", format: formatCurrency },
+                      { header: "NSSF", accessor: "nssf", format: formatCurrency },
+                      { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                    ]}
+                    onExport={handleExport}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Employee breakdown not available for this report.</p>
+                    <p className="text-sm mt-2">
+                      Enable employee breakdown in report filters to see this data.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
           </>
         );
 

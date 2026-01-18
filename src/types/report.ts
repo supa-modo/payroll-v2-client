@@ -49,6 +49,62 @@ export interface TaxSummary {
     nssf: number;
     nhif: number;
   }>;
+  periodBreakdown: Array<{
+    periodId: string;
+    periodName: string;
+    startDate: string;
+    endDate: string;
+    paye: number;
+    nssf: number;
+    nhif: number;
+    status: string;
+  }>;
+  employeeBreakdown?: Array<{
+    employeeId: string;
+    employeeName: string;
+    employeeNumber: string;
+    paye: number;
+    nssf: number;
+    nhif: number;
+  }>;
+  departmentBreakdown: Array<{
+    departmentId: string;
+    departmentName: string;
+    paye: number;
+    nssf: number;
+    nhif: number;
+  }>;
+  remittanceStatus: {
+    pendingPAYE: number;
+    pendingNSSF: number;
+    pendingNHIF: number;
+    remittedPAYE: number;
+    remittedNSSF: number;
+    remittedNHIF: number;
+  };
+}
+
+export interface TaxRemittance {
+  id: string;
+  tenantId: string;
+  payrollPeriodId: string;
+  taxType: "PAYE" | "NSSF" | "NHIF";
+  amount: number;
+  dueDate: string;
+  remittedAt?: string | null;
+  remittedBy?: string | null;
+  remittanceReference?: string | null;
+  status: "pending" | "remitted";
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  payrollPeriod?: {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+  };
 }
 
 export interface EmployeePayrollHistory {

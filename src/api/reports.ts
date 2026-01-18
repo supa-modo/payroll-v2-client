@@ -16,7 +16,8 @@ import {
  */
 export async function getPayrollReports(
   type: PayrollReportType,
-  filters: ReportFilters
+  filters: ReportFilters,
+  includeEmployeeBreakdown?: boolean
 ): Promise<PayrollReportResponse> {
   const params = new URLSearchParams({
     type,
@@ -30,6 +31,10 @@ export async function getPayrollReports(
 
   if (filters.employeeId) {
     params.append("employeeId", filters.employeeId);
+  }
+
+  if (includeEmployeeBreakdown !== undefined) {
+    params.append("includeEmployeeBreakdown", includeEmployeeBreakdown.toString());
   }
 
   const response = await api.get(`/reports/payroll?${params.toString()}`);
