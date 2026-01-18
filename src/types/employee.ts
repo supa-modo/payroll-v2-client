@@ -103,10 +103,35 @@ export interface CreateEmployeeInput {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   emergencyContactRelationship?: string;
-  // User account creation fields
-  createUserAccount?: boolean;
-  roleId?: string;
-  userPassword?: string;
+  // User account creation fields (always required now)
+  roleId: string;
+  userPassword: string;
+  // Bank details (optional array)
+  bankDetails?: BankDetailInput[];
+  // Documents metadata (optional array, files sent separately)
+  documentsMetadata?: DocumentMetadataInput[];
+  // Photo file (sent separately in multipart/form-data)
+  photoFile?: File;
+  // Document files (sent separately in multipart/form-data)
+  documentFiles?: File[];
+}
+
+export interface BankDetailInput {
+  paymentMethod: "bank" | "mpesa" | "cash";
+  isPrimary?: boolean;
+  bankName?: string;
+  bankBranch?: string;
+  accountNumber?: string;
+  accountName?: string;
+  swiftCode?: string;
+  mpesaPhone?: string;
+  mpesaName?: string;
+}
+
+export interface DocumentMetadataInput {
+  documentType: string;
+  documentName: string;
+  expiryDate?: string;
 }
 
 export interface UpdateEmployeeInput extends Partial<CreateEmployeeInput> {

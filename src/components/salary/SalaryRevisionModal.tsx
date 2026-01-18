@@ -6,14 +6,8 @@
 import React, { useState, useEffect } from "react";
 import { FaXmark } from "react-icons/fa6";
 import {
-  FiDollarSign,
   FiPlus,
   FiTrash2,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiEdit2,
-  FiCheckCircle,
-  FiAlertCircle,
 } from "react-icons/fi";
 import { TbReceipt } from "react-icons/tb";
 import api from "../../services/api";
@@ -25,7 +19,6 @@ import Button from "../ui/Button";
 import type {
   EmployeeSalary,
   SalaryComponent,
-  EmployeeSalaryComponent,
 } from "../../types/salary";
 
 interface SalaryRevisionModalProps {
