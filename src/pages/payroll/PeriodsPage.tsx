@@ -6,6 +6,7 @@ import Modal from "../../components/ui/Modal";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import DateInput from "../../components/ui/DateInput";
+import NotificationModal, { NotificationType } from "../../components/ui/NotificationModal";
 import api from "../../services/api";
 import type { PayrollPeriod, CreatePayrollPeriodInput } from "../../types/payroll";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +31,13 @@ const PeriodsPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const pageSize = 30;
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    type: NotificationType;
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+  } | null>(null);
 
   useEffect(() => {
     fetchPeriods();
@@ -107,55 +115,124 @@ const PeriodsPage: React.FC = () => {
   };
 
   const handleProcess = async (id: string) => {
-    if (!window.confirm("Are you sure you want to process this payroll period?")) {
-      return;
-    }
-
-    try {
-      await api.post(`/payroll-periods/${id}/process`);
-      fetchPeriods();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to process payroll period");
-    }
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Process payroll period",
+      message: "Are you sure you want to process this payroll period?",
+      onConfirm: async () => {
+        try {
+          await api.post(`/payroll-periods/${id}/process`);
+          fetchPeriods();
+          setNotification({
+            open: true,
+            type: "success",
+            title: "Payroll processed",
+            message: "The payroll period was processed successfully.",
+          });
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to process payroll period",
+            message:
+              error.response?.data?.error ||
+              "Failed to process payroll period",
+          });
+        }
+      },
+    });
   };
 
   const handleApprove = async (id: string) => {
-    if (!window.confirm("Are you sure you want to approve this payroll period?")) {
-      return;
-    }
-
-    try {
-      await api.post(`/payroll-periods/${id}/approve`);
-      fetchPeriods();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to approve payroll period");
-    }
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Approve payroll period",
+      message: "Are you sure you want to approve this payroll period?",
+      onConfirm: async () => {
+        try {
+          await api.post(`/payroll-periods/${id}/approve`);
+          fetchPeriods();
+          setNotification({
+            open: true,
+            type: "success",
+            title: "Payroll approved",
+            message: "The payroll period was approved successfully.",
+          });
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to approve payroll period",
+            message:
+              error.response?.data?.error ||
+              "Failed to approve payroll period",
+          });
+        }
+      },
+    });
   };
 
   const handleLock = async (id: string) => {
-    if (!window.confirm("Are you sure you want to lock this payroll period? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      await api.post(`/payroll-periods/${id}/lock`);
-      fetchPeriods();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to lock payroll period");
-    }
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Lock payroll period",
+      message:
+        "Are you sure you want to lock this payroll period? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          await api.post(`/payroll-periods/${id}/lock`);
+          fetchPeriods();
+          setNotification({
+            open: true,
+            type: "success",
+            title: "Payroll locked",
+            message: "The payroll period was locked successfully.",
+          });
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to lock payroll period",
+            message:
+              error.response?.data?.error || "Failed to lock payroll period",
+          });
+        }
+      },
+    });
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this payroll period? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      await api.delete(`/payroll-periods/${id}`);
-      fetchPeriods();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to delete payroll period");
-    }
+    setNotification({
+      open: true,
+      type: "delete",
+      title: "Delete payroll period",
+      message:
+        "Are you sure you want to delete this payroll period? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/payroll-periods/${id}`);
+          fetchPeriods();
+          setNotification({
+            open: true,
+            type: "success",
+            title: "Payroll period deleted",
+            message: "The payroll period was deleted successfully.",
+          });
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to delete payroll period",
+            message:
+              error.response?.data?.error ||
+              "Failed to delete payroll period",
+          });
+        }
+      },
+    });
   };
 
   const getStatusBadgeClass = (status: string) => {
@@ -184,6 +261,19 @@ const PeriodsPage: React.FC = () => {
 
   const startIndex = totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
   const endIndex = Math.min(currentPage * pageSize, totalItems);
+
+  const handleNotificationClose = () => {
+    setNotification(null);
+  };
+
+  const handleNotificationConfirm = async () => {
+    if (notification?.onConfirm) {
+      await notification.onConfirm();
+    }
+    if (!notification || !notification.onConfirm) {
+      handleNotificationClose();
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -423,6 +513,25 @@ const PeriodsPage: React.FC = () => {
             </div>
           </form>
         </Modal>
+      )}
+      {notification && (
+        <NotificationModal
+          isOpen={notification.open}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          confirmText={
+            notification.type === "delete"
+              ? "Delete"
+              : notification.type === "confirm"
+              ? "Confirm"
+              : "OK"
+          }
+          cancelText="Cancel"
+          showCancel={notification.type === "delete" || notification.type === "confirm"}
+          onConfirm={handleNotificationConfirm}
+          onClose={handleNotificationClose}
+        />
       )}
     </div>
   );

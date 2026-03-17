@@ -171,7 +171,7 @@ const DataTable = <T extends Record<string, any> = any>({
     <div className="p-2">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left  text-gray-600">
-          <thead className="text-sm text-gray-700   bg-gray-200">
+          <thead className="text-sm text-gray-700 bg-blue-200">
             <tr>
               {showCheckboxes && (
                 <th scope="col" className="pl-6 py-3">
@@ -212,7 +212,7 @@ const DataTable = <T extends Record<string, any> = any>({
                 return (
                   <tr
                     key={`row-${rowId ?? rowIdx}`}
-                    className={`bg-white border-b border-gray-200 hover:bg-gray-50 transition-colors ${
+                    className={`bg-white border-b border-gray-200 hover:bg-gray-100 transition-all duration-300 ${
                       selected ? "bg-green-50" : ""
                     } ${onRowClick ? "cursor-pointer" : ""}`}
                     onClick={() => onRowClick && onRowClick(row)}
@@ -276,7 +276,7 @@ const DataTable = <T extends Record<string, any> = any>({
                     onPageChange(1);
                   }
                 }}
-                className="px-2 py-1 text-sm border border-gray-300 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="px-2 py-1 text-sm border border-gray-300 rounded-full bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {pageSizeOptions.map((size) => (
                   <option key={size} value={size}>
@@ -293,7 +293,7 @@ const DataTable = <T extends Record<string, any> = any>({
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-[0.8rem] font-semibold text-gray-600 bg-white border border-gray-300 rounded-full hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
@@ -315,9 +315,9 @@ const DataTable = <T extends Record<string, any> = any>({
                     onClick={() =>
                       onPageChange && onPageChange(pageNum as number)
                     }
-                    className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+                    className={`px-3 py-1 text-[0.8rem] font-semibold rounded-full transition-colors ${
                       currentPage === pageNum
-                        ? "bg-green-600 text-white"
+                        ? "bg-primary-600 text-white"
                         : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50"
                     }`}
                   >
@@ -329,7 +329,7 @@ const DataTable = <T extends Record<string, any> = any>({
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="px-3 py-1.5 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-[0.8rem] font-semibold text-gray-600 bg-white border border-gray-300 rounded-full hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>

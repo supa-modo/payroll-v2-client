@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiEdit2, FiTrash2, FiUser, FiSearch } from "react-icons/fi";
+import { FiPlus, FiUser, FiSearch } from "react-icons/fi";
 import DataTable from "../../components/ui/DataTable";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -7,9 +7,11 @@ import Textarea from "../../components/ui/Textarea";
 import Select from "../../components/ui/Select";
 import Modal from "../../components/ui/Modal";
 import api from "../../services/api";
+import NotificationModal, { NotificationType } from "../../components/ui/NotificationModal";
 import type { Department } from "../../types/department";
 import type { Employee } from "../../types/employee";
 import { PiUsersThreeDuotone } from "react-icons/pi";
+import { TbEdit, TbTrash,  } from "react-icons/tb";
 
 const DepartmentsPage: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -19,6 +21,12 @@ const DepartmentsPage: React.FC = () => {
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    type: NotificationType;
+    title: string;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchDepartments();
@@ -52,16 +60,31 @@ const DepartmentsPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this department?")) {
-      return;
-    }
-
-    try {
-      await api.delete(`/departments/${id}`);
-      fetchDepartments();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to delete department");
-    }
+    setNotification({
+      open: true,
+      type: "delete",
+      title: "Delete department",
+      message: "Are you sure you want to delete this department?",
+    });
+    (handleDelete as any)._confirm = async () => {
+      try {
+        await api.delete(`/departments/${id}`);
+        fetchDepartments();
+        setNotification({
+          open: true,
+          type: "success",
+          title: "Department deleted",
+          message: "The department was deleted successfully.",
+        });
+      } catch (error: any) {
+        setNotification({
+          open: true,
+          type: "error",
+          title: "Failed to delete department",
+          message: error.response?.data?.error || "Failed to delete department",
+        });
+      }
+    };
   };
 
   const handleFormClose = () => {
@@ -74,7 +97,7 @@ const DepartmentsPage: React.FC = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <h1 className="text-2xl font-bold text-gray-900">Departments</h1>
+          <h1 className="text-2xl font-bold text-primary-700">Departments</h1>
           <div className="w-px h-6 bg-gray-300" />
           <p className="text-[0.95rem] text-gray-600">
             Manage your company's organizational structure
@@ -84,12 +107,12 @@ const DepartmentsPage: React.FC = () => {
           onClick={handleCreate}
           leftIcon={<FiPlus className="w-4 h-4" />}
         >
-          Add Department
+          Add New Department
         </Button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-300 overflow-hidden">
+        <div className="px-5 pt-5 border-b border-gray-200">
           <Input
             type="text"
             placeholder="Search departments by name, code, or manager..."
@@ -225,20 +248,22 @@ const DepartmentsPage: React.FC = () => {
                       e.stopPropagation();
                       handleEdit(dept);
                     }}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="flex items-center gap-1 p-2 text-[0.8rem] text-blue-600 hover:text-blue-800 hover:cursor-pointer underline underline-offset-4 transition-colors"
                     title="Edit department"
                   >
-                    <FiEdit2 className="w-4 h-4" />
+                    <TbEdit className="w-4 h-4" />
+                    <span>Edit Dpt</span>
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDelete(dept.id);
                     }}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="flex items-center gap-1 p-2 text-[0.8rem] text-red-600 hover:text-red-800 transition-colors"
                     title="Delete department"
                   >
-                    <FiTrash2 className="w-4 h-4" />
+                    <TbTrash className="w-4 h-4" />
+                    <span>Delete</span>
                   </button>
                 </div>
               ),
@@ -260,6 +285,30 @@ const DepartmentsPage: React.FC = () => {
         <DepartmentFormModal
           department={editingDepartment}
           onClose={handleFormClose}
+        />
+      )}
+
+      {notification && (
+        <NotificationModal
+          isOpen={notification.open}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          confirmText={notification.type === "delete" ? "Delete" : "OK"}
+          cancelText="Cancel"
+          showCancel={notification.type === "delete"}
+          onConfirm={async () => {
+            const fn = (handleDelete as any)._confirm as
+              | (() => Promise<void>)
+              | undefined;
+            if (fn) {
+              await fn();
+              (handleDelete as any)._confirm = undefined;
+            } else {
+              setNotification(null);
+            }
+          }}
+          onClose={() => setNotification(null)}
         />
       )}
     </div>

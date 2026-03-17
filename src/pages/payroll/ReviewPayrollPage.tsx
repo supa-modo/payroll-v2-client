@@ -14,6 +14,7 @@ import {
 import Button from "../../components/ui/Button";
 import DataTable from "../../components/ui/DataTable";
 import api from "../../services/api";
+import NotificationModal, { NotificationType } from "../../components/ui/NotificationModal";
 import type { PayrollSummary } from "../../types/payroll";
 
 const ReviewPayrollPage: React.FC = () => {
@@ -22,6 +23,13 @@ const ReviewPayrollPage: React.FC = () => {
   const [summary, setSummary] = useState<PayrollSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    type: NotificationType;
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+  } | null>(null);
 
   useEffect(() => {
     if (periodId) {
@@ -44,53 +52,99 @@ const ReviewPayrollPage: React.FC = () => {
 
   const handleApprove = async () => {
     if (!periodId) return;
-    if (!window.confirm("Are you sure you want to approve this payroll period?")) {
-      return;
-    }
-
-    try {
-      setIsProcessing(true);
-      await api.post(`/payroll-periods/${periodId}/approve`);
-      fetchSummary();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to approve payroll period");
-    } finally {
-      setIsProcessing(false);
-    }
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Approve payroll period",
+      message: "Are you sure you want to approve this payroll period?",
+      onConfirm: async () => {
+        try {
+          setIsProcessing(true);
+          await api.post(`/payroll-periods/${periodId}/approve`);
+          fetchSummary();
+          setNotification({
+            open: true,
+            type: "success",
+            title: "Payroll approved",
+            message: "The payroll period was approved successfully.",
+          });
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to approve payroll period",
+            message:
+              error.response?.data?.error ||
+              "Failed to approve payroll period",
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      },
+    });
   };
 
   const handleLock = async () => {
     if (!periodId) return;
-    if (!window.confirm("Are you sure you want to lock this payroll period? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      setIsProcessing(true);
-      await api.post(`/payroll-periods/${periodId}/lock`);
-      fetchSummary();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to lock payroll period");
-    } finally {
-      setIsProcessing(false);
-    }
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Lock payroll period",
+      message:
+        "Are you sure you want to lock this payroll period? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          setIsProcessing(true);
+          await api.post(`/payroll-periods/${periodId}/lock`);
+          fetchSummary();
+          setNotification({
+            open: true,
+            type: "success",
+            title: "Payroll locked",
+            message: "The payroll period was locked successfully.",
+          });
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to lock payroll period",
+            message:
+              error.response?.data?.error || "Failed to lock payroll period",
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      },
+    });
   };
 
   const handleDelete = async () => {
     if (!periodId) return;
-    if (!window.confirm("Are you sure you want to delete this payroll period? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      setIsProcessing(true);
-      await api.delete(`/payroll-periods/${periodId}`);
-      navigate("/payroll/periods");
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to delete payroll period");
-    } finally {
-      setIsProcessing(false);
-    }
+    setNotification({
+      open: true,
+      type: "delete",
+      title: "Delete payroll period",
+      message:
+        "Are you sure you want to delete this payroll period? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          setIsProcessing(true);
+          await api.delete(`/payroll-periods/${periodId}`);
+          navigate("/payroll/periods");
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to delete payroll period",
+            message:
+              error.response?.data?.error ||
+              "Failed to delete payroll period",
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      },
+    });
   };
 
   const handleProcess = async () => {
@@ -130,6 +184,18 @@ const ReviewPayrollPage: React.FC = () => {
   }
 
   const { period, summary: periodSummary } = summary;
+
+  const handleNotificationClose = () => {
+    setNotification(null);
+  };
+
+  const handleNotificationConfirm = async () => {
+    if (notification?.onConfirm) {
+      await notification.onConfirm();
+    } else {
+      handleNotificationClose();
+    }
+  };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -397,6 +463,26 @@ const ReviewPayrollPage: React.FC = () => {
           showCheckboxes={false}
         />
       </div>
+
+      {notification && (
+        <NotificationModal
+          isOpen={notification.open}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          confirmText={
+            notification.type === "delete"
+              ? "Delete"
+              : notification.type === "confirm"
+              ? "Confirm"
+              : "OK"
+          }
+          cancelText="Cancel"
+          showCancel={notification.type === "delete" || notification.type === "confirm"}
+          onConfirm={handleNotificationConfirm}
+          onClose={handleNotificationClose}
+        />
+      )}
     </div>
   );
 };

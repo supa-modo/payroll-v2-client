@@ -1,288 +1,221 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaCheck } from "react-icons/fa";
-import { FiMail } from "react-icons/fi";
+import { FiCheck } from "react-icons/fi";
+import { TbShieldHalfFilled, TbClock, TbTrendingUp, TbMailFilled, TbArrowBack } from "react-icons/tb";
 import api from "../../services/api";
-import { LoginHeroSection } from "../../components/landing/LoginHeroSection";
+import { PiUsersThreeDuotone } from "react-icons/pi";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import { MdLockReset } from "react-icons/md";
+import AuthLeftPanel from "@/components/ui/AuthLeftPanel";
 
+const FontStyle = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    @keyframes authFadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .auth-animate { animation: authFadeUp 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+  `}</style>
+);
+
+
+/* ══════════════════════════════════════════════
+   FORGOT PASSWORD PAGE
+   ══════════════════════════════════════════════ */
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setEmail(value);
-    if (errors.email) {
-      setErrors((prev) => ({ ...prev, email: "" }));
-    }
-    if (error) {
-      setError(null);
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (errors.email) setErrors({});
+    if (apiError) setApiError(null);
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validate = () => {
+    if (!email) { setErrors({ email: "Email is required" }); return false; }
+    if (!/\S+@\S+\.\S+/.test(email)) { setErrors({ email: "Enter a valid email address" }); return false; }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
+    if (!validate()) return;
     setIsSubmitting(true);
-    setError(null);
-
     try {
       await api.post("/auth/forgot-password", { email });
       setIsSuccess(true);
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.error ||
-        err.message ||
-        "An error occurred. Please try again later.";
-      setError(errorMessage);
+      setApiError(err.response?.data?.error || "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Success State View
+  const leftPanel = (
+    <AuthLeftPanel
+      heading={<>Account Password<br /><span className="text-sky-300">recovery.</span></>}
+      sub="We'll send a secure password reset link straight to your inbox. Check your email and follow the instructions."
+      features={[
+        { icon: <TbShieldHalfFilled size={22} />, text: "Secure reset link via email" },
+        { icon: <TbClock size={22} />, text: "Link expires after 30 minutes" },
+        { icon: <PiUsersThreeDuotone size={22} />, text: "Your account data stays protected" },
+        { icon: <TbTrendingUp size={22} />, text: "Instant access once reset" },
+      ]}
+    />
+  );
+
+  /* ── Success state ── */
   if (isSuccess) {
     return (
-      <div className="font-source min-h-screen lg:max-h-screen flex flex-col lg:flex-row overflow-hidden">
-        {/* Hero Section */}
-        <LoginHeroSection variant="default" patternId="topographic-forgot" />
-
-        {/* Form Section */}
-        <div className="login-form-section flex-1 lg:max-h-screen bg-white flex items-center justify-center px-6 pb-2 lg:mb-6 lg:px-2 lg:pt-12 lg:pb-0 overflow-y-auto">
-          <div className="w-full max-w-md lg:-ml-16 flex flex-col min-h-full lg:h-full">
-            <div className="flex-1 flex flex-col justify-center">
-              <div className="-ml-4 mb-4 lg:mb-6">
-                <img
-                  src="/logo.webp"
-                  alt="Payroll System Logo"
-                  className="w-auto h-16 lg:h-20 mb-1 md:mb-4 lg:mb-6"
-                />
+      <>
+        <FontStyle />
+        <div className="pjs min-h-screen flex flex-col lg:flex-row bg-[#f0f5ff]"
+          style={{ backgroundImage: "radial-gradient(ellipse 80% 60% at 50% -10%,rgba(59,130,246,0.1) 0%,transparent 70%)" }}>
+          {leftPanel}
+          <div className="flex-1 flex items-center justify-center px-6 py-12">
+            <div className="w-full max-w-md auth-animate">
+              <div className="lg:hidden flex items-center gap-2.5 mb-8">
+                <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg">P</div>
+                <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
               </div>
 
-              {/* Success Card */}
-              <div className="bg-white rounded-3xl shadow-lg border border-gray-200 mb-8 lg:mb-2 py-4 px-6 lg:p-8">
-                <div className="text-center mb-5">
-                  <div className="mx-auto h-13 lg:h-14 w-13 lg:w-14 rounded-full bg-green-600 flex items-center justify-center mb-4">
-                    <FaCheck className="h-6 lg:h-7 w-6 lg:w-7 text-white" />
-                  </div>
-                  <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
-                    Check your email
-                  </h2>
-                  <p className="text-gray-600 text-sm lg:text-base">
-                    If an account with that email exists, we've sent you a
-                    password reset link. Please check your inbox and follow the
-                    instructions.
+              <div className="bg-white rounded-3xl shadow-[0_8px_40px_rgba(37,99,235,0.10),0_0_0_1px_rgba(37,99,235,0.07)] px-8 py-10 flex flex-col items-center text-center gap-5">
+                {/* Success icon */}
+                <div className="w-16 h-16 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl">
+                  <FiCheck />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Check your inbox</h2>
+                  <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
+                    If an account with <strong className="text-slate-700">{email}</strong> exists, we've sent a reset link. Check your inbox and follow the instructions.
                   </p>
                 </div>
-
-                <div className="mt-6">
-                  <Link
-                    to="/login"
-                    className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-primary-600/25 hover:shadow-primary-600/40 active:scale-[0.98] text-sm lg:text-base flex justify-center"
-                  >
-                    Back to Login
-                  </Link>
+                <div className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700">
+                  Didn't receive it? Check your spam folder or wait a minute before trying again.
                 </div>
+                <Link to="/login"
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.45)] transition-all duration-200">
+                  Back to Sign In
+                </Link>
               </div>
-            </div>
 
-            
-            {/* Copyright Footer */}
-          <div className="font-source mt-auto pt-3 lg:pt-6 border-t border-gray-200">
-            <div className="flex lg:flex-col items-center justify-between lg:gap-3">
-              {/* Copyright Text */}
-              <p className="text-xs lg:text-[0.85rem] text-gray-400 text-center">
-                © {new Date().getFullYear()} Innovasure Limited Payroll System. All rights
-                reserved.
+              <p className="text-center text-xs text-slate-400 mt-6">
+                © {new Date().getFullYear()} Innovasure Limited · Powered by APIHub Solutions
               </p>
-
-                <p className="text-xs lg:text-[0.83rem] font-medium text-gray-500 text-center">Powered by APIHub Solutions</p>
             </div>
-          </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  // Main Form View
+  /* ── Main form ── */
   return (
-    <div className="font-source min-h-screen lg:max-h-screen flex flex-col lg:flex-row overflow-hidden">
-      {/* 
-        ============================================
-        HERO SECTION
-        ============================================
-      */}
-      <LoginHeroSection variant="default" patternId="topographic-forgot" />
+    <>
+      <FontStyle />
+      <div className="min-h-screen flex flex-col lg:flex-row bg-[#f0f5ff]"
+        style={{
+          backgroundImage: `url("/loginbg.png")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="absolute inset-0 bg-linear-to-b lg:bg-linear-to-br from-white via-white/80 to-blue-500/0 backdrop-blur-[2px]" />
 
-      {/* 
-        ============================================
-        FORM SECTION
-        ============================================
-      */}
-      <div className="login-form-section flex-1 max-h-screen bg-white flex items-center justify-center px-6 pb-2 lg:mb-6 lg:px-2 lg:pt-12 lg:pb-0 overflow-y-auto">
-        <div className="w-full max-w-md lg:-ml-16 flex flex-col min-h-full lg:h-full">
-          {/* Main Content Area - Takes up available space */}
-          <div className="flex-1 flex flex-col justify-center">
-            {/* Sign In Header */}
-            <div className="-ml-4 mb-4 lg:mb-6">
-              <img
-                src="/logo.webp"
-                alt="Payroll System Logo"
-                className="w-auto h-16 lg:h-20 mb-3 md:mb-4 lg:mb-6"
-              />
-              <p className="pl-4 text-xl lg:text-2xl font-bold text-gray-900">
-                Forgot Your Password?
-              </p>
+
+        {leftPanel}
+
+        <div className="-mx-2 lg:mx-0 font-source relative z-10 flex-1 flex items-center justify-center px-6 py-12 lg:py-0">
+          <div className="w-full max-w-lg auth-animate">
+
+            {/* Mobile logo */}
+            <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg">P</div>
+              <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
             </div>
 
-            {/* Error Message Display */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2.5 rounded-xl mb-6">
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
+            <div className="bg-white rounded-4xl shadow-[0_8px_40px_rgba(37,99,235,0.10),0_0_0_1px_rgba(37,99,235,0.07)] px-6 lg:px-8 py-7 lg:py-9">
+              {/* Header */}
+              <div className="hidden items-center gap-2.5 mb-5 lg:flex justify-center">
+                <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg">P</div>
+                <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
+              </div>
+              <div className="pb-3 text-center">
+                <h2 className="text-xl lg:text-2xl font-extrabold font-google text-slate-900 mb-1">Forgot Your Account password?</h2>
+                <p className="text-sm lg:text-base text-slate-500">Enter your email and we'll send you a link to reset your password.</p>
+              </div>
+
+              {apiError && (
+                <div className="pt-2 flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-2 text-sm mb-6">
+                  <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-sm font-medium">{error}</p>
+                  {apiError}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Forgot Password Form */}
-            <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5">
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-[0.83rem] md:text-sm font-medium text-gray-700 mb-2"
-                >
-                  Email address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 lg:pl-5 flex items-center pointer-events-none">
-                    <FiMail className="h-5 lg:h-6 w-5 lg:w-6 text-gray-500" />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
+              <form onSubmit={handleSubmit} className="pt-3 flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+
+                  <Input
+                    label="Email address"
+                    labelClassName="text-gray-600"
                     type="email"
-                    required
+                    leftIcon={<TbMailFilled className="w-5 h-5" />}
                     value={email}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 lg:pl-14 pr-4 py-3 lg:py-3.5 border rounded-xl text-gray-900 placeholder:text-gray-400 
-                      focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all  
-                      duration-200 text-sm lg:text-base ${
-                        errors.email
-                          ? "border-red-400 focus:ring-red-400/50 focus:border-red-400"
-                          : "border-gray-300"
-                      }`}
-                    placeholder="Enter your email address"
+                    onChange={handleChange}
+                    placeholder="you@company.com"
+                    error={errors.email}
+                    required={true}
+                    className="text-sm"
                   />
+
+                  {errors.email && <p className="text-xs text-rose-500 pl-1">{errors.email}</p>}
+                  <p className="text-[0.8rem] font-source text-gray-600 pl-1">We'll only send a reset link if this email is registered.</p>
                 </div>
-                {errors.email && (
-                  <p className="text-red-500 text-xs pl-1.5 lg:text-sm mt-1.5">
-                    {errors.email}
-                  </p>
-                )}
-                <p className="mt-2 text-xs text-gray-500">
-                  We'll send a password reset link to your email address
-                </p>
-              </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold 
-                  py-3.5 px-4 rounded-xl transition-all duration-200 
-                  disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer
-                  shadow-lg shadow-primary-600/25 hover:shadow-primary-600/40
-                  active:scale-[0.98] text-sm lg:text-base"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Sending Code...
-                  </div>
-                ) : (
-                  "Send Reset Link"
-                )}
-              </button>
-            </form>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full">
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center gap-2">
 
-            {/* Back to Login Link */}
-            <div className="mt-8 lg:mt-10 pb-16 lg:pb-0 text-center">
-              <p className="text-gray-600 text-sm">
-                Remember your account password?{" "}
-                <Link
-                  to="/login"
-                  className="text-primary-600 hover:text-primary-700 underline underline-offset-4 font-semibold transition-colors"
-                >
-                  Log in
+
+                      <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin block" />
+                      <span>Sending ...</span></div>
+                  ) : <div className="flex items-center justify-center gap-2">
+                    <MdLockReset className="w-5 h-5" />
+                    <span>Send Reset Link</span>
+                  </div>}
+                </Button>
+
+              </form>
+
+              <div className="pt-6  flex justify-center">
+                <Link to="/login" className="flex items-center gap-1.5 text-sm font-semibold text-secondary-700 hover:text-secondary-800 transition-colors">
+                  <TbArrowBack className="text-base" /> Back to Sign In
                 </Link>
-              </p>
+              </div>
             </div>
-          </div>
 
-          {/* Copyright Footer */}
-          <div className="font-source mt-auto pt-3 lg:pt-6 border-t border-gray-200">
-            <div className="flex lg:flex-col items-center justify-between lg:gap-3">
-              {/* Copyright Text */}
-              <p className="text-xs lg:text-[0.85rem] text-gray-400 text-center">
-                © {new Date().getFullYear()} Innovasure Limited Payroll System. All rights
-                reserved.
-              </p>
 
-                <p className="text-xs lg:text-[0.83rem] font-medium text-gray-500 text-center">Powered by APIHub Solutions</p>
-            </div>
+            {/* Footer */}
+            <p className="text-center text-[0.8rem] font-source font-medium text-gray-700 mt-6 leading-relaxed">
+              © {new Date().getFullYear()} For Innovasure Limited.
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -33,9 +33,9 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     return (
-      <div className={clsx("w-full mb-5", wrapperClassName)}>
+      <div className={clsx("w-full mb-2", wrapperClassName)}>
         {label && (
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 pl-1.5 font-source">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -49,7 +49,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <select
             ref={ref}
             className={clsx(
-              "w-full px-4 py-3 rounded-lg border transition-all duration-200",
+              "w-full px-4 py-2.5 rounded-[0.7rem] border transition-all duration-200",
               "focus:outline-none focus:ring-1",
               "disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500",
               "appearance-none bg-gray-100",

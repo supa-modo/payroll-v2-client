@@ -20,7 +20,7 @@ import OnboardingWizard from "./pages/onboarding/OnboardingWizard";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import DepartmentsPage from "./pages/departments/DepartmentsPage";
 import EmployeesPage from "./pages/employees/EmployeesPage";
-import EmployeeDetailPage from "./pages/employees/EmployeeDetailPage";
+import EmployeeDetailPage from "./pages/employees/EmployeeDetailDrawer";
 
 // Admin Pages
 import RolesPage from "./pages/admin/RolesPage";

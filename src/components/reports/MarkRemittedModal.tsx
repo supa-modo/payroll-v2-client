@@ -59,7 +59,7 @@ export default function MarkRemittedModal({
           onClick={onClose}
         />
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <form onSubmit={handleSubmit}>
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="flex items-center justify-between mb-4">
@@ -145,7 +145,7 @@ export default function MarkRemittedModal({
               <Button
                 type="submit"
                 disabled={isLoading || !remittanceReference.trim()}
-                className="w-full sm:w-auto sm:ml-3"
+                className="w-full rounded-full sm:ml-3"
               >
                 {isLoading ? "Processing..." : "Mark as Remitted"}
               </Button>
@@ -153,7 +153,7 @@ export default function MarkRemittedModal({
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="mt-3 w-full sm:mt-0 sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                className="mt-3 w-full sm:mt-0 rounded-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
               </button>
