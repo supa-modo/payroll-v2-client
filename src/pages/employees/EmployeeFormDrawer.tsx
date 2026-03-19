@@ -11,6 +11,7 @@ import api from "../../services/api";
 import type { Employee, CreateEmployeeInput, BankDetailInput, DocumentMetadataInput } from "../../types/employee";
 import type { Department } from "../../types/department";
 import type { Role } from "../../types/role";
+import type { SalaryComponent } from "../../types/salary";
 import { TbAlertTriangle, TbArrowBack, TbBriefcase, TbCheck, TbLockFilled, TbShieldHalfFilled } from "react-icons/tb";
 import { motion } from "framer-motion";
 import Button from "@/components/ui/Button";
@@ -24,6 +25,7 @@ const STEPS = [
     { id: 4, title: "User Account", desc: "Login role & password", icon: <TbLockFilled className="w-5 h-5" />, optional: false },
     { id: 5, title: "Bank Details", desc: "Payment method for payroll", icon: <FiCreditCard className="w-5 h-5" />, optional: true },
     { id: 6, title: "Documents", desc: "Contracts, IDs & certificates", icon: <FiFileText className="w-5 h-5" />, optional: true },
+    { id: 7, title: "Salary Setup", desc: "Basic salary, deductions & relief-ready defaults", icon: <FiShield className="w-5 h-5" />, optional: false },
 ];
 
 /* ─── small helpers ──────────────────────────────────────── */
@@ -65,6 +67,12 @@ interface Props {
     onSuccess: () => void;
 }
 
+interface EmployeeSalaryRow {
+    salaryComponentId: string;
+    amount: number;
+    source: "manual" | "auto";
+}
+
 const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) => {
     const isEdit = !!employee;
     const [visible, setVisible] = useState(false);
@@ -80,6 +88,10 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [bankDetails, setBankDetails] = useState<BankDetailInput[]>([]);
     const [documents, setDocuments] = useState<Array<{ file: File; metadata: DocumentMetadataInput }>>([]);
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [salaryTemplates, setSalaryTemplates] = useState<SalaryComponent[]>([]);
+    const [salaryRows, setSalaryRows] = useState<EmployeeSalaryRow[]>([]);
+    const [selectedSalaryTemplate, setSelectedSalaryTemplate] = useState("");
 
     const fmtDate = (d?: string | null) => {
         if (!d) return "";
@@ -151,9 +163,10 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
 
     const fetchData = async () => {
         try {
-            const [dr, rr] = await Promise.all([api.get("/departments"), api.get("/roles")]);
+            const [dr, rr, sr] = await Promise.all([api.get("/departments"), api.get("/roles"), api.get("/salary-components")]);
             setDepartments(dr.data.departments || []);
             setRoles(rr.data.roles || []);
+            setSalaryTemplates(sr.data.components || []);
         } catch { }
     };
 
@@ -180,9 +193,93 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
         if (step === 4 && !isEdit) {
             if (!form.roleId) e.roleId = "Please select a role";
             if (!form.userPassword || form.userPassword.length < 8) e.userPassword = "Minimum 8 characters required";
+            if (confirmPassword !== form.userPassword) e.confirmPassword = "Passwords do not match";
+        }
+        if (step === 5) {
+            bankDetails.forEach((bank, index) => {
+                if (bank.paymentMethod === "bank") {
+                    if (!bank.bankName?.trim()) e[`bankName_${index}`] = "Bank name is required";
+                    if (!bank.accountNumber?.trim()) e[`accountNumber_${index}`] = "Account number is required";
+                }
+                if (bank.paymentMethod === "mpesa" && !bank.mpesaPhone?.trim()) {
+                    e[`mpesaPhone_${index}`] = "M-Pesa phone is required";
+                }
+            });
+        }
+        if (step === 7 && !isEdit) {
+            const basic = getBasicSalaryAmount();
+            if (!basic || basic <= 0) {
+                e.basicSalary = "Basic salary is required before salary setup can be completed";
+            }
         }
         setErrors(e);
         return Object.keys(e).length === 0;
+    };
+
+    const payeBands = [
+        { min: 0, max: 24000, rate: 10 },
+        { min: 24000, max: 32333, rate: 25 },
+        { min: 32333, max: 500000, rate: 30 },
+        { min: 500000, max: 800000, rate: 32.5 },
+        { min: 800000, max: Number.POSITIVE_INFINITY, rate: 35 },
+    ];
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const getTemplateById = (id: string) => salaryTemplates.find(s => s.id === id);
+    const getBasicTemplate = () =>
+        salaryTemplates.find(s =>
+            s.type === "earning" && (
+                s.code?.toLowerCase() === "basic" ||
+                s.name?.toLowerCase().includes("basic")
+            )
+        );
+    const getBasicSalaryAmount = () => {
+        const basicTemplate = getBasicTemplate();
+        if (!basicTemplate) return 0;
+        const basicRow = salaryRows.find(row => row.salaryComponentId === basicTemplate.id);
+        return basicRow?.amount || 0;
+    };
+    const upsertSalaryRow = (salaryComponentId: string, amount: number, source: "manual" | "auto" = "manual") => {
+        setSalaryRows(prev => {
+            const idx = prev.findIndex(row => row.salaryComponentId === salaryComponentId);
+            if (idx === -1) return [...prev, { salaryComponentId, amount, source }];
+            const copy = [...prev];
+            copy[idx] = { ...copy[idx], amount, source };
+            return copy;
+        });
+    };
+    const removeSalaryRow = (salaryComponentId: string) => {
+        setSalaryRows(prev => prev.filter(row => row.salaryComponentId !== salaryComponentId));
+    };
+    const calculatePaye = (taxable: number, shifAmount: number) => {
+        let remaining = Math.max(0, taxable);
+        let tax = 0;
+        for (const band of payeBands) {
+            if (remaining <= 0) break;
+            const width = band.max === Number.POSITIVE_INFINITY ? remaining : Math.max(0, band.max - band.min);
+            const taxableInBand = Math.min(remaining, width);
+            tax += (taxableInBand * band.rate) / 100;
+            remaining -= taxableInBand;
+        }
+        const personalRelief = 2400;
+        const insuranceRelief = Math.min((shifAmount * 15) / 100, 5000);
+        return round2(Math.max(0, tax - personalRelief - insuranceRelief));
+    };
+    const applyMandatoryDeductions = (basicSalary: number) => {
+        if (basicSalary <= 0) return;
+        const nssfTemplate = salaryTemplates.find(s => s.type === "deduction" && s.isStatutory && (s.statutoryType || "").toLowerCase() === "nssf");
+        const payeTemplate = salaryTemplates.find(s => s.type === "deduction" && s.isStatutory && (s.statutoryType || "").toLowerCase() === "paye");
+        const shifTemplate = salaryTemplates.find(s => s.type === "deduction" && s.isStatutory && ["shif", "nhif"].includes((s.statutoryType || "").toLowerCase()));
+        const housingTemplate = salaryTemplates.find(s => s.type === "deduction" && s.isStatutory && ["housing_levy", "ahl"].includes((s.statutoryType || "").toLowerCase()));
+
+        const nssf = round2(Math.min(basicSalary, 9000) * 0.06 + Math.max(0, Math.min(basicSalary, 108000) - 9000) * 0.06);
+        const shif = round2(Math.max(300, basicSalary * 0.0275));
+        const housing = round2(basicSalary * 0.015);
+        const paye = calculatePaye(Math.max(0, basicSalary - nssf), shif);
+
+        if (nssfTemplate) upsertSalaryRow(nssfTemplate.id, nssf, "auto");
+        if (shifTemplate) upsertSalaryRow(shifTemplate.id, shif, "auto");
+        if (housingTemplate) upsertSalaryRow(housingTemplate.id, housing, "auto");
+        if (payeTemplate) upsertSalaryRow(payeTemplate.id, paye, "auto");
     };
 
     const handleNext = () => {
@@ -227,7 +324,18 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                 });
                 if (photoFile) fd.append("photo", photoFile);
                 documents.forEach(d => fd.append("documents", d.file));
-                await api.post("/employees", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                const created = await api.post("/employees", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                const createdEmployeeId = created?.data?.employee?.id;
+                if (createdEmployeeId && salaryRows.length > 0) {
+                    await api.post(`/employees/${createdEmployeeId}/salary`, {
+                        effectiveFrom: form.hireDate || new Date().toISOString().split("T")[0],
+                        reason: "Initial salary setup during employee onboarding",
+                        components: salaryRows.map(row => ({
+                            salaryComponentId: row.salaryComponentId,
+                            amount: row.amount,
+                        })),
+                    });
+                }
             }
             setSubmitSuccess(true);
             setTimeout(() => { setVisible(false); setTimeout(onSuccess, 320); }, 1400);
@@ -243,7 +351,16 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
     // Bank helpers
     const addBank = () => setBankDetails(b => [...b, { paymentMethod: "bank", isPrimary: b.length === 0, bankName: "", accountNumber: "", accountName: "", bankBranch: "", swiftCode: "", mpesaPhone: "", mpesaName: "" }]);
     const removeBank = (i: number) => setBankDetails(b => b.filter((_, x) => x !== i));
-    const updateBank = (i: number, f: string, v: any) => { const u = [...bankDetails]; u[i] = { ...u[i], [f]: v }; setBankDetails(u); };
+    const updateBank = (i: number, f: string, v: any) => {
+        const updated = [...bankDetails];
+        updated[i] = { ...updated[i], [f]: v };
+        if (f === "isPrimary" && v === true) {
+            for (let idx = 0; idx < updated.length; idx++) {
+                if (idx !== i) updated[idx] = { ...updated[idx], isPrimary: false };
+            }
+        }
+        setBankDetails(updated);
+    };
 
     // Doc helpers
     const addDoc = () => {
@@ -396,7 +513,8 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                             <Select label="System Role *" value={form.roleId || ""} onChange={e => set("roleId", e.target.value)} options={roleOpts} error={errors.roleId} />
                             <div />
                             <Input label="Password *" name="userPassword" type="password" value={form.userPassword || ""} onChange={e => set("userPassword", e.target.value)} error={errors.userPassword} placeholder="Minimum 8 characters" />
-                            <Input label="Confirm Password" name="confirmPassword" type="password" onChange={e => {
+                            <Input label="Confirm Password" name="confirmPassword" type="password" value={confirmPassword} onChange={e => {
+                                setConfirmPassword(e.target.value);
                                 if (e.target.value !== form.userPassword) setErrors(er => ({ ...er, confirmPassword: "Passwords do not match" }));
                                 else setErrors(er => { const u = { ...er }; delete u.confirmPassword; return u; });
                             }} error={errors.confirmPassword} placeholder="Re-enter password" />
@@ -453,14 +571,14 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                                             <span className="text-sm font-semibold text-slate-700">Set as primary</span>
                                         </div>
                                         {bd.paymentMethod === "bank" && <>
-                                            <Input label="Bank Name *" value={bd.bankName || ""} onChange={e => updateBank(i, "bankName", e.target.value)} />
-                                            <Input label="Account Number *" value={bd.accountNumber || ""} onChange={e => updateBank(i, "accountNumber", e.target.value)} />
+                                            <Input label="Bank Name *" value={bd.bankName || ""} onChange={e => updateBank(i, "bankName", e.target.value)} error={errors[`bankName_${i}`]} />
+                                            <Input label="Account Number *" value={bd.accountNumber || ""} onChange={e => updateBank(i, "accountNumber", e.target.value)} error={errors[`accountNumber_${i}`]} />
                                             <Input label="Account Name" value={bd.accountName || ""} onChange={e => updateBank(i, "accountName", e.target.value)} />
                                             <Input label="Branch" value={bd.bankBranch || ""} onChange={e => updateBank(i, "bankBranch", e.target.value)} />
                                             <Input label="SWIFT Code" value={bd.swiftCode || ""} onChange={e => updateBank(i, "swiftCode", e.target.value)} />
                                         </>}
                                         {bd.paymentMethod === "mpesa" && <>
-                                            <Input label="M-Pesa Phone *" value={bd.mpesaPhone || ""} onChange={e => updateBank(i, "mpesaPhone", e.target.value)} />
+                                            <Input label="M-Pesa Phone *" value={bd.mpesaPhone || ""} onChange={e => updateBank(i, "mpesaPhone", e.target.value)} error={errors[`mpesaPhone_${i}`]} />
                                             <Input label="M-Pesa Name" value={bd.mpesaName || ""} onChange={e => updateBank(i, "mpesaName", e.target.value)} />
                                         </>}
                                     </div>
@@ -520,6 +638,119 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                 </div>
             );
 
+            case 7: {
+                const basicTemplate = getBasicTemplate();
+                const mandatoryRows = salaryRows.filter(row => {
+                    const component = getTemplateById(row.salaryComponentId);
+                    return component?.isStatutory;
+                });
+                const earnings = salaryRows
+                    .filter(row => getTemplateById(row.salaryComponentId)?.type === "earning")
+                    .reduce((sum, row) => sum + row.amount, 0);
+                const deductions = salaryRows
+                    .filter(row => getTemplateById(row.salaryComponentId)?.type === "deduction")
+                    .reduce((sum, row) => sum + row.amount, 0);
+                return (
+                    <div className="space-y-6">
+                        <div className="bg-primary-50 border border-primary-200 rounded-2xl p-4">
+                            <p className="text-sm font-semibold text-primary-700">
+                                Set basic salary first. PAYE, NSSF, SHIF and Housing Levy are auto-calculated and can be edited.
+                            </p>
+                        </div>
+
+                        <FormSection title="Basic Salary">
+                            {!basicTemplate ? (
+                                <div className="text-sm text-rose-600">Create a BASIC earning component first in Salary Components.</div>
+                            ) : (
+                                <Input
+                                    label="Basic Salary *"
+                                    type="number"
+                                    value={String(salaryRows.find(row => row.salaryComponentId === basicTemplate.id)?.amount || "")}
+                                    onChange={e => {
+                                        const amount = Number(e.target.value || 0);
+                                        upsertSalaryRow(basicTemplate.id, amount, "manual");
+                                        applyMandatoryDeductions(amount);
+                                    }}
+                                    error={errors.basicSalary}
+                                />
+                            )}
+                        </FormSection>
+
+                        <FormSection title="Additional Salary Components">
+                            <div className="grid grid-cols-3 gap-4 items-end">
+                                <Select
+                                    label="Select component"
+                                    value={selectedSalaryTemplate}
+                                    onChange={e => setSelectedSalaryTemplate(e.target.value)}
+                                    options={[
+                                        { value: "", label: "Select component" },
+                                        ...salaryTemplates
+                                            .filter(s => s.isActive && (!basicTemplate || s.id !== basicTemplate.id))
+                                            .map(s => ({ value: s.id, label: `${s.name} (${s.type})` })),
+                                    ]}
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        if (!selectedSalaryTemplate) return;
+                                        const selected = getTemplateById(selectedSalaryTemplate);
+                                        if (!selected) return;
+                                        if (selected.type === "deduction" && getBasicSalaryAmount() <= 0) {
+                                            setErrors(prev => ({ ...prev, basicSalary: "Add basic salary before deductions" }));
+                                            return;
+                                        }
+                                        const defaultAmount = Number(selected.defaultAmount || 0);
+                                        upsertSalaryRow(selected.id, defaultAmount, "manual");
+                                        if (selected.isStatutory) {
+                                            applyMandatoryDeductions(getBasicSalaryAmount());
+                                        }
+                                    }}
+                                >
+                                    Add Component
+                                </Button>
+                            </div>
+                        </FormSection>
+
+                        <div className="space-y-3">
+                            {salaryRows.map(row => {
+                                const component = getTemplateById(row.salaryComponentId);
+                                if (!component) return null;
+                                const isMandatory = component.isStatutory && mandatoryRows.some(m => m.salaryComponentId === row.salaryComponentId);
+                                return (
+                                    <div key={row.salaryComponentId} className="grid grid-cols-4 gap-4 items-end border border-slate-200 rounded-xl p-3 bg-white">
+                                        <div className="col-span-2">
+                                            <p className="text-sm font-semibold text-slate-700">{component.name}</p>
+                                            <p className="text-xs text-slate-500">{component.type} {isMandatory ? "• Mandatory statutory" : ""}</p>
+                                        </div>
+                                        <Input
+                                            label="Amount"
+                                            type="number"
+                                            value={String(row.amount)}
+                                            onChange={e => upsertSalaryRow(row.salaryComponentId, Number(e.target.value || 0), "manual")}
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => removeSalaryRow(row.salaryComponentId)}
+                                            disabled={isMandatory}
+                                        >
+                                            Remove
+                                        </Button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="p-4 rounded-xl bg-slate-100"><p className="text-xs text-slate-500">Earnings</p><p className="font-bold">KES {earnings.toLocaleString()}</p></div>
+                            <div className="p-4 rounded-xl bg-slate-100"><p className="text-xs text-slate-500">Deductions</p><p className="font-bold">KES {deductions.toLocaleString()}</p></div>
+                            <div className="p-4 rounded-xl bg-primary-100"><p className="text-xs text-primary-700">Estimated Net</p><p className="font-bold text-primary-800">KES {(earnings - deductions).toLocaleString()}</p></div>
+                        </div>
+                    </div>
+                );
+            }
+
             default: return null;
         }
     };
@@ -567,7 +798,7 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                             </motion.svg>
                         </div>
                         <div className="text-center">
-                            <h3 className="text-2xl font-extrabold text-primary-600 font-source mb-2">Employee Record {isEdit ? "Updated" : "Created"} Successfuly!</h3>
+                            <h3 className="text-2xl font-extrabold text-primary-600 font-source mb-2">Employee Record {isEdit ? "Updated" : "Created"} Successfully!</h3>
                             <p className="text-sm text-slate-500">Closing panel in a moment…</p>
                         </div>
                     </div>

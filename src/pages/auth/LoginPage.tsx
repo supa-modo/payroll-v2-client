@@ -18,10 +18,22 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { login, isLoading, error: loginError, isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
+  const isEmployeePortalUser = (u: any) => {
+    if (!u) return false;
+    const role = String(u.role || "").toLowerCase();
+    const roles = (u.roles || []).map((r: string) => String(r).toLowerCase());
+    return role === "employee" || roles.includes("employee");
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(user?.isSystemAdmin ? "/system-admin/stats" : "/dashboard");
+      navigate(
+        user?.isSystemAdmin
+          ? "/system-admin/stats"
+          : isEmployeePortalUser(user)
+            ? "/portal/dashboard"
+            : "/dashboard"
+      );
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -40,7 +52,13 @@ const LoginPage: React.FC = () => {
     if (!validate()) return;
     const result = await login(formData);
     if (result.success && result.user) {
-      navigate(result.user.isSystemAdmin ? "/system-admin/stats" : "/dashboard");
+      navigate(
+        result.user.isSystemAdmin
+          ? "/system-admin/stats"
+          : isEmployeePortalUser(result.user)
+            ? "/portal/dashboard"
+            : "/dashboard"
+      );
     }
   };
 
@@ -94,8 +112,8 @@ const LoginPage: React.FC = () => {
                 <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
               </div>
               <div className="pb-3 border-b border-gray-200 text-center">
-                <h2 className="text-xl lg:text-2xl font-extrabold font-google text-slate-900 mb-1">Login to Continue</h2>
-                <p className="text-sm lg:text-base text-slate-500">Welcome back — enter your credentials below.</p>
+                <h2 className="text-xl lg:text-[1.35rem] font-extrabold font-google text-slate-900 mb-1">Login to Continue</h2>
+                <p className="text-sm lg:text-[0.9rem] text-slate-500">Welcome back — enter your credentials below.</p>
               </div>
 
               {/* API error */}
@@ -120,8 +138,6 @@ const LoginPage: React.FC = () => {
                   placeholder="you@company.com"
                   error={errors.email}
                   required={true}
-                  className="text-sm"
-                  wrapperClassName="mb-2"
                 />
 
 
@@ -142,7 +158,6 @@ const LoginPage: React.FC = () => {
                   OnClickRightIcon={() => setShowPassword(v => !v)}
                   error={errors.password}
                   required={true}
-                  className="text-sm"
                   wrapperClassName="mb-2"
                 />
 
@@ -156,7 +171,7 @@ const LoginPage: React.FC = () => {
                   loadingText="Verifying ..."
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <PiSignInDuotone className="w-4 h-4" />
+                    <PiSignInDuotone className="w-5 h-5" />
                     <span>Sign In to Your Account</span>
                   </div>
                 </Button>

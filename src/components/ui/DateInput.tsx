@@ -25,7 +25,7 @@ const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
             ref={ref}
             type="date"
             className={clsx(
-              "w-full px-4 py-3 rounded-xl border transition-all duration-200",
+              "w-full px-4 py-3 rounded-xl border transition-all duration-200 text-[0.9rem]",
               "focus:outline-none focus:ring-1",
               "disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500",
               "pr-12",

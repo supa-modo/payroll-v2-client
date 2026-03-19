@@ -6,6 +6,7 @@ import api from "./services/api";
 
 // Layouts
 import DashboardLayout from "./components/layouts/DashboardLayout";
+import EmployeePortalLayout from "./components/layouts/EmployeePortalLayout";
 
 // Public Pages
 import LoginPage from "./pages/auth/LoginPage";
@@ -20,7 +21,6 @@ import OnboardingWizard from "./pages/onboarding/OnboardingWizard";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import DepartmentsPage from "./pages/departments/DepartmentsPage";
 import EmployeesPage from "./pages/employees/EmployeesPage";
-import EmployeeDetailPage from "./pages/employees/EmployeeDetailDrawer";
 
 // Admin Pages
 import RolesPage from "./pages/admin/RolesPage";
@@ -29,7 +29,6 @@ import AuditLogsPage from "./pages/admin/AuditLogsPage";
 
 // Salary Pages
 import ComponentsPage from "./pages/salary/ComponentsPage";
-import EmployeeSalaryPage from "./pages/salary/EmployeeSalaryPage";
 
 // Payroll Pages
 import PeriodsPage from "./pages/payroll/PeriodsPage";
@@ -65,6 +64,19 @@ import NotificationPreferencesPage from "./pages/settings/NotificationPreference
 import DataChangeHistoryPage from "./pages/admin/DataChangeHistoryPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import StatutoryRatesPage from "./pages/admin/StatutoryRatesPage";
+import PortalDashboard from "./pages/portal/PortalDashboard";
+import PortalPayslips from "./pages/portal/PortalPayslips";
+import PortalSalaryHistory from "./pages/portal/PortalSalaryHistory";
+import PortalExpenses from "./pages/portal/PortalExpenses";
+import PortalLoans from "./pages/portal/PortalLoans";
+import PortalProfile from "./pages/portal/PortalProfile";
+
+const isEmployeePortalUser = (user: any) => {
+  if (!user) return false;
+  const role = String(user.role || "").toLowerCase();
+  const roles = (user.roles || []).map((r: string) => String(r).toLowerCase());
+  return role === "employee" || roles.includes("employee");
+};
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -104,6 +116,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     !location.pathname.startsWith("/system-admin")
   ) {
     return <Navigate to="/system-admin/stats" replace />;
+  }
+
+  if (!user?.isSystemAdmin && isEmployeePortalUser(user) && location.pathname === "/dashboard") {
+    return <Navigate to="/portal/dashboard" replace />;
   }
 
   // Redirect tenant users away from system admin routes
@@ -170,14 +186,7 @@ function App() {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="employees" element={<EmployeesPage />} />
-          <Route
-            path="employees/:employeeId"
-            element={<EmployeeDetailPage />}
-          />
-          <Route
-            path="employees/:employeeId/salary"
-            element={<EmployeeSalaryPage />}
-          />
+          
           <Route path="salary/components" element={<ComponentsPage />} />
           <Route path="payroll/periods" element={<PeriodsPage />} />
           <Route
@@ -215,6 +224,23 @@ function App() {
             path="settings/notifications"
             element={<NotificationPreferencesPage />}
           />
+        </Route>
+
+        <Route
+          path="/portal"
+          element={
+            <ProtectedRoute>
+              <EmployeePortalLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/portal/dashboard" replace />} />
+          <Route path="dashboard" element={<PortalDashboard />} />
+          <Route path="payslips" element={<PortalPayslips />} />
+          <Route path="salary-history" element={<PortalSalaryHistory />} />
+          <Route path="expenses" element={<PortalExpenses />} />
+          <Route path="loans" element={<PortalLoans />} />
+          <Route path="profile" element={<PortalProfile />} />
         </Route>
 
         {/* System Admin Routes */}

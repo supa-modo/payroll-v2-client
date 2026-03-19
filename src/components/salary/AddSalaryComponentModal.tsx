@@ -1,293 +1,158 @@
-/**
- * Add Salary Component Modal
- * Simple modal for adding new salary components to an employee
- */
-
-import React, { useState, useEffect } from "react";
-import { FiX } from "react-icons/fi";
+import { useState } from "react";
+import { SalaryComponent } from "../../types/salary";
+import { AssignSalaryComponentsInput } from "../../types/salary";
 import api from "../../services/api";
+import { useEffect } from "react";
+import { FiPlus, FiX, FiCheck } from "react-icons/fi";
+import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Select from "../ui/Select";
 import DateInput from "../ui/DateInput";
 import Textarea from "../ui/Textarea";
-import Button from "../ui/Button";
-import type { SalaryComponent, AssignSalaryComponentsInput } from "../../types/salary";
 
+/* ─── Add Salary Component Modal ────────────────────────────────── */
 interface AddSalaryComponentModalProps {
-  isOpen: boolean;
   employeeId: string;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const AddSalaryComponentModal: React.FC<AddSalaryComponentModalProps> = ({
-  isOpen,
-  employeeId,
-  onClose,
-  onSuccess,
-}) => {
-  const [availableComponents, setAvailableComponents] = useState<
-    SalaryComponent[]
-  >([]);
+const AddSalaryComponentModal: React.FC<AddSalaryComponentModalProps> = ({ employeeId, onClose, onSuccess }) => {
+  const [available, setAvailable] = useState<SalaryComponent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState<AssignSalaryComponentsInput>({
+  const [form, setForm] = useState<AssignSalaryComponentsInput>({
     components: [],
     effectiveFrom: new Date().toISOString().split("T")[0],
     reason: "",
   });
 
   useEffect(() => {
-    if (isOpen) {
-      fetchAvailableComponents();
-      // Reset form
-      setFormData({
-        components: [],
-        effectiveFrom: new Date().toISOString().split("T")[0],
-        reason: "",
-      });
-      setError("");
-    }
-  }, [isOpen]);
+    api.get("/salary-components")
+      .then(r => setAvailable(r.data.components || []))
+      .catch(() => {});
+  }, []);
 
-  const fetchAvailableComponents = async () => {
-    try {
-      const response = await api.get("/salary-components");
-      setAvailableComponents(response.data.components || []);
-    } catch (error: any) {
-      console.error("Failed to fetch salary components:", error);
-    }
-  };
+  const addRow = () =>
+    setForm(f => ({ ...f, components: [...f.components, { salaryComponentId: "", amount: 0, effectiveTo: null }] }));
 
-  const handleAddComponent = () => {
-    setFormData({
-      ...formData,
-      components: [
-        ...formData.components,
-        {
-          salaryComponentId: "",
-          amount: 0,
-          effectiveTo: null,
-        },
-      ],
+  const removeRow = (i: number) =>
+    setForm(f => ({ ...f, components: f.components.filter((_, idx) => idx !== i) }));
+
+  const updateRow = (i: number, field: string, value: any) =>
+    setForm(f => {
+      const comps = [...f.components];
+      comps[i] = { ...comps[i], [field]: field === "amount" ? parseFloat(value) || 0 : value };
+      return { ...f, components: comps };
     });
-  };
 
-  const handleRemoveComponent = (index: number) => {
-    setFormData({
-      ...formData,
-      components: formData.components.filter((_, i) => i !== index),
-    });
-  };
-
-  const handleComponentChange = (index: number, field: string, value: any) => {
-    const updated = [...formData.components];
-    if (field === "amount") {
-      updated[index] = {
-        ...updated[index],
-        [field]: parseFloat(value?.toString() || "0") || 0,
-      };
-    } else {
-      updated[index] = { ...updated[index], [field]: value };
-    }
-    setFormData({ ...formData, components: updated });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (formData.components.length === 0) {
-      setError("At least one salary component is required");
-      return;
+    if (!form.components.length) { setError("Add at least one component."); return; }
+    if (form.components.some(c => !c.salaryComponentId || c.amount < 0)) {
+      setError("All components need a valid selection and non-negative amount."); return;
     }
-
-    // Validate all components
-    const invalidComponents = formData.components.filter(
-      (comp) => !comp.salaryComponentId || comp.amount < 0
-    );
-    if (invalidComponents.length > 0) {
-      setError(
-        "Please ensure all components have a valid component selected and amount"
-      );
-      return;
-    }
-
     setLoading(true);
     try {
-      await api.post(`/employees/${employeeId}/salary`, formData);
-      onSuccess();
-      onClose();
-    } catch (error: any) {
-      console.error("Failed to assign salary components:", error);
-      setError(
-        error.response?.data?.error ||
-          error.response?.data?.details ||
-          "Failed to assign salary components"
-      );
-    } finally {
-      setLoading(false);
-    }
+      await api.post(`/employees/${employeeId}/salary`, form);
+      onSuccess(); onClose();
+    } catch (e: any) {
+      setError(e.response?.data?.error || e.response?.data?.details || "Failed to add components.");
+    } finally { setLoading(false); }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <div
-        className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-900">
-            Add Salary Components
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            disabled={loading}
-          >
-            <FiX className="w-5 h-5 text-gray-500" />
+    <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px]"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col max-h-[88vh]"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Modal header */}
+        <div className="h-[3px] rounded-t-3xl bg-primary-600" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
+              <FiPlus className="w-4 h-4 text-emerald-600" />
+            </span>
+            <h3 className="text-base font-bold text-slate-800">Add Salary Components</h3>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 space-y-4">
+        <form onSubmit={submit} className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 rounded-r-md px-4 py-2.5">
-              <p className="text-red-700 text-sm">{error}</p>
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
           <DateInput
             label="Effective From"
             name="effectiveFrom"
-            value={formData.effectiveFrom}
-            onChange={(e) =>
-              setFormData({ ...formData, effectiveFrom: e.target.value })
-            }
+            value={form.effectiveFrom}
+            onChange={e => setForm(f => ({ ...f, effectiveFrom: e.target.value }))}
             required
           />
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">
-                Salary Components
-              </label>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={handleAddComponent}
-              >
-                Add Component
-              </Button>
+              <p className="text-sm font-semibold text-slate-700">Components</p>
+              <button type="button" onClick={addRow}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700 border border-primary-200 bg-primary-50 hover:bg-primary-100 rounded-lg px-3 py-1.5 transition-colors">
+                <FiPlus className="w-3.5 h-3.5" /> Add Row
+              </button>
             </div>
 
-            {formData.components.map((comp, index) => (
-              <div
-                key={index}
-                className="p-4 border border-gray-200 rounded-lg space-y-3"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Component {index + 1}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveComponent(index)}
-                    className="text-red-600 hover:text-red-700"
-                  >
+            {form.components.length === 0 && (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-8 text-center">
+                <p className="text-sm text-slate-400">No components yet. Click "Add Row" to start.</p>
+              </div>
+            )}
+
+            {form.components.map((comp, i) => (
+              <div key={i} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Component {i + 1}</p>
+                  <button type="button" onClick={() => removeRow(i)}
+                    className="text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors">
                     Remove
                   </button>
                 </div>
-
                 <Select
-                  label="Component"
+                  label="Select Component"
                   value={comp.salaryComponentId}
-                  onChange={(e) =>
-                    handleComponentChange(
-                      index,
-                      "salaryComponentId",
-                      e.target.value
-                    )
-                  }
+                  onChange={e => updateRow(i, "salaryComponentId", e.target.value)}
                   options={[
-                    { value: "", label: "Select component" },
-                    ...availableComponents
-                      .filter((c) => c.isActive)
-                      .map((c) => ({
-                        value: c.id,
-                        label: `${c.name} (${c.type})`,
-                      })),
+                    { value: "", label: "Choose…" },
+                    ...available.filter(c => c.isActive).map(c => ({ value: c.id, label: `${c.name} (${c.type})` })),
                   ]}
                   required
                 />
-
-                <Input
-                  label="Amount"
-                  name={`amount-${index}`}
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={comp.amount.toString()}
-                  onChange={(e) =>
-                    handleComponentChange(
-                      index,
-                      "amount",
-                      parseFloat(e.target.value) || 0
-                    )
-                  }
-                  required
-                />
-
-                <DateInput
-                  label="Effective To (Optional)"
-                  name={`effectiveTo-${index}`}
-                  value={comp.effectiveTo || ""}
-                  onChange={(e) =>
-                    handleComponentChange(
-                      index,
-                      "effectiveTo",
-                      e.target.value || null
-                    )
-                  }
-                />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="Amount (KES)" name={`amt-${i}`} type="number" step="0.01" min="0"
+                    value={comp.amount.toString()}
+                    onChange={e => updateRow(i, "amount", e.target.value)} required />
+                  <DateInput label="Effective To (opt.)" name={`to-${i}`}
+                    value={comp.effectiveTo || ""}
+                    onChange={e => updateRow(i, "effectiveTo", e.target.value || null)} />
+                </div>
               </div>
             ))}
           </div>
 
-          <Textarea
-            label="Reason (Optional)"
-            name="reason"
-            value={formData.reason || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
-            rows={3}
-          />
+          <Textarea label="Reason (Optional)" name="reason"
+            value={form.reason || ""}
+            onChange={e => setForm(f => ({ ...f, reason: e.target.value }))}
+            rows={2} />
         </form>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 flex-shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" isLoading={loading} onClick={handleSubmit}>
-            Add Components
+        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-3xl flex justify-end gap-3">
+          <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>
+          <Button variant="primary" isLoading={loading} onClick={submit}>
+            <FiCheck className="w-4 h-4" /> Save Components
           </Button>
         </div>
       </div>
@@ -296,4 +161,3 @@ const AddSalaryComponentModal: React.FC<AddSalaryComponentModalProps> = ({
 };
 
 export default AddSalaryComponentModal;
-

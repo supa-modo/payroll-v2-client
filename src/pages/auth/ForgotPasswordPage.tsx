@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { FiCheck } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
 import { TbShieldHalfFilled, TbClock, TbTrendingUp, TbMailFilled, TbArrowBack } from "react-icons/tb";
 import api from "../../services/api";
 import { PiUsersThreeDuotone } from "react-icons/pi";
@@ -31,7 +30,7 @@ const ForgotPasswordPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     if (errors.email) setErrors({});
@@ -76,39 +75,58 @@ const ForgotPasswordPage: React.FC = () => {
     return (
       <>
         <FontStyle />
-        <div className="pjs min-h-screen flex flex-col lg:flex-row bg-[#f0f5ff]"
-          style={{ backgroundImage: "radial-gradient(ellipse 80% 60% at 50% -10%,rgba(59,130,246,0.1) 0%,transparent 70%)" }}>
+        <div className="min-h-screen flex flex-col lg:flex-row bg-[#f0f5ff]"
+          style={{
+            backgroundImage: `url("/loginbg.png")`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          <div className="absolute inset-0 bg-linear-to-b lg:bg-linear-to-br from-white via-white/80 to-blue-500/0 backdrop-blur-[2px]" />
+
           {leftPanel}
-          <div className="flex-1 flex items-center justify-center px-6 py-12">
-            <div className="w-full max-w-md auth-animate">
-              <div className="lg:hidden flex items-center gap-2.5 mb-8">
+   
+          <div className="-mx-2 lg:mx-0 font-source relative z-10 flex-1 flex items-center justify-center px-6 py-12 lg:py-0">
+          <div className="w-full max-w-lg auth-animate">
+
+            {/* Mobile logo */}
+            <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg">P</div>
+              <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
+            </div>
+
+            <div className="bg-white rounded-4xl shadow-[0_8px_40px_rgba(37,99,235,0.10),0_0_0_1px_rgba(37,99,235,0.07)] px-6 lg:px-8 py-7 lg:py-9">
+              {/* Header */}
+              <div className="hidden items-center gap-2.5 mb-5 lg:flex justify-center">
                 <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg">P</div>
                 <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
               </div>
+              <div className="pb-3 text-center">
+                <h2 className="text-xl lg:text-[1.35rem] font-extrabold font-google text-slate-900 mb-1">Check your inbox</h2>
+                <p className="text-sm lg:text-[0.9rem] text-slate-500">If an account with <strong className="text-slate-700">{email}</strong> exists, we've sent a reset link. Check your inbox and follow the instructions.</p>
+              </div>
+                <div className="mb-6 w-full bg-blue-50 text-center border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+                  Didn't receive the email? Check your spam folder or wait a minute before trying again.
+                </div>
 
-              <div className="bg-white rounded-3xl shadow-[0_8px_40px_rgba(37,99,235,0.10),0_0_0_1px_rgba(37,99,235,0.07)] px-8 py-10 flex flex-col items-center text-center gap-5">
-                {/* Success icon */}
-                <div className="w-16 h-16 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 text-2xl">
-                  <FiCheck />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Check your inbox</h2>
-                  <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
-                    If an account with <strong className="text-slate-700">{email}</strong> exists, we've sent a reset link. Check your inbox and follow the instructions.
-                  </p>
-                </div>
-                <div className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700">
-                  Didn't receive it? Check your spam folder or wait a minute before trying again.
-                </div>
-                <Link to="/login"
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.45)] transition-all duration-200">
-                  Back to Sign In
-                </Link>
+                <Button
+                  type="button"
+                  onClick={() => navigate("/login")}
+                  disabled={isSubmitting}
+                  className="w-full">
+                   <div className="flex items-center justify-center gap-2">
+                    <MdLockReset className="w-6 h-6" />
+                    <span>Back to Sign In</span>
+                  </div>
+                </Button>
+
               </div>
 
-              <p className="text-center text-xs text-slate-400 mt-6">
-                © {new Date().getFullYear()} Innovasure Limited · Powered by APIHub Solutions
-              </p>
+              {/* Footer */}
+            <p className="text-center text-[0.8rem] font-source font-medium text-gray-700 mt-6 leading-relaxed">
+              © {new Date().getFullYear()} For Innovasure Limited.
+            </p>
             </div>
           </div>
         </div>
@@ -149,8 +167,8 @@ const ForgotPasswordPage: React.FC = () => {
                 <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
               </div>
               <div className="pb-3 text-center">
-                <h2 className="text-xl lg:text-2xl font-extrabold font-google text-slate-900 mb-1">Forgot Your Account password?</h2>
-                <p className="text-sm lg:text-base text-slate-500">Enter your email and we'll send you a link to reset your password.</p>
+                <h2 className="text-xl lg:text-[1.35rem] font-extrabold font-google text-slate-900 mb-1">Forgot Your Account password?</h2>
+                <p className="text-sm lg:text-[0.9rem] text-slate-500">Enter your email and we'll send you a link to reset your password.</p>
               </div>
 
               {apiError && (
@@ -175,7 +193,6 @@ const ForgotPasswordPage: React.FC = () => {
                     placeholder="you@company.com"
                     error={errors.email}
                     required={true}
-                    className="text-sm"
                     wrapperClassName="mb-2"
                   />
 
@@ -194,7 +211,7 @@ const ForgotPasswordPage: React.FC = () => {
                       <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin block" />
                       <span>Sending ...</span></div>
                   ) : <div className="flex items-center justify-center gap-2">
-                    <MdLockReset className="w-5 h-5" />
+                    <MdLockReset className="w-6 h-6" />
                     <span>Send Reset Link</span>
                   </div>}
                 </Button>

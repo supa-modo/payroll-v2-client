@@ -206,11 +206,11 @@ const CreateRevisionPanel: React.FC<PanelProps> = ({
 
   return (
     <>
-      <div className={`fixed inset-0 z-[150] transition-all duration-300 ${visible ? "bg-slate-900/30 backdrop-blur-[2px]" : "bg-transparent pointer-events-none"}`}
+      <div className={`fixed inset-0 z-150 transition-all duration-300 ${visible ? "bg-slate-900/30 backdrop-blur-[2px]" : "bg-transparent pointer-events-none"}`}
         onClick={handleClose} />
 
       <div
-        className={`fixed top-0 right-0 h-full z-[160] flex flex-col bg-white transition-transform duration-300 ease-out ${visible ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 h-full z-160 flex flex-col bg-white transition-transform duration-300 ease-out ${visible ? "translate-x-0" : "translate-x-full"}`}
         style={{ width: "min(640px, 94vw)", boxShadow: "-8px 0 40px rgba(0,0,0,0.12)" }}
       >
         <div className="h-[3px] w-full bg-primary-600 shrink-0 rounded-t" />

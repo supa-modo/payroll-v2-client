@@ -6,6 +6,8 @@ interface User {
   id: string;
   tenantId: string | null;
   role: string;
+  roles?: string[];
+  permissions?: string[];
   email?: string;
   firstName?: string;
   lastName?: string;

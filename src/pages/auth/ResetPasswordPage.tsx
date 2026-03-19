@@ -121,14 +121,14 @@ const ResetPasswordPage: React.FC = () => {
                   <TbLockFilled className="w-8 h-8" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-extrabold font-google text-red-600 mb-2">Invalid reset link</h2>
-                  <p className="text-sm font-source text-gray-600 leading-relaxed">This password reset link is invalid or has already been used. Request a new one.</p>
+                  <h2 className="text-xl lg:text-[1.35rem] font-extrabold font-google text-red-600 mb-2 lg:mb-3">Invalid reset link</h2>
+                  <p className="text-sm lg:text-[0.9rem] font-source text-gray-600 leading-relaxed">This password reset link is invalid or has already been used. Request a new one.</p>
                 </div>
                 <Button
                   onClick={() => navigate("/forgot-password")}
                   className="w-full">
                   <div className="flex items-center justify-center gap-2">
-                    <MdLockReset className="w-5 h-5" />
+                    <MdLockReset className="w-6 h-6" />
                     <span>Request New Link</span></div>
                 </Button>
               </div>
@@ -170,8 +170,8 @@ const ResetPasswordPage: React.FC = () => {
                   <FiCheckCircle className="text-white w-10 h-10" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-extrabold font-google text-gray-700 mb-2">Password updated!</h2>
-                  <p className="text-sm font-source text-gray-600 leading-relaxed">
+                  <h2 className="text-xl lg:text-[1.35rem] font-extrabold font-google text-gray-700 mb-2">Password updated!</h2>
+                  <p className="text-sm lg:text-[0.9rem] font-source text-gray-600 leading-relaxed">
                     Your password has been reset successfully. Redirecting you to sign in…
                   </p>
                 </div>
@@ -230,8 +230,8 @@ const ResetPasswordPage: React.FC = () => {
                 <span className="font-bold text-slate-900 text-lg">PayrollHQ</span>
               </div>
               <div className="pb-3 text-center">
-                <h2 className="text-xl lg:text-2xl font-extrabold font-google text-slate-900 mb-1">Set a new password</h2>
-                <p className="text-sm lg:text-base text-slate-500">Choose a strong password. You'll use it every time you sign in.</p>
+                <h2 className="text-xl lg:text-[1.35rem] font-extrabold font-google text-slate-900 mb-1">Set a new password</h2>
+                <p className="text-sm lg:text-[0.9rem] text-slate-500">Choose a strong password. You'll use it every time you sign in.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -249,8 +249,6 @@ const ResetPasswordPage: React.FC = () => {
                   OnClickRightIcon={() => setShowPw(v => !v)}
                   error={errors.password}
                   required={true}
-                  className="text-sm"
-                  wrapperClassName="mb-2"
                 />
 
                 {/* Strength meter */}
@@ -281,7 +279,6 @@ const ResetPasswordPage: React.FC = () => {
                   OnClickRightIcon={() => setShowConfirm(v => !v)}
                   error={errors.confirmPassword}
                   required={true}
-                  className="text-sm"
                   wrapperClassName="mb-2"
                 />
                 {/* Match indicator */}
@@ -306,7 +303,7 @@ const ResetPasswordPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <MdLockReset className="w-5 h-5" />
+                      <MdLockReset className="w-6 h-6" />
                       <span>Reset Password</span>
                     </div>
                   )}

@@ -149,19 +149,36 @@ const ReviewPayrollPage: React.FC = () => {
 
   const handleProcess = async () => {
     if (!periodId) return;
-    if (!window.confirm("Are you sure you want to process this payroll period?")) {
-      return;
-    }
-
-    try {
-      setIsProcessing(true);
-      await api.post(`/payroll-periods/${periodId}/process`);
-      fetchSummary();
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to process payroll period");
-    } finally {
-      setIsProcessing(false);
-    }
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Process payroll period",
+      message: "Are you sure you want to process this payroll period?",
+      onConfirm: async () => {
+        try {
+          setIsProcessing(true);
+          await api.post(`/payroll-periods/${periodId}/process`);
+          fetchSummary();
+          setNotification({
+            open: true,
+            type: "success",
+            title: "Payroll processed",
+            message: "The payroll period was processed successfully.",
+          });
+        } catch (error: any) {
+          setNotification({
+            open: true,
+            type: "error",
+            title: "Failed to process payroll period",
+            message:
+              error.response?.data?.error ||
+              "Failed to process payroll period",
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      },
+    });
   };
 
   if (isLoading) {
