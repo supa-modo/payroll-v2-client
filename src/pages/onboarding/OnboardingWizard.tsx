@@ -15,6 +15,7 @@ import Select from "../../components/ui/Select";
 import api from "../../services/api";
 import { TbAlertTriangle, TbArrowBack, TbBriefcaseFilled, TbCheck, TbTrash } from "react-icons/tb";
 import { PiUsersThreeDuotone } from "react-icons/pi";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
 
 /* ─── types ─────────────────────────────────────────────── */
 interface Step {
@@ -33,22 +34,7 @@ const steps: Step[] = [
   { id: "complete", title: "Complete", description: "All done", icon: FiCheck },
 ];
 
-/* ─── Toggle ─────────────────────────────────────────────── */
-const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
-  <button
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    onClick={() => onChange(!checked)}
-    className={`relative inline-flex h-[22px] w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${checked ? "bg-primary-600" : "bg-slate-200"
-      }`}
-  >
-    <span
-      className={`inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${checked ? "translate-x-[18px]" : "translate-x-0"
-        }`}
-    />
-  </button>
-);
+
 
 /* ═══════════════════════════════════════════════════════════
    MAIN
@@ -266,7 +252,7 @@ const OnboardingWizard = () => {
             <div className="inline-flex items-center gap-2 bg-primary-50 text-primary-600 text-sm font-semibold px-3 py-1.5 rounded-full border border-primary-200 mb-5">
               <FiZap size={18} /> Setup Wizard
             </div>
-            <h2 className="text-5xl font-extrabold text-slate-900 leading-tight font-google mb-3">
+            <h2 className="text-4xl font-extrabold text-slate-900 leading-tight font-google mb-3">
               Let's get your<br />
               <span className="text-primary-600  font-google">payroll running & ready.</span>
             </h2>
@@ -322,7 +308,7 @@ const OnboardingWizard = () => {
           </div>
           <div className="flex flex-col gap-2.5">
             {departments.map((dept, i) => (
-              <div key={i} className="group flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 pt-3.5 pb-1 shadow-sm hover:border-primary-300 transition-all duration-200 focus-within:border-primary-400">
+              <div key={i} className="group flex items-end gap-3 bg-white border border-slate-200 rounded-2xl px-4 pt-3.5 pb-5 shadow-sm hover:border-primary-300 transition-all duration-200 focus-within:border-primary-400">
                 <div className="grid grid-cols-2 gap-3 flex-1">
                   <Input label="Department Name" value={dept.name} onChange={e => updateDepartment(i, "name", e.target.value)} placeholder="e.g., Human Resources" />
                   <Input label="Short Code" value={dept.code} onChange={e => updateDepartment(i, "code", e.target.value)} placeholder="e.g., HR" />
@@ -354,12 +340,12 @@ const OnboardingWizard = () => {
           <div className="flex flex-col gap-3">
             {employees.map((emp, i) => (
               <div key={i} className="bg-white border border-slate-200 rounded-3xl px-4 py-4 shadow-sm hover:border-primary-300 transition-all duration-200 focus-within:border-primary-500">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-3.5">
                   <Input label="First Name" value={emp.firstName} onChange={e => updateEmployee(i, "firstName", e.target.value)} required className="text-sm" />
                   <Input label="Last Name" value={emp.lastName} onChange={e => updateEmployee(i, "lastName", e.target.value)} required className="text-sm" />
                   <Input label="Work Email" type="email" value={emp.workEmail} onChange={e => updateEmployee(i, "workEmail", e.target.value)} required className="text-sm" />
-                  <Input label="Phone" type="tel" value={emp.phonePrimary} onChange={e => updateEmployee(i, "phonePrimary", e.target.value)} className="text-sm" />
-                  <Input label="Job Title *" value={emp.jobTitle} onChange={e => updateEmployee(i, "jobTitle", e.target.value)} required className="text-sm" />
+                  <Input label="Phone" type="tel" value={emp.phonePrimary} onChange={e => updateEmployee(i, "phonePrimary", e.target.value)} required className="text-sm" />
+                  <Input label="Job Title" value={emp.jobTitle} onChange={e => updateEmployee(i, "jobTitle", e.target.value)} required className="text-sm" />
                   <Select
                     label="Department"
                     value={emp.departmentId}
@@ -371,7 +357,7 @@ const OnboardingWizard = () => {
                     className="text-sm"
                   />
                   <Select
-                    label="Role *"
+                    label="Role"
                     value={emp.roleId}
                     onChange={e => updateEmployee(i, "roleId", e.target.value)}
                     options={[
@@ -434,8 +420,8 @@ const OnboardingWizard = () => {
               <div key={i} className="grid grid-cols-[2fr_1.2fr_80px_90px] gap-4 items-center px-5 py-3 border-b border-slate-100 last:border-0 hover:bg-primary-50/40 transition-colors">
                 <Input value={c.name} onChange={e => updateSalary(i, "name", e.target.value)} placeholder="Name" className="text-sm" />
                 <Select value={c.type} onChange={e => updateSalary(i, "type", e.target.value)} options={[{ value: "earning", label: "Earning" }, { value: "deduction", label: "Deduction" }]} className="text-sm" />
-                <Toggle checked={c.isTaxable} onChange={v => updateSalary(i, "isTaxable", v)} />
-                <Toggle checked={c.isStatutory} onChange={v => updateSalary(i, "isStatutory", v)} />
+                <ToggleSwitch checked={c.isTaxable} onChange={() => updateSalary(i, "isTaxable", !c.isTaxable)} />
+                <ToggleSwitch checked={c.isStatutory} onChange={() => updateSalary(i, "isStatutory", !c.isStatutory)} />
               </div>
             ))}
           </div>

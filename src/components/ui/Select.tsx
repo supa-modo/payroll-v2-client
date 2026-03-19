@@ -9,6 +9,7 @@ interface SelectOption {
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
+  labelClassName?: string;
   error?: string;
   helperText?: string;
   options: SelectOption[];
@@ -21,6 +22,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
       label,
+      labelClassName,
       error,
       helperText,
       options,
@@ -33,9 +35,9 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     return (
-      <div className={clsx("w-full mb-2", wrapperClassName)}>
+      <div className={clsx("w-full", wrapperClassName)}>
         {label && (
-          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 pl-1.5 font-source">
+          <label className={clsx("block text-sm text-gray-700 mb-1 pl-1.5 font-source", labelClassName)}>
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>

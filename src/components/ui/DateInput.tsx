@@ -4,17 +4,18 @@ import { FiCalendar } from "react-icons/fi";
 
 interface DateInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label?: string;
+  labelClassName?: string;
   error?: string;
   helperText?: string;
   wrapperClassName?: string;
 }
 
 const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
-  ({ label, error, helperText, className, wrapperClassName, ...props }, ref) => {
+  ({ label, labelClassName, error, helperText, className, wrapperClassName, ...props }, ref) => {
     return (
-      <div className={clsx("w-full mb-5", wrapperClassName)}>
+      <div className={clsx("w-full", wrapperClassName)}>
         {label && (
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <label className={clsx("block text-sm pl-1.5 text-gray-700  mb-1", labelClassName)}>
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -24,7 +25,7 @@ const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
             ref={ref}
             type="date"
             className={clsx(
-              "w-full px-4 py-3 rounded-lg border transition-all duration-200",
+              "w-full px-4 py-3 rounded-xl border transition-all duration-200",
               "focus:outline-none focus:ring-1",
               "disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500",
               "pr-12",

@@ -239,7 +239,6 @@ const ResetPasswordPage: React.FC = () => {
                 {/* New password */}
                 <Input
                   label="Password"
-
                   labelClassName="text-gray-600"
                   type={showPw ? "text" : "password"}
                   value={formData.password}
@@ -251,6 +250,7 @@ const ResetPasswordPage: React.FC = () => {
                   error={errors.password}
                   required={true}
                   className="text-sm"
+                  wrapperClassName="mb-2"
                 />
 
                 {/* Strength meter */}
@@ -282,6 +282,7 @@ const ResetPasswordPage: React.FC = () => {
                   error={errors.confirmPassword}
                   required={true}
                   className="text-sm"
+                  wrapperClassName="mb-2"
                 />
                 {/* Match indicator */}
                 {formData.confirmPassword && formData.password && (

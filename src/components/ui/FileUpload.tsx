@@ -104,7 +104,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           {value.map((file, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200"
+              className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200"
             >
               <FiFile className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-700 flex-1 truncate">
@@ -128,7 +128,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
     const file = Array.isArray(value) ? value[0] : value;
     return (
-      <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200">
+      <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
         <FiFile className="w-4 h-4 text-gray-500" />
         <span className="text-sm text-gray-700 flex-1 truncate">
           {file.name}
@@ -162,12 +162,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
         onDragOver={handleDrag}
         onDrop={handleDrop}
         className={clsx(
-          "border-2 border-dashed rounded-lg p-6 transition-colors",
+          "border-2 border-dashed rounded-2xl p-6 transition-colors",
           dragActive
             ? "border-primary-500 bg-primary-50"
             : error || errorMessage
-            ? "border-red-500 bg-red-50"
-            : "border-gray-300 bg-gray-50 hover:border-gray-400",
+              ? "border-red-500 bg-red-50"
+              : "border-gray-300 bg-gray-50 hover:border-gray-400",
           disabled && "opacity-50 cursor-not-allowed"
         )}
       >

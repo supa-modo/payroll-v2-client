@@ -6,7 +6,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   labelClassName?: string;
   rightLabelButtonText?: {
-      text: string;
+    text: string;
     href: string;
   };
   error?: string;
@@ -39,22 +39,22 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     ref
   ) => {
     return (
-      <div className={clsx("w-full mb-2", wrapperClassName)}>
+      <div className={clsx("w-full", wrapperClassName)}>
         {label && (
           <div className="flex items-center justify-between">
-          <label className={clsx("block text-sm text-gray-700 mb-1 pl-1.5 font-source", labelClassName)}>
-            {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
-          </label>
+            <label className={clsx("block text-sm text-gray-700 mb-1 pl-1.5 font-source", labelClassName)}>
+              {label}
+              {props.required && <span className="text-red-500 ml-1">*</span>}
+            </label>
 
-        
-          {rightLabelButtonText && (
-            <Link to={rightLabelButtonText.href} className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-              {rightLabelButtonText.text}
-            </Link>
-          )}
+
+            {rightLabelButtonText && (
+              <Link to={rightLabelButtonText.href} className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                {rightLabelButtonText.text}
+              </Link>
+            )}
           </div>
-        )} 
+        )}
         <div className="relative">
           {leftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">

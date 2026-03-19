@@ -121,6 +121,7 @@ const LoginPage: React.FC = () => {
                   error={errors.email}
                   required={true}
                   className="text-sm"
+                  wrapperClassName="mb-2"
                 />
 
 
@@ -142,6 +143,7 @@ const LoginPage: React.FC = () => {
                   error={errors.password}
                   required={true}
                   className="text-sm"
+                  wrapperClassName="mb-2"
                 />
 
 

@@ -27,6 +27,7 @@ const DepartmentsPage: React.FC = () => {
     title: string;
     message: string;
   } | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDepartments();
@@ -59,32 +60,14 @@ const DepartmentsPage: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
+    setPendingDeleteId(id);
     setNotification({
       open: true,
       type: "delete",
       title: "Delete department",
       message: "Are you sure you want to delete this department?",
     });
-    (handleDelete as any)._confirm = async () => {
-      try {
-        await api.delete(`/departments/${id}`);
-        fetchDepartments();
-        setNotification({
-          open: true,
-          type: "success",
-          title: "Department deleted",
-          message: "The department was deleted successfully.",
-        });
-      } catch (error: any) {
-        setNotification({
-          open: true,
-          type: "error",
-          title: "Failed to delete department",
-          message: error.response?.data?.error || "Failed to delete department",
-        });
-      }
-    };
   };
 
   const handleFormClose = () => {
@@ -94,14 +77,23 @@ const DepartmentsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <h1 className="text-2xl font-bold text-primary-700">Departments</h1>
-          <div className="w-px h-6 bg-gray-300" />
-          <p className="text-[0.95rem] text-gray-600">
-            Manage your company's organizational structure
-          </p>
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white">
+              <PiUsersThreeDuotone className="w-5 h-5" />
+            </div>
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-extrabold font-source text-gray-900">
+                Departments
+              </h1>
+              <div className="w-px h-6 bg-gray-300" />
+              <p className="text-sm font-source text-gray-600">
+                Manage your company's organizational structure
+              </p>
+            </div>
+          </div>
         </div>
         <Button
           onClick={handleCreate}
@@ -111,8 +103,8 @@ const DepartmentsPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-300 overflow-hidden">
-        <div className="px-5 pt-5 border-b border-gray-200">
+      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-200">
           <Input
             type="text"
             placeholder="Search departments by name, code, or manager..."
@@ -269,15 +261,15 @@ const DepartmentsPage: React.FC = () => {
               ),
             },
           ]}
-          rows={departments}
-          totalItems={departments.length}
-          startIndex={1}
-          endIndex={departments.length}
-          currentPage={1}
-          totalPages={1}
-          tableLoading={isLoading}
-          showCheckboxes={false}
-        />
+            rows={departments}
+            totalItems={departments.length}
+            startIndex={departments.length > 0 ? 1 : 0}
+            endIndex={departments.length}
+            currentPage={1}
+            totalPages={1}
+            tableLoading={isLoading}
+            showCheckboxes={false}
+          />
         </div>
       </div>
 
@@ -298,12 +290,28 @@ const DepartmentsPage: React.FC = () => {
           cancelText="Cancel"
           showCancel={notification.type === "delete"}
           onConfirm={async () => {
-            const fn = (handleDelete as any)._confirm as
-              | (() => Promise<void>)
-              | undefined;
-            if (fn) {
-              await fn();
-              (handleDelete as any)._confirm = undefined;
+            if (notification.type === "delete" && pendingDeleteId) {
+              try {
+                await api.delete(`/departments/${pendingDeleteId}`);
+                await fetchDepartments();
+                setNotification({
+                  open: true,
+                  type: "success",
+                  title: "Department deleted",
+                  message: "The department was deleted successfully.",
+                });
+              } catch (error: any) {
+                setNotification({
+                  open: true,
+                  type: "error",
+                  title: "Failed to delete department",
+                  message:
+                    error.response?.data?.error ||
+                    "Failed to delete department",
+                });
+              } finally {
+                setPendingDeleteId(null);
+              }
             } else {
               setNotification(null);
             }

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-    FiX, FiCheck, FiArrowRight, FiArrowLeft, FiUpload,
-    FiPlus, FiTrash2, FiFile, FiCreditCard, FiAlertCircle,
-    FiUser, FiBriefcase, FiShield, FiLock,
+    FiX, FiCheck, FiArrowRight, FiUpload,
+    FiPlus, FiTrash2, FiFile, FiCreditCard, FiAlertCircle, FiShield, FiLock,
     FiFileText, FiCamera,
 } from "react-icons/fi";
 import Input from "../../components/ui/Input";
@@ -12,21 +11,25 @@ import api from "../../services/api";
 import type { Employee, CreateEmployeeInput, BankDetailInput, DocumentMetadataInput } from "../../types/employee";
 import type { Department } from "../../types/department";
 import type { Role } from "../../types/role";
+import { TbAlertTriangle, TbArrowBack, TbBriefcase, TbCheck, TbLockFilled, TbShieldHalfFilled } from "react-icons/tb";
+import { motion } from "framer-motion";
+import Button from "@/components/ui/Button";
+import { PiUserDuotone } from "react-icons/pi";
 
 /* ─── steps ─────────────────────────────────────────────── */
 const STEPS = [
-    { id: 1, title: "Personal Info", desc: "Name, contact & address", icon: <FiUser className="w-4 h-4" />, optional: false },
-    { id: 2, title: "Employment", desc: "Role, department & dates", icon: <FiBriefcase className="w-4 h-4" />, optional: false },
-    { id: 3, title: "Identification", desc: "ID, KRA PIN & statutory IDs", icon: <FiShield className="w-4 h-4" />, optional: true },
-    { id: 4, title: "User Account", desc: "Login role & password", icon: <FiLock className="w-4 h-4" />, optional: false },
-    { id: 5, title: "Bank Details", desc: "Payment method for payroll", icon: <FiCreditCard className="w-4 h-4" />, optional: true },
-    { id: 6, title: "Documents", desc: "Contracts, IDs & certificates", icon: <FiFileText className="w-4 h-4" />, optional: true },
+    { id: 1, title: "Personal Info", desc: "Name, contact & address", icon: <PiUserDuotone className="w-5 h-5" />, optional: false },
+    { id: 2, title: "Employment", desc: "Role, department & dates", icon: <TbBriefcase className="w-5 h-5" />, optional: false },
+    { id: 3, title: "Identification", desc: "ID, KRA PIN & statutory IDs", icon: <TbShieldHalfFilled className="w-5 h-5" />, optional: true },
+    { id: 4, title: "User Account", desc: "Login role & password", icon: <TbLockFilled className="w-5 h-5" />, optional: false },
+    { id: 5, title: "Bank Details", desc: "Payment method for payroll", icon: <FiCreditCard className="w-5 h-5" />, optional: true },
+    { id: 6, title: "Documents", desc: "Contracts, IDs & certificates", icon: <FiFileText className="w-5 h-5" />, optional: true },
 ];
 
 /* ─── small helpers ──────────────────────────────────────── */
 const FormSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="mb-8">
-        <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+        <h4 className="text-sm font-bold text-tertiary-600 mb-4 flex items-center gap-2">
             <span className="flex-1 h-px bg-slate-200" />
             {title}
             <span className="flex-1 h-px bg-slate-200" />
@@ -35,9 +38,20 @@ const FormSection = ({ title, children }: { title: string; children: React.React
     </div>
 );
 
+/** Server stores photo paths relative to uploads/; <img> needs an absolute URL. */
+function employeePhotoSrc(photoUrl?: string | null): string | null {
+    if (!photoUrl?.trim()) return null;
+    const u = photoUrl.trim();
+    if (u.startsWith("data:") || u.startsWith("blob:")) return u;
+    if (/^https?:\/\//i.test(u)) return u;
+    const origin = (api.defaults.baseURL || "").replace(/\/api\/?$/, "");
+    if (u.startsWith("/")) return `${origin}${u}`;
+    return `${origin}/uploads/${u.replace(/^\/+/, "")}`;
+}
+
 const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
     <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${checked ? "bg-blue-600" : "bg-slate-200"}`}>
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${checked ? "bg-primary-600" : "bg-slate-200"}`}>
         <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ${checked ? "translate-x-5" : "translate-x-0"}`} />
     </button>
 );
@@ -117,13 +131,23 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                 emergencyContactRelationship: employee.emergencyContactRelationship || "",
                 roleId: "", userPassword: "",
             });
-            setPhotoPreview(employee.photoUrl || null);
+            setPhotoPreview(employeePhotoSrc(employee.photoUrl));
         }
 
         const h = (e: KeyboardEvent) => { if (e.key === "Escape") handleClose(); };
         window.addEventListener("keydown", h);
         return () => window.removeEventListener("keydown", h);
     }, []);
+
+    useEffect(() => {
+        if (employee?.id) {
+            setPhotoFile(null);
+            setPhotoPreview(employeePhotoSrc(employee.photoUrl));
+        } else {
+            setPhotoPreview(null);
+            setPhotoFile(null);
+        }
+    }, [employee?.id, employee?.photoUrl]);
 
     const fetchData = async () => {
         try {
@@ -239,19 +263,19 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
             case 1: return (
                 <div>
                     {/* Photo upload — prominent */}
-                    <div className="flex items-center gap-6 mb-8 p-5 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <div className="flex items-center gap-6 mb-8 p-5 bg-slate-50 border border-slate-200 rounded-3xl">
                         <div className="relative shrink-0">
                             {photoPreview
-                                ? <img src={photoPreview} alt="" className="w-20 h-20 rounded-2xl object-cover ring-4 ring-white shadow-md" />
-                                : <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center text-white text-2xl font-bold ring-4 ring-white shadow-md">
+                                ? <img src={photoPreview} alt="" className="w-26 h-26 rounded-2xl object-cover ring-4 ring-white shadow-md" />
+                                : <div className="w-26 h-26 rounded-2xl bg-linear-to-br from-primary-400 to-primary-700 flex items-center justify-center text-white text-2xl font-bold ring-4 ring-white shadow-md">
                                     {form.firstName?.[0] || "?"}{form.lastName?.[0] || ""}
                                 </div>
                             }
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-slate-800 mb-1">Profile Photo</p>
-                            <p className="text-xs text-slate-500 mb-3">Upload a clear photo. JPG, PNG accepted.</p>
-                            <label className="cursor-pointer inline-flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 border border-blue-300 rounded-xl px-4 py-2.5 hover:bg-blue-100 transition-colors">
+                            <p className="text-base font-bold text-slate-800 mb-1">Profile Photo</p>
+                            <p className="text-sm text-slate-500 mb-3">Upload a clear photo. JPG, PNG accepted.</p>
+                            <label className="cursor-pointer inline-flex items-center gap-2 text-sm font-semibold text-primary-600 bg-primary-50 border border-primary-300 rounded-xl px-4 py-2 hover:bg-primary-100 transition-colors">
                                 <input type="file" accept="image/*" className="hidden" onChange={e => {
                                     const f = e.target.files?.[0];
                                     if (f) { setPhotoFile(f); const r = new FileReader(); r.onloadend = () => setPhotoPreview(r.result as string); r.readAsDataURL(f); }
@@ -263,20 +287,20 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
 
                     <FormSection title="Basic Information">
                         <div className="grid grid-cols-3 gap-4">
-                            <Input label="First Name *" name="firstName" value={form.firstName} onChange={e => set("firstName", e.target.value)} error={errors.firstName} />
-                            <Input label="Middle Name" name="middleName" value={form.middleName || ""} onChange={e => set("middleName", e.target.value)} />
-                            <Input label="Last Name *" name="lastName" value={form.lastName} onChange={e => set("lastName", e.target.value)} error={errors.lastName} />
-                            <DateInput label="Date of Birth" name="dateOfBirth" value={form.dateOfBirth || ""} onChange={e => set("dateOfBirth", (e as any).target.value)} />
-                            <Select label="Gender" value={form.gender || ""} onChange={e => set("gender", e.target.value)}
+                            <Input label="First Name" labelClassName="text-sm" name="firstName" value={form.firstName} onChange={e => set("firstName", e.target.value)} error={errors.firstName} />
+                            <Input label="Middle Name" labelClassName="text-sm" name="middleName" value={form.middleName || ""} onChange={e => set("middleName", e.target.value)} />
+                            <Input label="Last Name" labelClassName="text-sm" name="lastName" value={form.lastName} onChange={e => set("lastName", e.target.value)} error={errors.lastName} />
+                            <DateInput label="Date of Birth" labelClassName="text-sm" name="dateOfBirth" value={form.dateOfBirth || ""} onChange={e => set("dateOfBirth", (e as any).target.value)} />
+                            <Select label="Gender" labelClassName="text-sm" value={form.gender || ""} onChange={e => set("gender", e.target.value)}
                                 options={[{ value: "", label: "Select" }, { value: "Male", label: "Male" }, { value: "Female", label: "Female" }, { value: "Other", label: "Other" }]} />
-                            <Select label="Marital Status" value={form.maritalStatus || ""} onChange={e => set("maritalStatus", e.target.value)}
+                            <Select label="Marital Status" labelClassName="text-sm" value={form.maritalStatus || ""} onChange={e => set("maritalStatus", e.target.value)}
                                 options={[{ value: "", label: "Select" }, { value: "Single", label: "Single" }, { value: "Married", label: "Married" }, { value: "Divorced", label: "Divorced" }, { value: "Widowed", label: "Widowed" }]} />
-                            <Input label="Nationality" name="nationality" value={form.nationality || ""} onChange={e => set("nationality", e.target.value)} className="col-span-3" />
+                            <Input label="Nationality" labelClassName="text-sm" name="nationality" value={form.nationality || ""} onChange={e => set("nationality", e.target.value)} className="col-span-3 " />
                         </div>
                     </FormSection>
 
                     <FormSection title="Contact Information">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-4">
                             <Input label="Work Email *" name="workEmail" type="email" value={form.workEmail || ""} onChange={e => set("workEmail", e.target.value)} error={errors.workEmail} />
                             <Input label="Personal Email" name="personalEmail" type="email" value={form.personalEmail || ""} onChange={e => set("personalEmail", e.target.value)} />
                             <Input label="Primary Phone *" name="phonePrimary" type="tel" value={form.phonePrimary || ""} onChange={e => set("phonePrimary", e.target.value)} error={errors.phonePrimary} />
@@ -285,7 +309,7 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                     </FormSection>
 
                     <FormSection title="Address">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-4">
                             <Input label="Address Line 1" name="addressLine1" value={form.addressLine1 || ""} onChange={e => set("addressLine1", e.target.value)} />
                             <Input label="Address Line 2" name="addressLine2" value={form.addressLine2 || ""} onChange={e => set("addressLine2", e.target.value)} />
                             <Input label="City" name="city" value={form.city || ""} onChange={e => set("city", e.target.value)} />
@@ -331,13 +355,13 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
 
             case 3: return (
                 <div>
-                    <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4 mb-7">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 mt-0.5">
+                    <div className="flex items-start gap-3 bg-primary-50 border border-primary-200 rounded-2xl px-5 py-4 mb-7">
+                        <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white shrink-0 mt-0.5">
                             <FiShield className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-blue-800 mb-0.5">Optional but recommended</p>
-                            <p className="text-sm text-blue-600">These IDs are required for accurate PAYE, NSSF and NHIF statutory deductions.</p>
+                            <p className="text-sm font-bold text-primary-800 mb-0.5">Optional but recommended</p>
+                            <p className="text-sm text-primary-600">These IDs are required for accurate PAYE, NSSF and NHIF statutory deductions.</p>
                         </div>
                     </div>
                     <FormSection title="Government & Statutory IDs">
@@ -354,13 +378,13 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
 
             case 4: return (
                 <div>
-                    <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4 mb-7">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 mt-0.5">
+                    <div className="flex items-start gap-3 bg-primary-50 border border-primary-200 rounded-2xl px-5 py-4 mb-7">
+                        <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white shrink-0 mt-0.5">
                             <FiLock className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-blue-800 mb-0.5">System login credentials</p>
-                            <p className="text-sm text-blue-600">The employee will use their work email and this password to sign in to the payroll system.</p>
+                            <p className="text-sm font-bold text-primary-800 mb-0.5">System login credentials</p>
+                            <p className="text-sm text-primary-600">The employee will use their work email and this password to sign in to the payroll system.</p>
                         </div>
                     </div>
 
@@ -390,31 +414,33 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
             case 5: return (
                 <div>
                     <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <p className="text-sm font-bold text-slate-800">Payment Methods</p>
-                            <p className="text-sm text-slate-400 mt-0.5">How this employee receives their salary</p>
+                        <div className="flex items-center gap-4">
+                            <p className="text-lg font-bold text-tertiary-700">Payment Methods</p>
+                            <div className="h-4 w-px bg-gray-400" />
+                            <p className="text-[0.9rem] text-slate-500 mt-0.5">How this employee receives their salary</p>
                         </div>
-                        <button onClick={addBank} className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 border border-blue-300 rounded-xl px-4 py-2.5 hover:bg-blue-100 transition-colors">
-                            <FiPlus className="w-4 h-4" /> Add Method
+                        <button onClick={addBank} className="flex items-center gap-2 text-sm font-semibold text-primary-600 bg-primary-50 border border-primary-300 rounded-xl px-4 py-2 hover:bg-primary-100 transition-colors">
+                            <FiPlus className="w-4 h-4" /> Add Payment Method
                         </button>
                     </div>
 
                     {bankDetails.length === 0
-                        ? <div className="flex flex-col items-center justify-center py-16 gap-4 border-2 border-dashed border-slate-200 rounded-2xl">
-                            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400"><FiCreditCard className="w-6 h-6" /></div>
+                        ? <div className="flex flex-col items-center justify-center py-16 gap-4 border-2 border-dashed border-slate-200 rounded-3xl">
+
+                            <TbAlertTriangle className="text-gray-400 w-16 h-16" />
                             <div className="text-center">
-                                <p className="text-sm font-bold text-slate-700 mb-1">No payment methods yet</p>
-                                <p className="text-xs text-slate-400">Add a bank account or M-Pesa number for payroll</p>
+                                <p className="font-semibold text-slate-700 mb-1">No payment methods yet !</p>
+                                <p className="text-[0.9rem] text-slate-400">Add a bank account or M-Pesa number for salary payments</p>
                             </div>
-                            <button onClick={addBank} className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 border border-blue-300 rounded-xl px-4 py-2.5 hover:bg-blue-100 transition-colors">
+                            <button onClick={addBank} className="flex items-center gap-2 text-sm font-semibold text-primary-600 bg-primary-50 border border-primary-300 rounded-xl px-4 py-2 hover:bg-primary-100 transition-colors">
                                 <FiPlus className="w-4 h-4" /> Add Payment Method
                             </button>
                         </div>
                         : <div className="space-y-4">
                             {bankDetails.map((bd, i) => (
-                                <div key={i} className="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm">
+                                <div key={i} className="border border-slate-200 rounded-3xl p-5 bg-white shadow-sm">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-sm font-bold text-slate-700">Method {i + 1}</span>
+                                        <span className="font-bold text-slate-700">Payment Option {i + 1}</span>
                                         <button onClick={() => removeBank(i)} className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 hover:bg-rose-100 transition-colors">
                                             <FiTrash2 className="w-3.5 h-3.5" /> Remove
                                         </button>
@@ -423,7 +449,7 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                                         <Select label="Payment Method" value={bd.paymentMethod} onChange={e => updateBank(i, "paymentMethod", e.target.value)}
                                             options={[{ value: "bank", label: "Bank Transfer" }, { value: "mpesa", label: "M-Pesa" }, { value: "cash", label: "Cash" }]} />
                                         <div className="flex items-center gap-3 pt-7">
-                                            <Toggle checked={bd.isPrimary} onChange={v => updateBank(i, "isPrimary", v)} />
+                                            <Toggle checked={bd.isPrimary ?? false} onChange={v => updateBank(i, "isPrimary", v)} />
                                             <span className="text-sm font-semibold text-slate-700">Set as primary</span>
                                         </div>
                                         {bd.paymentMethod === "bank" && <>
@@ -448,23 +474,24 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
             case 6: return (
                 <div>
                     <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <p className="text-sm font-bold text-slate-800">Employee Documents</p>
-                            <p className="text-sm text-slate-400 mt-0.5">Upload contracts, ID copies, certificates, etc.</p>
+                        <div className="flex items-center gap-4">
+                            <p className="text-lg font-bold text-tertiary-700">Employee Documents</p>
+                            <div className="h-4 w-px bg-gray-400" />
+                            <p className="text-[0.9rem] text-slate-500 mt-0.5">Upload contracts, ID copies, certificates, etc.</p>
                         </div>
-                        <button onClick={addDoc} className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 border border-blue-300 rounded-xl px-4 py-2.5 hover:bg-blue-100 transition-colors">
+                        <button onClick={addDoc} className="flex items-center gap-2 text-sm font-semibold text-primary-600 bg-primary-50 border border-primary-300 rounded-xl px-4 py-2 hover:bg-primary-100 transition-colors">
                             <FiUpload className="w-4 h-4" /> Upload Document
                         </button>
                     </div>
 
                     {documents.length === 0
-                        ? <div className="flex flex-col items-center justify-center py-16 gap-4 border-2 border-dashed border-slate-200 rounded-2xl">
-                            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400"><FiFile className="w-6 h-6" /></div>
+                        ? <div className="flex flex-col items-center justify-center py-16 gap-4 border-2 border-dashed border-slate-200 rounded-3xl">
+                            <FiFile className="w-16 h-16 text-gray-400" />
                             <div className="text-center">
-                                <p className="text-sm font-bold text-slate-700 mb-1">No documents uploaded</p>
-                                <p className="text-xs text-slate-400">You can also add documents from the employee profile later</p>
+                                <p className="font-semibold text-slate-700 mb-1">No documents uploaded !</p>
+                                <p className="text-[0.9rem] text-slate-400">You can also add documents from the employee profile later</p>
                             </div>
-                            <button onClick={addDoc} className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 border border-blue-300 rounded-xl px-4 py-2.5 hover:bg-blue-100 transition-colors">
+                            <button onClick={addDoc} className="flex items-center gap-2 text-sm font-semibold text-primary-600 bg-primary-50 border border-primary-300 rounded-xl px-4 py-2 hover:bg-primary-100 transition-colors">
                                 <FiUpload className="w-4 h-4" /> Upload First Document
                             </button>
                         </div>
@@ -497,35 +524,50 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
         }
     };
 
-    const stepCount = isEdit ? 2 : STEPS.length;
-    const isLastStep = isEdit ? currentStep === 2 : currentStep === STEPS.length;
+    const stepCount = isEdit ? 3 : STEPS.length;
+    const isLastStep = isEdit ? currentStep === 3 : currentStep === STEPS.length;
     const progress = Math.round((currentStep / stepCount) * 100);
 
     /* ── render ── */
     return (
         <>
-            <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        .ef-drawer { font-family:'Plus Jakarta Sans',sans-serif; }
-      `}</style>
 
             {/* Backdrop */}
             <div onClick={handleClose}
-                className={`fixed inset-0 bg-slate-900/50 backdrop-blur-[2px] z-40 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`} />
+                className={`fixed inset-0 bg-slate-900/50 backdrop-blur-[2px] z-50 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`} />
 
             {/* Drawer */}
             <div
-                className={`ef-drawer fixed top-0 right-0 h-full z-50 flex bg-white shadow-[0_0_80px_rgba(0,0,0,0.22)] transform transition-transform duration-300 ease-out ${visible ? "translate-x-0" : "translate-x-full"}`}
-                style={{ width: "min(980px, 92vw)" }}
+                className={`fixed top-0 right-0 h-full z-100 flex bg-white shadow-[0_0_80px_rgba(0,0,0,0.22)] transform transition-transform duration-300 ease-out ${visible ? "translate-x-0" : "translate-x-full"}`}
+                style={!isEdit ? { width: "min(1200px, 95vw)" } : { width: "min(980px, 92vw)" }}
             >
                 {/* ── Success overlay ── */}
                 {submitSuccess && (
                     <div className="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center gap-5">
-                        <div className="w-20 h-20 rounded-2xl bg-emerald-100 border-2 border-emerald-200 flex items-center justify-center text-emerald-600 animate-bounce">
-                            <FiCheck className="w-9 h-9" />
+                        <div className="relative w-16 h-16 sm:w-18 mb-3 rounded-full flex items-center justify-center">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
+                                <TbCheck className="h-10 w-10 text-primary-700" />
+                            </div>
+                            <motion.svg
+                                className="absolute inset-0 w-full h-full"
+                                viewBox="0 0 100 100"
+                            >
+                                <motion.circle
+                                    cx="50"
+                                    cy="50"
+                                    r="47"
+                                    fill="none"
+                                    stroke="#1d4ed8"
+                                    strokeWidth="4"
+                                    strokeLinecap="round"
+                                    initial={{ pathLength: 0, opacity: 0 }}
+                                    animate={{ pathLength: 1, opacity: 1 }}
+                                    transition={{ duration: 1.6, ease: "easeOut" }}
+                                />
+                            </motion.svg>
                         </div>
                         <div className="text-center">
-                            <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Employee {isEdit ? "Updated" : "Created"}!</h3>
+                            <h3 className="text-2xl font-extrabold text-primary-600 font-source mb-2">Employee Record {isEdit ? "Updated" : "Created"} Successfuly!</h3>
                             <p className="text-sm text-slate-500">Closing panel in a moment…</p>
                         </div>
                     </div>
@@ -533,19 +575,19 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
 
                 {/* ── Left: step rail ── */}
                 {!isEdit && (
-                    <div className="w-64 shrink-0 flex flex-col bg-[#0f1f3d] overflow-hidden relative">
+                    <div className="w-72 shrink-0 flex flex-col bg-primary-700 overflow-hidden relative">
                         {/* dot texture */}
-                        <div className="absolute inset-0 opacity-[0.06]"
+                        <div className="absolute inset-0 opacity-[0.09]"
                             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='5' cy='5' r='1'/%3E%3Ccircle cx='20' cy='5' r='1'/%3E%3Ccircle cx='35' cy='5' r='1'/%3E%3Ccircle cx='5' cy='20' r='1'/%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3Ccircle cx='35' cy='20' r='1'/%3E%3Ccircle cx='5' cy='35' r='1'/%3E%3Ccircle cx='20' cy='35' r='1'/%3E%3Ccircle cx='35' cy='35' r='1'/%3E%3C/g%3E%3C/svg%3E")` }}
                         />
                         {/* decorative circle */}
-                        <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full border-[36px] border-white/10 pointer-events-none" />
+                        <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full border-36 border-white/10 pointer-events-none" />
 
                         <div className="relative flex flex-col h-full px-5 py-8">
                             {/* Logo */}
-                            <div className="flex items-center gap-2.5 mb-8">
-                                <div className="w-8 h-8 rounded-xl bg-white/20 border border-white/25 flex items-center justify-center text-white font-bold text-base">P</div>
-                                <span className="text-white font-bold text-base tracking-tight">New Employee</span>
+                            <div className="flex items-center gap-2.5 mb-6">
+                                <div className="w-8 h-8 rounded-xl bg-white/20 border border-white/25 flex items-center justify-center text-white font-bold text-lg">P</div>
+                                <span className="text-white font-semibold text-lg ">Adding New Employee</span>
                             </div>
 
                             <div className="h-px bg-white/15 mb-6" />
@@ -562,24 +604,24 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                                         <div key={step.id} className="relative">
                                             <button type="button" disabled={!canNav}
                                                 onClick={() => canNav && setCurrentStep(step.id)}
-                                                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${active ? "bg-white/20 shadow-sm" : canNav ? "hover:bg-white/10 cursor-pointer" : "cursor-default"
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all text-left ${active ? "bg-white/20 shadow-sm" : canNav ? "hover:bg-white/10 cursor-pointer" : "cursor-default"
                                                     }`}
                                             >
                                                 {/* step icon */}
-                                                <div className={`w-8 h-8 shrink-0 rounded-xl flex items-center justify-center text-sm font-bold transition-all ${done && !active ? "bg-emerald-500 text-white shadow-sm" :
-                                                        active ? "bg-white text-blue-700 shadow-sm" :
-                                                            past ? "bg-white/20 text-white/70" :
-                                                                "bg-white/10 text-white/30"
+                                                <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center font-bold transition-all ${done && !active ? "bg-emerald-500 text-white shadow-sm" :
+                                                    active ? "bg-white text-primary-700 shadow-sm" :
+                                                        past ? "bg-white/20 text-white/70" :
+                                                            "bg-white/10 text-white/30"
                                                     }`}>
-                                                    {done && !active ? <FiCheck className="w-4 h-4" /> : step.icon}
+                                                    {done && !active ? <FiCheck className="w-5 h-5" /> : step.icon}
                                                 </div>
 
                                                 <div className="min-w-0 flex-1">
-                                                    <p className={`text-[13px] font-semibold leading-tight ${active ? "text-white" : done || past ? "text-white/75" : "text-white/35"
+                                                    <p className={` font-semibold leading-tight ${active ? "text-white" : done || past ? "text-white/75" : "text-white/35"
                                                         }`}>
                                                         {step.title}
                                                     </p>
-                                                    <p className={`text-[11px] mt-0.5 truncate ${active ? "text-white/60" : "text-white/25"}`}>
+                                                    <p className={`text-sm mt-0.5 truncate ${active ? "text-white/60" : "text-white/25"}`}>
                                                         {step.optional ? "optional" : step.desc}
                                                     </p>
                                                 </div>
@@ -596,15 +638,15 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                             </nav>
 
                             {/* Progress pill */}
-                            <div className="bg-white/10 border border-white/15 rounded-2xl p-4 mt-4">
-                                <div className="flex justify-between text-xs font-semibold mb-2">
+                            <div className="bg-white/10 border border-white/15 rounded-2xl py-2.5 px-4 -mx-2 mt-4">
+                                <div className="flex justify-between text-sm font-semibold mb-2">
                                     <span className="text-white/60">Progress</span>
                                     <span className="text-white">{progress}%</span>
                                 </div>
                                 <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
                                     <div className="h-full bg-white rounded-full transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
                                 </div>
-                                <p className="text-[11px] text-white/35 mt-2">Step {currentStep} of {STEPS.length}</p>
+                                <p className="text-[12px] text-white/40 mt-2">Step {currentStep} of {STEPS.length}</p>
                             </div>
                         </div>
                     </div>
@@ -613,15 +655,16 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                 {/* ── Right: form content ── */}
                 <div className="flex flex-1 flex-col overflow-hidden">
                     {/* Top colour bar */}
-                    <div className="h-1 w-full bg-gradient-to-r from-blue-700 via-blue-500 to-sky-400 shrink-0" />
+                    <div className="h-1 w-full bg-linear-to-r from-primary-700 via-primary-600 to-primary-500 shrink-0" />
 
                     {/* Header */}
-                    <div className="flex items-center justify-between px-8 py-5 border-b border-slate-100 shrink-0 bg-white">
-                        <div>
+                    <div className="flex items-center justify-between px-8 py-4 border-b border-slate-200 shrink-0 bg-white">
+                        <div className="flex items-center gap-6">
                             <h2 className="text-xl font-extrabold text-slate-900">
                                 {isEdit ? `Editing — ${employee?.firstName} ${employee?.lastName}` : STEPS[currentStep - 1]?.title}
                             </h2>
-                            <p className="text-sm text-slate-400 mt-0.5">
+                            <div className="h-4 w-px bg-gray-500" />
+                            <p className="text-[0.9rem] text-slate-500 mt-0.5">
                                 {isEdit ? "Update employee information" : STEPS[currentStep - 1]?.desc}
                                 {!isEdit && STEPS[currentStep - 1]?.optional && (
                                     <span className="ml-2 text-xs font-bold bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Optional</span>
@@ -637,7 +680,7 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                     {/* Scrollable form body */}
                     <div className="flex-1 overflow-y-auto px-8 py-7 bg-slate-50/40">
                         {submitError && (
-                            <div className="flex items-start gap-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl px-5 py-4 text-sm mb-6">
+                            <div className="flex items-start gap-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-5 py-3 text-sm mb-6">
                                 <FiAlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-500" />
                                 <span>{submitError}</span>
                             </div>
@@ -648,37 +691,36 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                     </div>
 
                     {/* Footer nav */}
-                    <div className="shrink-0 px-8 py-5 border-t border-slate-200 bg-white flex justify-between items-center">
+                    <div className="shrink-0 px-8 py-4 border-t border-slate-200 bg-white flex justify-between items-center">
                         <div>
                             {currentStep > 1 && (
-                                <button type="button" onClick={handleBack} disabled={isSubmitting}
-                                    className="flex items-center gap-2 text-sm font-bold text-slate-600 border border-slate-200 bg-white rounded-xl px-5 py-2.5 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-40 transition-all shadow-sm">
-                                    <FiArrowLeft className="w-4 h-4" /> Back
-                                </button>
+                                <Button variant="outline" size="sm" onClick={handleBack} disabled={isSubmitting} className="px-6 py-3">
+                                    <TbArrowBack className="w-4 h-4" />Go Back
+                                </Button>
+
                             )}
                         </div>
 
                         <div className="flex items-center gap-3">
                             {!isEdit && !isLastStep && STEPS[currentStep - 1]?.optional && (
-                                <button type="button" onClick={handleSkip} disabled={isSubmitting}
-                                    className="text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors px-3 py-2.5 disabled:opacity-40">
+                                <Button variant="outline" size="sm" onClick={handleSkip} disabled={isSubmitting} className="px-6 py-3">
                                     Skip this step
-                                </button>
+                                </Button>
                             )}
 
                             {isLastStep ? (
-                                <button type="submit" form="ef-form" disabled={isSubmitting}
-                                    className="flex items-center gap-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl px-6 py-2.5 shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.45)] hover:-translate-y-px active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all">
+                                <Button variant="primary" size="sm" onClick={handleSubmit} disabled={isSubmitting} className="px-6 py-3">
                                     {isSubmitting
                                         ? <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin block" />
                                         : <><FiCheck className="w-4 h-4" />{isEdit ? "Save Changes" : "Create Employee"}</>
                                     }
-                                </button>
+                                </Button>
+
                             ) : (
-                                <button type="button" onClick={handleNext} disabled={isSubmitting}
-                                    className="flex items-center gap-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl px-6 py-2.5 shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.45)] hover:-translate-y-px active:translate-y-0 disabled:opacity-40 transition-all">
+                                <Button variant="primary" size="sm" onClick={handleNext} disabled={isSubmitting} className="px-10 py-3">
                                     Continue <FiArrowRight className="w-4 h-4" />
-                                </button>
+                                </Button>
+
                             )}
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiCreditCard, FiPlus, FiEdit2, FiTrash2, FiCheck } from "react-icons/fi";
+import { FiPlus, FiCheck } from "react-icons/fi";
 import Modal from "../ui/Modal";
 import Input from "../ui/Input";
 import Select from "../ui/Select";
@@ -9,17 +9,22 @@ import type {
   EmployeeBankDetails,
   CreateBankDetailsInput,
 } from "../../types/employeeExtension";
+import ToggleSwitch from "../ui/ToggleSwitch";
+import { TbEdit, TbTrash } from "react-icons/tb";
 
 interface BankDetailsSectionProps {
   employeeId: string;
 }
+
+/** Form state always has explicit boolean primary flag (API type has optional isPrimary). */
+type BankDetailsFormState = CreateBankDetailsInput & { isPrimary: boolean };
 
 const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) => {
   const [bankDetails, setBankDetails] = useState<EmployeeBankDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBankDetails, setEditingBankDetails] = useState<EmployeeBankDetails | null>(null);
-  const [formData, setFormData] = useState<CreateBankDetailsInput>({
+  const [formData, setFormData] = useState<BankDetailsFormState>({
     paymentMethod: "bank",
     isPrimary: false,
     bankName: "",
@@ -143,16 +148,13 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <FiCreditCard className="w-5 h-5 text-primary-600" />
-          Bank Details
-        </h3>
+        <p className="text-sm text-slate-400">Payment methods for payroll processing</p>
         <Button
           onClick={handleCreate}
           size="sm"
           leftIcon={<FiPlus className="w-4 h-4" />}
         >
-          Add Bank Details
+          Add Payment Method
         </Button>
       </div>
 
@@ -164,17 +166,17 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 mb-2">
           {bankDetails.map((details) => (
             <div
               key={details.id}
-              className="p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+              className="p-4 font-source bg-white rounded-2xl border border-gray-200 hover:border-primary-300 transition-colors"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-medium text-gray-900 capitalize">
-                      {details.paymentMethod}
+                  <div className="flex items-center gap-4 mb-2">
+                    <span className="text-[0.95rem] font-bold text-gray-900 capitalize">
+                      {details.paymentMethod} {details.paymentMethod === "bank" ? "Account" : "Payment"}
                     </span>
                     {details.isPrimary && (
                       <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center gap-1">
@@ -224,25 +226,25 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
                   {!details.isPrimary && (
                     <button
                       onClick={() => handleSetPrimary(details.id)}
-                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      className="flex items-center gap-1 px-2 py-1 border border-green-600 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                       title="Set as primary"
                     >
-                      <FiCheck className="w-4 h-4" />
+                      <FiCheck className="w-4 h-4" /> <span className="text-xs">Set Primary</span>
                     </button>
                   )}
                   <button
                     onClick={() => handleEdit(details)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     title="Edit"
                   >
-                    <FiEdit2 className="w-4 h-4" />
+                    <TbEdit className="w-4 h-4" /> <span className="text-xs">Edit</span>
                   </button>
                   <button
                     onClick={() => handleDelete(details.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 border border-red-600 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete"
                   >
-                    <FiTrash2 className="w-4 h-4" />
+                    <TbTrash className="w-4 h-4" /> <span className="text-xs">Delete</span>
                   </button>
                 </div>
               </div>
@@ -255,7 +257,7 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
         <Modal
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
-          title={editingBankDetails ? "Edit Bank Details" : "Add Bank Details"}
+          title={editingBankDetails ? "Edit Payment Method" : "Add Payment Method"}
           size="md"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -265,30 +267,38 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
               </div>
             )}
 
-            <Select
-              label="Payment Method"
-              value={formData.paymentMethod}
-              onChange={(e) =>
-                setFormData({ ...formData, paymentMethod: e.target.value as any })
-              }
-              options={paymentMethodOptions}
-              required
-            />
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isPrimary"
-                checked={formData.isPrimary}
+            <div className="flex items-end gap-4">
+              <Select
+                label="Payment Method"
+                labelClassName="text-sm"
+                value={formData.paymentMethod}
                 onChange={(e) =>
-                  setFormData({ ...formData, isPrimary: e.target.checked })
+                  setFormData({ ...formData, paymentMethod: e.target.value as any })
                 }
-                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                options={paymentMethodOptions}
+                required
+                className="text-sm"
               />
-              <label htmlFor="isPrimary" className="text-sm text-gray-700">
-                Set as primary payment method
-              </label>
+
+              <div className="flex items-center gap-2 mb-2">
+                <ToggleSwitch
+                  title="Primary"
+                  checked={formData.isPrimary ?? false}
+                  onChange={() =>
+                    setFormData({
+                      ...formData,
+                      isPrimary: !(formData.isPrimary ?? false),
+                    })
+                  }
+                />
+
+                <label htmlFor="isPrimary" className="text-sm text-gray-700">
+                  Primary
+                </label>
+              </div>
             </div>
+
+
 
             {formData.paymentMethod === "bank" && (
               <>
@@ -298,20 +308,16 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
                   onChange={(e) =>
                     setFormData({ ...formData, bankName: e.target.value })
                   }
+                  className="text-sm"
                 />
-                <Input
-                  label="Bank Branch"
-                  value={formData.bankBranch}
-                  onChange={(e) =>
-                    setFormData({ ...formData, bankBranch: e.target.value })
-                  }
-                />
+
                 <Input
                   label="Account Number"
                   value={formData.accountNumber}
                   onChange={(e) =>
                     setFormData({ ...formData, accountNumber: e.target.value })
                   }
+                  className="text-sm"
                 />
                 <Input
                   label="Account Name"
@@ -319,14 +325,26 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
                   onChange={(e) =>
                     setFormData({ ...formData, accountName: e.target.value })
                   }
+                  className="text-sm"
                 />
-                <Input
-                  label="SWIFT Code"
-                  value={formData.swiftCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, swiftCode: e.target.value })
-                  }
-                />
+                <div className="grid grid-cols-2 gap-3.5">
+                  <Input
+                    label="Bank Branch"
+                    value={formData.bankBranch}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bankBranch: e.target.value })
+                    }
+                    className="text-sm"
+                  />
+                  <Input
+                    label="SWIFT Code"
+                    value={formData.swiftCode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, swiftCode: e.target.value })
+                    }
+                    className="text-sm"
+                  />
+                </div>
               </>
             )}
 
@@ -339,6 +357,7 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
                     setFormData({ ...formData, mpesaPhone: e.target.value })
                   }
                   type="tel"
+                  className="text-sm"
                 />
                 <Input
                   label="M-Pesa Name"
@@ -346,20 +365,22 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
                   onChange={(e) =>
                     setFormData({ ...formData, mpesaName: e.target.value })
                   }
+                  className="text-sm"
                 />
               </>
             )}
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsFormOpen(false)}
                 disabled={isSubmitting}
+                className="text-sm w-full"
               >
                 Cancel
-              </Button>
-              <Button type="submit" variant="primary" isLoading={isSubmitting}>
+              </Button> */}
+              <Button type="submit" variant="primary" isLoading={isSubmitting} className="text-sm w-full">
                 {editingBankDetails ? "Update" : "Add"} Bank Details
               </Button>
             </div>

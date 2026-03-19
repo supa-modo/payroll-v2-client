@@ -9,7 +9,7 @@ import {
 } from "react-icons/fi";
 import Modal from "../ui/Modal";
 import Input from "../ui/Input";
-import DateInput from "../ui/DateInput";
+// import DateInput from "../ui/DateInput";
 import Select from "../ui/Select";
 import FileUpload from "../ui/FileUpload";
 import Button from "../ui/Button";
@@ -165,32 +165,30 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ employeeId }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <FiFile className="w-5 h-5 text-primary-600" />
-          Documents
-        </h3>
+        <p className="text-sm text-slate-400">Documents uploaded by the employee</p>
+
         <Button
           onClick={handleUpload}
           size="sm"
           leftIcon={<FiUpload className="w-4 h-4" />}
         >
-          Upload Document
+          Upload New Document
         </Button>
       </div>
 
       {documents.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center py-8 bg-gray-50 rounded-2xl border border-gray-200">
           <p className="text-gray-500">No documents uploaded yet</p>
-          <Button onClick={handleUpload} variant="outline" className="mt-4">
+          <Button onClick={handleUpload} variant="outline" className="mt-4 text-sm">
             Upload Document
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 mb-2">
           {documents.map((document) => (
             <div
               key={document.id}
-              className="p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+              className="p-4 bg-white rounded-2xl border border-gray-200 hover:border-primary-300 transition-colors"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -295,6 +293,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ employeeId }) => {
                 setFormData({ ...formData, documentType: e.target.value })
               }
               options={documentTypeOptions}
+              className="text-sm"
             />
 
             <Input
@@ -304,26 +303,28 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ employeeId }) => {
                 setFormData({ ...formData, documentName: e.target.value })
               }
               helperText="Leave empty to use file name"
+              className="text-sm"
             />
 
-            <DateInput
+            {/* <DateInput
               label="Expiry Date (Optional)"
               value={formData.expiryDate}
               onChange={(e) =>
                 setFormData({ ...formData, expiryDate: e.target.value })
               }
-            />
+              className="text-sm"
+            /> */}
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsFormOpen(false)}
                 disabled={isSubmitting}
               >
                 Cancel
-              </Button>
-              <Button type="submit" variant="primary" isLoading={isSubmitting}>
+              </Button> */}
+              <Button type="submit" variant="primary" isLoading={isSubmitting} className="w-full">
                 Upload Document
               </Button>
             </div>

@@ -176,6 +176,7 @@ const ForgotPasswordPage: React.FC = () => {
                     error={errors.email}
                     required={true}
                     className="text-sm"
+                    wrapperClassName="mb-2"
                   />
 
                   {errors.email && <p className="text-xs text-rose-500 pl-1">{errors.email}</p>}
