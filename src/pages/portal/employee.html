@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Portal — Meridian HR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base: #0a0d14;
+    --bg-surface: #0f1421;
+    --bg-elevated: #141927;
+    --bg-card: #181e2e;
+    --bg-card-hover: #1d2438;
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.12);
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-glow: rgba(201,168,76,0.08);
+    --text-primary: #eef0f6;
+    --text-secondary: #8892a4;
+    --text-muted: #4a5468;
+    --accent-blue: #4a7cdc;
+    --accent-blue-dim: rgba(74,124,220,0.12);
+    --accent-green: #3dcf8e;
+    --accent-green-dim: rgba(61,207,142,0.1);
+    --accent-red: #e05c6a;
+    --accent-red-dim: rgba(224,92,106,0.1);
+    --accent-amber: #f0a52a;
+    --accent-amber-dim: rgba(240,165,42,0.1);
+    --radius-sm: 6px;
+    --radius: 12px;
+    --radius-lg: 18px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 48px rgba(0,0,0,0.5);
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --sidebar-w: 260px;
+    --topbar-h: 64px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── LAYOUT ─────────────────────────────────── */
+  .app { display: flex; min-height: 100vh; }
+
+  /* ─── SIDEBAR ────────────────────────────────── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .sidebar-header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 600;
+    color: #0a0d14;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 20px; font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: -2px;
+  }
+
+  .sidebar-user {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2c4a8a, #4a7cdc);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    flex-shrink: 0;
+    border: 2px solid rgba(74,124,220,0.3);
+  }
+
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .user-role { font-size: 11px; color: var(--text-muted); }
+
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+  .sidebar-nav::-webkit-scrollbar { width: 3px; }
+  .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+  .nav-section-label {
+    padding: 14px 24px 6px;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 400;
+    border-left: 2px solid transparent;
+    transition: all 0.18s ease;
+    position: relative;
+  }
+
+  .nav-item:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+
+  .nav-item.active {
+    color: var(--gold);
+    border-left-color: var(--gold);
+    background: var(--gold-glow);
+    font-weight: 500;
+  }
+
+  .nav-icon {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent-blue-dim);
+    color: var(--accent-blue);
+    border-radius: 20px;
+    padding: 1px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+  }
+
+  .nav-badge.alert { background: var(--accent-red-dim); color: var(--accent-red); }
+  .nav-badge.success { background: var(--accent-green-dim); color: var(--accent-green); }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .signout-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: color 0.18s;
+  }
+  .signout-btn:hover { color: var(--accent-red); }
+
+  /* ─── MAIN ───────────────────────────────────── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: margin-left 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ─── TOPBAR ─────────────────────────────────── */
+  .topbar {
+    height: var(--topbar-h);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+  }
+
+  .menu-toggle {
+    display: none;
+    width: 36px; height: 36px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .topbar-title span {
+    color: var(--gold);
+  }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+  .topbar-btn {
+    width: 36px; height: 36px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.18s;
+    position: relative;
+  }
+  .topbar-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+  .notif-dot {
+    position: absolute;
+    top: 7px; right: 7px;
+    width: 7px; height: 7px;
+    background: var(--gold);
+    border-radius: 50%;
+    border: 1px solid var(--bg-surface);
+  }
+
+  /* ─── PAGE CONTENT ───────────────────────────── */
+  .page-content {
+    padding: 32px;
+    flex: 1;
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── CARDS ──────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .card:hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ─── STAT CARDS ─────────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: default;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-color, var(--gold));
+    opacity: 0.6;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow);
+  }
+
+  .stat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    font-size: 18px;
+  }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .stat-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    margin-top: 8px;
+    font-weight: 500;
+    font-family: var(--font-mono);
+  }
+  .stat-change.up { color: var(--accent-green); }
+  .stat-change.down { color: var(--accent-red); }
+
+  /* ─── GRID LAYOUTS ───────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .col-span-2 { grid-column: span 2; }
+
+  /* ─── TABLE ──────────────────────────────────── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table th {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-elevated);
+  }
+
+  .data-table th:first-child { border-radius: 8px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 8px 0 0; }
+
+  .data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .data-table tr:hover td {
+    background: var(--bg-elevated);
+  }
+
+  .data-table td.mono {
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  /* ─── BADGES ─────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .badge::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .badge-green { background: var(--accent-green-dim); color: var(--accent-green); }
+  .badge-amber { background: var(--accent-amber-dim); color: var(--accent-amber); }
+  .badge-red { background: var(--accent-red-dim); color: var(--accent-red); }
+  .badge-blue { background: var(--accent-blue-dim); color: var(--accent-blue); }
+  .badge-gray { background: rgba(255,255,255,0.05); color: var(--text-secondary); }
+
+  /* ─── BUTTONS ────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: none;
+    text-decoration: none;
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    color: #0a0d14;
+  }
+  .btn-gold:hover { box-shadow: 0 4px 16px rgba(201,168,76,0.3); transform: translateY(-1px); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-ghost {
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+  .btn-danger {
+    background: var(--accent-red-dim);
+    color: var(--accent-red);
+    border: 1px solid rgba(224,92,106,0.2);
+  }
+
+  .btn-sm { padding: 6px 12px; font-size: 12px; gap: 5px; }
+  .btn-icon { padding: 8px; }
+
+  /* ─── PAYSLIP DOWNLOAD BTN ───────────────────── */
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--radius-sm);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+  .download-btn:hover {
+    background: rgba(201,168,76,0.22);
+    box-shadow: 0 2px 12px rgba(201,168,76,0.15);
+  }
+
+  /* ─── PROGRESS BAR ───────────────────────────── */
+  .progress-track {
+    height: 6px;
+    background: var(--bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0 6px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ─── FORMS ──────────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .form-full { grid-column: 1 / -1; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-label {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    padding: 10px 14px;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    outline: none;
+    width: 100%;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-dim);
+  }
+
+  .form-select { appearance: none; cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 100px; }
+
+  .form-select option { background: var(--bg-card); }
+
+  .upload-zone {
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-elevated);
+  }
+
+  .upload-zone:hover {
+    border-color: var(--gold);
+    background: var(--gold-glow);
+  }
+
+  .upload-icon { font-size: 28px; margin-bottom: 10px; }
+  .upload-text { font-size: 13px; color: var(--text-secondary); }
+  .upload-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ─── SECTION HEADER ─────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .section-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ─── TABS ───────────────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 7px 18px;
+    border-radius: 5px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.18s;
+    font-weight: 400;
+  }
+
+  .tab.active {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-weight: 500;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+  }
+
+  /* ─── DASHBOARD: PAYSLIP PREVIEW ─────────────── */
+  .payslip-preview {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, #1a2035 100%);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .payslip-preview::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .payslip-amount {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 300;
+    color: var(--text-primary);
+    line-height: 1;
+    margin: 12px 0;
+  }
+
+  .payslip-amount span {
+    font-size: 22px;
+    color: var(--gold);
+    vertical-align: top;
+    margin-top: 8px;
+    display: inline-block;
+  }
+
+  .payslip-breakdown {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+  }
+
+  .breakdown-item .label { color: var(--text-muted); }
+  .breakdown-item .value { font-family: var(--font-mono); color: var(--text-primary); }
+  .breakdown-item .value.deduction { color: var(--accent-red); }
+
+  /* ─── LOAN CARD ──────────────────────────────── */
+  .loan-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    transition: all 0.2s;
+  }
+
+  .loan-card:hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
+
+  .loan-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .loan-title { font-size: 14px; font-weight: 500; }
+  .loan-id { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
+
+  .loan-amounts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .loan-amount-item { text-align: center; }
+  .loan-amount-value {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .loan-amount-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* ─── EXPENSE ITEM ───────────────────────────── */
+  .expense-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .expense-row:last-child { border-bottom: none; }
+
+  .expense-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .expense-info { flex: 1; }
+  .expense-name { font-size: 13.5px; font-weight: 500; }
+  .expense-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .expense-amount {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    text-align: right;
+  }
+  .expense-amount .currency { font-size: 11px; color: var(--text-muted); display: block; text-align: right; margin-top: 2px; }
+
+  /* ─── MODAL ──────────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.93) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 24px 28px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .modal-close {
+    width: 30px; height: 30px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 16px;
+    transition: all 0.18s;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { color: var(--text-primary); border-color: var(--border-strong); }
+
+  .modal-body { padding: 20px 28px 28px; }
+
+  /* ─── PAYSLIP MODAL PREVIEW ──────────────────── */
+  .payslip-doc {
+    background: #fff;
+    color: #1a1a2e;
+    border-radius: var(--radius);
+    padding: 32px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .payslip-doc .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #1a1a2e;
+  }
+
+  .payslip-doc .company-name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+
+  .payslip-doc .doc-period {
+    text-align: right;
+    color: #555;
+    font-size: 11px;
+  }
+
+  .payslip-doc .doc-period strong { color: #1a1a2e; font-size: 14px; }
+
+  .payslip-doc .employee-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: #f5f6f8;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 16px;
+    font-size: 11px;
+  }
+
+  .payslip-doc .info-row { display: flex; gap: 6px; }
+  .payslip-doc .info-label { color: #777; min-width: 80px; }
+  .payslip-doc .info-value { font-weight: 500; color: #1a1a2e; }
+
+  .payslip-doc table { width: 100%; border-collapse: collapse; }
+  .payslip-doc table th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 7px 10px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-align: left;
+  }
+  .payslip-doc table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+  }
+  .payslip-doc table tr:last-child td { border-bottom: none; }
+  .payslip-doc .total-row td { font-weight: 600; background: #f5f6f8; color: #1a1a2e; font-size: 13px; }
+  .payslip-doc .net-row td { background: #1a1a2e; color: #fff; font-weight: 600; }
+
+  /* ─── EMPTY STATE ────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
+  .empty-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* ─── DIVIDER ────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* ─── TOAST ──────────────────────────────────── */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    box-shadow: var(--shadow-lg);
+    animation: slideIn 0.3s ease forwards;
+    font-size: 13px;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  .toast-icon { font-size: 16px; }
+  .toast-message { flex: 1; }
+  .toast-title { font-weight: 500; color: var(--text-primary); }
+  .toast-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ─── MOBILE OVERLAY ─────────────────────────── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+  }
+
+  /* ─── RESPONSIVE ─────────────────────────────── */
+  @media (max-width: 1100px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .col-span-2 { grid-column: span 1; }
+  }
+
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 260px; }
+
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar-overlay.open { display: block; }
+
+    .menu-toggle { display: flex; }
+
+    .main { margin-left: 0; }
+
+    .page-content { padding: 20px 16px; }
+
+    .topbar { padding: 0 16px; }
+
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .stat-value { font-size: 20px; }
+
+    .form-grid { grid-template-columns: 1fr; }
+
+    .payslip-breakdown { grid-template-columns: 1fr; }
+
+    .loan-amounts { grid-template-columns: 1fr 1fr 1fr; }
+
+    .tabs { width: 100%; overflow-x: auto; }
+    .tab { white-space: nowrap; }
+
+    .section-header { flex-direction: column; align-items: flex-start; }
+
+    .data-table { display: block; overflow-x: auto; }
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .loan-amounts { grid-template-columns: 1fr; gap: 6px; }
+    .loan-amount-item { text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .loan-amount-label { margin-top: 0; }
+  }
+
+  /* ─── SHIMMER ────────────────────────────────── */
+  .shimmer {
+    background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-card-hover) 50%, var(--bg-elevated) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* GOLD SEPARATOR */
+  .gold-line {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin-bottom: 16px;
+    border-radius: 2px;
+  }
+
+  /* Summary pill */
+  .summary-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .summary-pill strong { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── SIDEBAR ──────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-mark">M</div>
+        <div>
+          <div class="logo-text">Meridian</div>
+          <div class="logo-sub">HR Platform</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="avatar">AM</div>
+      <div>
+        <div class="user-name">Amina Mwangi</div>
+        <div class="user-role">Senior Software Engineer</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <div class="nav-item active" onclick="navigate('dashboard', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+
+      <div class="nav-section-label">Compensation</div>
+      <div class="nav-item" onclick="navigate('salary', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Salary History
+      </div>
+      <div class="nav-item" onclick="navigate('payslips', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Payslips
+        <span class="nav-badge">3</span>
+      </div>
+
+      <div class="nav-section-label">Finance</div>
+      <div class="nav-item" onclick="navigate('loans', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Loans
+        <span class="nav-badge success">1</span>
+      </div>
+      <div class="nav-item" onclick="navigate('expenses', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Expenses
+        <span class="nav-badge alert">2</span>
+      </div>
+
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item" onclick="navigate('profile', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Profile
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="signout-btn" onclick="showToast('👋','Signing out...','Redirecting to login')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </div>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- ── MAIN ─────────────────────────────────── -->
+  <main class="main">
+    <div class="topbar">
+      <div class="menu-toggle" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </div>
+      <div class="topbar-title" id="topbarTitle">Good morning, <span>Amina</span> ☀️</div>
+      <div class="topbar-actions">
+        <div class="topbar-btn" onclick="showToast('🔔','No new notifications','All caught up')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="notif-dot"></div>
+        </div>
+        <div class="topbar-btn" onclick="showToast('⚙️','Settings','Opening account settings')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- ═══════════ DASHBOARD ════════════════ -->
+      <div class="page active" id="page-dashboard">
+        <div class="section-header">
+          <div>
+            <div class="gold-line"></div>
+            <div class="section-title">Your <em>Overview</em></div>
+            <div class="section-meta">March 2025 · Pay Period Active</div>
+          </div>
+          <div>
+            <span class="summary-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Last updated: Today, 09:15 AM
+            </span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" style="--accent-color: var(--gold)">
+            <div class="stat-icon" style="background: var(--gold-dim)">💰</div>
+            <div class="stat-value">KES 285,000</div>
+            <div class="stat-label">Gross Monthly Salary</div>
+            <div class="stat-change up">↑ +8.3% from last year</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-green)">
+            <div class="stat-icon" style="background: var(--accent-green-dim)">🏦</div>
+            <div class="stat-value">KES 212,400</div>
+            <div class="stat-label">Net Take-Home</div>
+            <div class="stat-change up">↑ This month</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-blue)">
+            <div class="stat-icon" style="background: var(--accent-blue-dim)">📋</div>
+            <div class="stat-value">1 Active</div>
+            <div class="stat-label">Outstanding Loan</div>
+            <div class="stat-change down">↓ KES 42,000 remaining</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-amber)">
+            <div class="stat-icon" style="background: var(--accent-amber-dim)">🧾</div>
+            <div class="stat-value">KES 18,500</div>
+            <div class="stat-label">Pending Expenses</div>
+            <div class="stat-change" style="color: var(--accent-amber)">⏳ 2 awaiting approval</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 20px;">
+          <div class="payslip-preview">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">Latest Payslip</div>
+                <div style="font-size:13px; color:var(--text-secondary); margin-top:2px;">February 2025</div>
+              </div>
+              <span class="badge badge-green">Paid</span>
+            </div>
+            <div class="payslip-amount"><span>KES</span> 212,400</div>
+            <div class="payslip-breakdown">
+              <div class="breakdown-item">
+                <span class="label">Basic</span>
+                <span class="value">200,000</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="label">House Allow.</span>
+                <span class="value">40,000</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="label">Transport</span>
+                <span class="value">25,000</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="label">PAYE Tax</span>
+                <span class="value deduction">-38,400</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="label">NHIF</span>
+                <span class="value deduction">-1,700</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="label">NSSF</span>
+                <span class="value deduction">-200</span>
+              </div>
+            </div>
+            <div style="margin-top:16px; display:flex; gap:10px;">
+              <button class="btn btn-gold btn-sm" onclick="navigate('payslips', document.querySelectorAll('.nav-item')[3])">View All Payslips</button>
+              <button class="download-btn" onclick="openPayslipModal('February 2025', '212,400')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Loan Repayment</div>
+                <div class="card-subtitle">Personal Development Loan</div>
+              </div>
+              <span class="badge badge-blue">Active</span>
+            </div>
+            <div style="padding: 4px 0;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:4px;">
+                <span>Repaid</span><span style="color:var(--text-primary); font-family:var(--font-mono);">KES 108,000 / 150,000</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 72%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));"></div>
+              </div>
+              <div style="font-size:11px; color:var(--text-muted);">72% complete · 3 installments left</div>
+            </div>
+            <div style="margin-top:16px; background:var(--bg-elevated); border-radius:var(--radius-sm); padding:14px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size:12px; color:var(--text-muted);">Monthly Deduction</span>
+                <span style="font-family:var(--font-mono); font-size:13px; color:var(--accent-blue);">KES 14,000</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:12px; color:var(--text-muted);">Next Payment</span>
+                <span style="font-size:12px; color:var(--text-primary);">31 March 2025</span>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm" style="margin-top:14px; width:100%; justify-content:center;" onclick="navigate('loans', document.querySelectorAll('.nav-item')[5])">View Loan Details</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Recent Expenses</div>
+              <div class="card-subtitle">Last 30 days</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('expenses', document.querySelectorAll('.nav-item')[6])">View All</button>
+          </div>
+          <div class="expense-row">
+            <div class="expense-icon" style="background:var(--accent-blue-dim)">✈️</div>
+            <div class="expense-info">
+              <div class="expense-name">Flight to Mombasa — Team Offsite</div>
+              <div class="expense-date">15 Feb 2025 · Travel</div>
+            </div>
+            <div>
+              <div class="expense-amount">12,500<span class="currency">KES · Pending</span></div>
+            </div>
+            <span class="badge badge-amber">Pending</span>
+          </div>
+          <div class="expense-row">
+            <div class="expense-icon" style="background:rgba(61,207,142,0.1)">🍽️</div>
+            <div class="expense-info">
+              <div class="expense-name">Client Lunch — Westlands</div>
+              <div class="expense-date">10 Feb 2025 · Entertainment</div>
+            </div>
+            <div>
+              <div class="expense-amount">6,000<span class="currency">KES · Pending</span></div>
+            </div>
+            <span class="badge badge-amber">Pending</span>
+          </div>
+          <div class="expense-row">
+            <div class="expense-icon" style="background:rgba(201,168,76,0.12)">📚</div>
+            <div class="expense-info">
+              <div class="expense-name">Online Course Subscription</div>
+              <div class="expense-date">2 Feb 2025 · Training</div>
+            </div>
+            <div>
+              <div class="expense-amount">4,200<span class="currency">KES · Approved</span></div>
+            </div>
+            <span class="badge badge-green">Approved</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ SALARY HISTORY ═══════════ -->
+      <div class="page" id="page-salary">
+        <div class="section-header">
+          <div>
+            <div class="gold-line"></div>
+            <div class="section-title">Salary <em>History</em></div>
+            <div class="section-meta">Complete compensation record</div>
+          </div>
+          <div class="tabs" style="margin-bottom:0">
+            <div class="tab active" onclick="switchTab(this, 'salaryAll')">All Time</div>
+            <div class="tab" onclick="switchTab(this, 'salary2025')">2025</div>
+            <div class="tab" onclick="switchTab(this, 'salary2024')">2024</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div class="stat-card" style="--accent-color: var(--gold)">
+            <div class="stat-icon" style="background: var(--gold-dim)">📈</div>
+            <div class="stat-value">KES 285,000</div>
+            <div class="stat-label">Current Gross Salary</div>
+            <div class="stat-change up">↑ Promoted Jan 2025</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-green)">
+            <div class="stat-icon" style="background: var(--accent-green-dim)">💳</div>
+            <div class="stat-value">KES 2,548,800</div>
+            <div class="stat-label">Total Earned (2024)</div>
+            <div class="stat-change up">↑ Annual</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Monthly Salary Record</div>
+            <button class="btn btn-outline btn-sm" onclick="showToast('📥','Export initiated','CSV download starting...')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Gross Salary</th>
+                <th>Deductions</th>
+                <th>Net Pay</th>
+                <th>Status</th>
+                <th>Payslip</th>
+              </tr>
+            </thead>
+            <tbody id="salaryTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════ PAYSLIPS ══════════════════ -->
+      <div class="page" id="page-payslips">
+        <div class="section-header">
+          <div>
+            <div class="gold-line"></div>
+            <div class="section-title">My <em>Payslips</em></div>
+            <div class="section-meta">Download & view official salary statements</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select class="form-select" style="width:140px; padding:8px 12px;">
+              <option>All Years</option>
+              <option selected>2025</option>
+              <option>2024</option>
+              <option>2023</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="payslipsGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ═══════════ LOANS ═════════════════════ -->
+      <div class="page" id="page-loans">
+        <div class="section-header">
+          <div>
+            <div class="gold-line"></div>
+            <div class="section-title">My <em>Loans</em></div>
+            <div class="section-meta">Loan history and repayment tracking</div>
+          </div>
+          <button class="btn btn-gold" onclick="openLoanModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Apply for Loan
+          </button>
+        </div>
+
+        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="stat-card" style="--accent-color: var(--accent-blue)">
+            <div class="stat-icon" style="background: var(--accent-blue-dim)">🏦</div>
+            <div class="stat-value">KES 42,000</div>
+            <div class="stat-label">Outstanding Balance</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-green)">
+            <div class="stat-icon" style="background: var(--accent-green-dim)">✅</div>
+            <div class="stat-value">KES 108,000</div>
+            <div class="stat-label">Total Repaid</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--gold)">
+            <div class="stat-icon" style="background: var(--gold-dim)">💎</div>
+            <div class="stat-value">KES 150,000</div>
+            <div class="stat-label">Eligible to Borrow</div>
+          </div>
+        </div>
+
+        <div id="loansContainer"><!-- Rendered by JS --></div>
+      </div>
+
+      <!-- ═══════════ EXPENSES ══════════════════ -->
+      <div class="page" id="page-expenses">
+        <div class="section-header">
+          <div>
+            <div class="gold-line"></div>
+            <div class="section-title">My <em>Expenses</em></div>
+            <div class="section-meta">Submit and track expense reimbursements</div>
+          </div>
+          <button class="btn btn-gold" onclick="openExpenseModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Submit Expense
+          </button>
+        </div>
+
+        <div class="stats-grid" style="grid-template-columns: repeat(4,1fr); margin-bottom:20px;">
+          <div class="stat-card" style="--accent-color: var(--accent-amber)">
+            <div class="stat-icon" style="background: var(--accent-amber-dim)">⏳</div>
+            <div class="stat-value">KES 18,500</div>
+            <div class="stat-label">Pending Approval</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-green)">
+            <div class="stat-icon" style="background: var(--accent-green-dim)">✅</div>
+            <div class="stat-value">KES 47,200</div>
+            <div class="stat-label">Approved (YTD)</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-blue)">
+            <div class="stat-icon" style="background: var(--accent-blue-dim)">💸</div>
+            <div class="stat-value">KES 41,000</div>
+            <div class="stat-label">Reimbursed (YTD)</div>
+          </div>
+          <div class="stat-card" style="--accent-color: var(--accent-red)">
+            <div class="stat-icon" style="background: var(--accent-red-dim)">❌</div>
+            <div class="stat-value">KES 3,500</div>
+            <div class="stat-label">Rejected (YTD)</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Expense Claims</div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <select class="form-select" style="width:140px; padding:7px 12px; font-size:13px;" onchange="filterExpenses(this.value)">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="paid">Paid</option>
+              </select>
+            </div>
+          </div>
+          <table class="data-table" id="expenseTable">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="expenseTableBody"><!-- Rendered by JS --></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════ PROFILE ═══════════════════ -->
+      <div class="page" id="page-profile">
+        <div class="section-header">
+          <div>
+            <div class="gold-line"></div>
+            <div class="section-title">My <em>Profile</em></div>
+            <div class="section-meta">Personal and employment information</div>
+          </div>
+          <button class="btn btn-outline" onclick="showToast('✏️','Edit mode','Profile editing enabled')">Edit Profile</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="card col-span-2">
+            <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+              <div style="width:80px; height:80px; border-radius:50%; background: linear-gradient(135deg, #2c4a8a, #4a7cdc); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:32px; font-weight:500; color:#fff; border:3px solid rgba(74,124,220,0.3); flex-shrink:0;">AM</div>
+              <div style="flex:1;">
+                <div style="font-family:var(--font-display); font-size:28px; font-weight:400;">Amina Mwangi</div>
+                <div style="color:var(--text-secondary); margin-top:3px; font-size:14px;">Senior Software Engineer · Engineering Department</div>
+                <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+                  <span class="badge badge-green">Active Employee</span>
+                  <span class="badge badge-blue">Permanent</span>
+                  <span class="badge badge-gray">Nairobi Office</span>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:11px; color:var(--text-muted);">Employee ID</div>
+                <div style="font-family:var(--font-mono); font-size:16px; color:var(--gold); margin-top:2px;">EMP-00247</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">Personal Information</div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Full Name</span>
+                <span style="font-size:13px;">Amina Wanjiku Mwangi</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">National ID</span>
+                <span style="font-family:var(--font-mono); font-size:13px;">29485763</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Email</span>
+                <span style="font-size:13px;">amina.mwangi@meridian.co.ke</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Phone</span>
+                <span style="font-size:13px;">+254 712 345 678</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:12px; color:var(--text-muted);">KRA PIN</span>
+                <span style="font-family:var(--font-mono); font-size:13px;">A003928475W</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">Employment Details</div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Department</span>
+                <span style="font-size:13px;">Engineering</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Job Grade</span>
+                <span style="font-size:13px;">Grade 7 — Senior</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Reports To</span>
+                <span style="font-size:13px;">David Kimani (VP Eng.)</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Start Date</span>
+                <span style="font-size:13px;">14 March 2020</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:12px; color:var(--text-muted);">Employment Type</span>
+                <span class="badge badge-green" style="font-size:11px;">Permanent</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">Bank Details</div>
+            <div style="background:var(--bg-elevated); border-radius:var(--radius); padding:16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:11px; color:var(--text-muted);">Primary Account</div>
+                <div style="font-family:var(--font-mono); font-size:15px; margin-top:2px;">•••• •••• 4821</div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Equity Bank · Nairobi CBD</div>
+              </div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-ghost btn-sm" onclick="showToast('🏦','Bank update','Please contact HR to update bank details')">Update Account</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">Emergency Contact</div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Name</span>
+                <span style="font-size:13px;">James Mwangi</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                <span style="font-size:12px; color:var(--text-muted);">Relationship</span>
+                <span style="font-size:13px;">Spouse</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:12px; color:var(--text-muted);">Phone</span>
+                <span style="font-size:13px;">+254 722 987 654</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </main>
+</div>
+
+<!-- ═══════════ PAYSLIP MODAL ════════════════ -->
+<div class="modal-overlay" id="payslipModal">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Payslip Preview</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;" id="payslipModalPeriod"></div>
+      </div>
+      <div class="modal-close" onclick="closeModal('payslipModal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="payslip-doc" id="payslipDocContent"><!-- filled by JS --></div>
+      <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="closeModal('payslipModal')">Close</button>
+        <button class="btn btn-gold" onclick="showToast('📥','Payslip Downloaded','PDF saved to your device'); closeModal('payslipModal')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ LOAN APPLICATION MODAL ═══════ -->
+<div class="modal-overlay" id="loanModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Apply for a Loan</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Maximum eligible: KES 150,000</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('loanModal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Loan Type</label>
+          <select class="form-select">
+            <option>Personal Loan</option>
+            <option>Emergency Loan</option>
+            <option>School Fees Loan</option>
+            <option>Housing Deposit Loan</option>
+            <option>Medical Loan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (KES)</label>
+          <input type="number" class="form-input" placeholder="e.g. 50,000" min="10000" max="150000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Repayment Period</label>
+          <select class="form-select">
+            <option>3 months</option>
+            <option selected>6 months</option>
+            <option>9 months</option>
+            <option>12 months</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly Deduction</label>
+          <input type="text" class="form-input" placeholder="Auto-calculated" readonly style="color:var(--text-muted);">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Purpose / Reason</label>
+          <textarea class="form-textarea" placeholder="Briefly describe the purpose of this loan..."></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Supporting Document (optional)</label>
+          <div class="upload-zone" onclick="showToast('📎','File upload','Select a document to attach')">
+            <div class="upload-icon">📎</div>
+            <div class="upload-text">Click to upload or drag & drop</div>
+            <div class="upload-hint">PDF, JPG, PNG — max 5MB</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="closeModal('loanModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="submitLoan()">Submit Application</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EXPENSE MODAL ════════════════ -->
+<div class="modal-overlay" id="expenseModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Submit Expense</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Attach receipt for faster approval</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('expenseModal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label class="form-label">Expense Description</label>
+          <input type="text" class="form-input" placeholder="e.g. Client dinner at Tribe Hotel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select">
+            <option>Travel</option>
+            <option>Accommodation</option>
+            <option>Meals & Entertainment</option>
+            <option>Training & Development</option>
+            <option>Office Supplies</option>
+            <option>Communication</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (KES)</label>
+          <input type="number" class="form-input" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date Incurred</label>
+          <input type="date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project / Cost Center</label>
+          <select class="form-select">
+            <option>General Operations</option>
+            <option>Project Alpha</option>
+            <option>Project Beta</option>
+            <option>Sales & Marketing</option>
+            <option>Engineering</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-textarea" style="min-height:70px;" placeholder="Any additional context..."></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Receipt / Proof of Payment</label>
+          <div class="upload-zone" onclick="showToast('📎','File upload','Select your receipt to attach')">
+            <div class="upload-icon">🧾</div>
+            <div class="upload-text">Upload receipt</div>
+            <div class="upload-hint">PDF, JPG, PNG — max 5MB</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="closeModal('expenseModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="submitExpense()">Submit for Approval</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────
+const salaryData = [
+  { period: 'March 2025',    gross: 285000, deductions: 72600, net: 212400, status: 'pending' },
+  { period: 'February 2025', gross: 285000, deductions: 72600, net: 212400, status: 'paid' },
+  { period: 'January 2025',  gross: 285000, deductions: 72600, net: 212400, status: 'paid' },
+  { period: 'December 2024', gross: 260000, deductions: 64400, net: 195600, status: 'paid' },
+  { period: 'November 2024', gross: 260000, deductions: 64400, net: 195600, status: 'paid' },
+  { period: 'October 2024',  gross: 260000, deductions: 64400, net: 195600, status: 'paid' },
+  { period: 'September 2024',gross: 260000, deductions: 64400, net: 195600, status: 'paid' },
+  { period: 'August 2024',   gross: 260000, deductions: 64400, net: 195600, status: 'paid' },
+  { period: 'July 2024',     gross: 240000, deductions: 58200, net: 181800, status: 'paid' },
+  { period: 'June 2024',     gross: 240000, deductions: 58200, net: 181800, status: 'paid' },
+  { period: 'May 2024',      gross: 240000, deductions: 58200, net: 181800, status: 'paid' },
+  { period: 'April 2024',    gross: 240000, deductions: 58200, net: 181800, status: 'paid' },
+];
+
+const loansData = [
+  {
+    id: 'LN-2024-0031',
+    type: 'Personal Development Loan',
+    original: 150000,
+    repaid: 108000,
+    balance: 42000,
+    monthly: 14000,
+    status: 'active',
+    startDate: '1 Apr 2024',
+    endDate: '31 Jun 2025',
+    installments: { total: 12, paid: 8, remaining: 3 },
+    purpose: 'Professional certification courses'
+  },
+  {
+    id: 'LN-2022-0014',
+    type: 'Emergency Medical Loan',
+    original: 80000,
+    repaid: 80000,
+    balance: 0,
+    monthly: 0,
+    status: 'settled',
+    startDate: '1 Mar 2022',
+    endDate: '28 Feb 2023',
+    installments: { total: 12, paid: 12, remaining: 0 },
+    purpose: 'Medical expenses'
+  }
+];
+
+const expensesData = [
+  { id:'EX-0041', desc:'Flight to Mombasa — Team Offsite', category:'Travel', date:'15 Feb 2025', amount:12500, status:'pending' },
+  { id:'EX-0040', desc:'Client Lunch — Westlands', category:'Entertainment', date:'10 Feb 2025', amount:6000, status:'pending' },
+  { id:'EX-0039', desc:'Online Course Subscription', category:'Training', date:'2 Feb 2025', amount:4200, status:'approved' },
+  { id:'EX-0038', desc:'Uber to Client Meeting', category:'Travel', date:'28 Jan 2025', amount:1400, status:'paid' },
+  { id:'EX-0037', desc:'Office Supplies', category:'Office', date:'20 Jan 2025', amount:3200, status:'paid' },
+  { id:'EX-0036', desc:'Team Lunch', category:'Entertainment', date:'15 Jan 2025', amount:8500, status:'paid' },
+  { id:'EX-0035', desc:'Parking Fee — Airport', category:'Travel', date:'10 Jan 2025', amount:1800, status:'paid' },
+  { id:'EX-0034', desc:'Conference Registration', category:'Training', date:'5 Jan 2025', amount:15000, status:'rejected' },
+];
+
+// ─── NAVIGATION ─────────────────────────────────────
+function navigate(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+
+  const titles = {
+    dashboard: 'Good morning, <span>Amina</span> ☀️',
+    salary: 'Salary <span>History</span>',
+    payslips: 'My <span>Payslips</span>',
+    loans: 'My <span>Loans</span>',
+    expenses: 'My <span>Expenses</span>',
+    profile: 'My <span>Profile</span>'
+  };
+  document.getElementById('topbarTitle').innerHTML = titles[page] || page;
+
+  // Re-animate
+  const pageEl = document.getElementById('page-' + page);
+  pageEl.style.animation = 'none';
+  pageEl.offsetHeight;
+  pageEl.style.animation = '';
+
+  closeSidebar();
+  renderPage(page);
+}
+
+function renderPage(page) {
+  if (page === 'salary') renderSalaryTable();
+  if (page === 'payslips') renderPayslipsGrid();
+  if (page === 'loans') renderLoans();
+  if (page === 'expenses') renderExpenses();
+}
+
+// ─── SALARY TABLE ────────────────────────────────────
+function renderSalaryTable() {
+  const body = document.getElementById('salaryTableBody');
+  body.innerHTML = salaryData.map(row => `
+    <tr>
+      <td><strong>${row.period}</strong></td>
+      <td class="mono">KES ${row.gross.toLocaleString()}</td>
+      <td class="mono" style="color:var(--accent-red)">KES ${row.deductions.toLocaleString()}</td>
+      <td class="mono" style="color:var(--accent-green)"><strong>KES ${row.net.toLocaleString()}</strong></td>
+      <td><span class="badge ${row.status==='paid'?'badge-green':row.status==='pending'?'badge-amber':'badge-gray'}">${row.status}</span></td>
+      <td>
+        <button class="download-btn" onclick="openPayslipModal('${row.period}', '${row.net.toLocaleString()}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          ${row.status==='pending'?'Preview':'Download'}
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ─── PAYSLIPS GRID ───────────────────────────────────
+function renderPayslipsGrid() {
+  const container = document.getElementById('payslipsGrid');
+  const months = salaryData.slice(0, 6);
+  container.innerHTML = months.map((p, i) => `
+    <div class="card" style="cursor:pointer; transition: all 0.2s;" onclick="openPayslipModal('${p.period}', '${p.net.toLocaleString()}')">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+        <div style="font-size:28px;">📄</div>
+        <span class="badge ${p.status==='paid'?'badge-green':p.status==='pending'?'badge-amber':'badge-gray'}">${p.status}</span>
+      </div>
+      <div style="font-family:var(--font-display); font-size:16px; font-weight:500; margin-bottom:3px;">${p.period}</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Salary Statement</div>
+      <div style="font-family:var(--font-mono); font-size:20px; color:var(--accent-green); margin-bottom:14px;">KES ${p.net.toLocaleString()}</div>
+      <div style="display:flex; gap:8px;">
+        <button class="download-btn" style="flex:1; justify-content:center;" onclick="event.stopPropagation(); openPayslipModal('${p.period}', '${p.net.toLocaleString()}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── LOANS ───────────────────────────────────────────
+function renderLoans() {
+  const container = document.getElementById('loansContainer');
+  container.innerHTML = loansData.map(loan => {
+    const pct = Math.round((loan.repaid / loan.original) * 100);
+    const isActive = loan.status === 'active';
+    return `
+      <div class="loan-card" style="margin-bottom:16px;">
+        <div class="loan-header">
+          <div>
+            <div class="loan-title">${loan.type}</div>
+            <div class="loan-id">${loan.id}</div>
+          </div>
+          <span class="badge ${isActive?'badge-blue':'badge-green'}">${loan.status}</span>
+        </div>
+        <div class="loan-amounts">
+          <div class="loan-amount-item">
+            <div class="loan-amount-value">KES ${loan.original.toLocaleString()}</div>
+            <div class="loan-amount-label">Principal</div>
+          </div>
+          <div class="loan-amount-item">
+            <div class="loan-amount-value" style="color:var(--accent-green)">KES ${loan.repaid.toLocaleString()}</div>
+            <div class="loan-amount-label">Repaid</div>
+          </div>
+          <div class="loan-amount-item">
+            <div class="loan-amount-value" style="color:${isActive?'var(--accent-amber)':'var(--text-muted)'}">KES ${loan.balance.toLocaleString()}</div>
+            <div class="loan-amount-label">Balance</div>
+          </div>
+        </div>
+        ${isActive ? `
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:5px;">
+            <span>Repayment Progress</span>
+            <span style="color:var(--text-primary); font-family:var(--font-mono);">${pct}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));"></div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted);">${loan.installments.paid} of ${loan.installments.total} installments paid · ${loan.installments.remaining} remaining</div>
+        </div>
+        ` : `
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Fully settled on ${loan.endDate}</div>
+        `}
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; background:var(--bg-elevated); border-radius:var(--radius-sm); padding:14px; font-size:12px; margin-bottom:14px;">
+          <div><div style="color:var(--text-muted);">Monthly</div><div style="font-family:var(--font-mono); color:var(--text-primary); margin-top:2px;">${isActive?'KES '+loan.monthly.toLocaleString():'-'}</div></div>
+          <div><div style="color:var(--text-muted);">Start Date</div><div style="color:var(--text-primary); margin-top:2px;">${loan.startDate}</div></div>
+          <div><div style="color:var(--text-muted);">Purpose</div><div style="color:var(--text-primary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${loan.purpose}</div></div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('📋','Loan Statement','PDF download starting...')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Statement
+          </button>
+          ${isActive ? `<button class="btn btn-outline btn-sm" onclick="showToast('💰','Early Repayment','Contact HR/Finance to arrange early settlement')">Early Repayment</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── EXPENSES ────────────────────────────────────────
+let currentExpenseFilter = 'all';
+
+function renderExpenses(filter = currentExpenseFilter) {
+  currentExpenseFilter = filter;
+  const filtered = filter === 'all' ? expensesData : expensesData.filter(e => e.status === filter);
+  const body = document.getElementById('expenseTableBody');
+  if (!body) return;
+
+  const icons = { Travel:'✈️', Entertainment:'🍽️', Training:'📚', Office:'📦', Communication:'📱' };
+  const statusBadge = { pending:'badge-amber', approved:'badge-blue', paid:'badge-green', rejected:'badge-red' };
+
+  body.innerHTML = filtered.map(exp => `
+    <tr>
+      <td>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="font-size:18px; flex-shrink:0;">${icons[exp.category]||'📄'}</div>
+          <div>
+            <div style="font-weight:500; font-size:13px;">${exp.desc}</div>
+            <div style="font-size:11px; color:var(--text-muted);">${exp.id}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="font-size:12px; color:var(--text-secondary);">${exp.category}</span></td>
+      <td style="font-size:12px; color:var(--text-secondary);">${exp.date}</td>
+      <td class="mono" style="font-size:14px; color:var(--text-primary);">KES ${exp.amount.toLocaleString()}</td>
+      <td><span class="badge ${statusBadge[exp.status]||'badge-gray'}">${exp.status}</span></td>
+      <td>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="showToast('🔍','Expense Detail','Viewing ${exp.id}')" title="View">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          ${exp.status === 'pending' ? `<button class="btn btn-danger btn-sm" onclick="cancelExpense('${exp.id}')">Retract</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  if (filtered.length === 0) {
+    body.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">No ${filter} expenses found</div><div class="empty-sub">Adjust the filter or submit a new expense claim</div></div></td></tr>`;
+  }
+}
+
+function filterExpenses(val) { renderExpenses(val); }
+
+function cancelExpense(id) {
+  showToast('↩️', 'Expense Retracted', `${id} has been withdrawn from approval`);
+  const idx = expensesData.findIndex(e => e.id === id);
+  if (idx > -1) expensesData.splice(idx, 1);
+  renderExpenses();
+}
+
+// ─── MODALS ──────────────────────────────────────────
+function openPayslipModal(period, net) {
+  document.getElementById('payslipModalPeriod').textContent = period + ' · Net KES ' + net;
+  document.getElementById('payslipDocContent').innerHTML = buildPayslipDoc(period, net);
+  openModal('payslipModal');
+}
+
+function buildPayslipDoc(period, net) {
+  return `
+    <div class="doc-header">
+      <div>
+        <div class="company-name">Meridian Holdings Ltd.</div>
+        <div style="font-size:10px; color:#555; margin-top:3px;">P.O. Box 47823, Nairobi, Kenya · KRA PIN: P051498276X</div>
+      </div>
+      <div class="doc-period">
+        <div>PAYSLIP</div>
+        <strong>${period}</strong>
+      </div>
+    </div>
+    <div class="employee-info">
+      <div class="info-row"><span class="info-label">Employee:</span><span class="info-value">Amina Wanjiku Mwangi</span></div>
+      <div class="info-row"><span class="info-label">Employee ID:</span><span class="info-value">EMP-00247</span></div>
+      <div class="info-row"><span class="info-label">Department:</span><span class="info-value">Engineering</span></div>
+      <div class="info-row"><span class="info-label">Job Title:</span><span class="info-value">Senior Software Engineer</span></div>
+      <div class="info-row"><span class="info-label">KRA PIN:</span><span class="info-value">A003928475W</span></div>
+      <div class="info-row"><span class="info-label">Bank A/C:</span><span class="info-value">••••4821 — Equity Bank</span></div>
+    </div>
+    <table>
+      <thead><tr><th>Earnings</th><th>Amount (KES)</th><th>Deductions</th><th>Amount (KES)</th></tr></thead>
+      <tbody>
+        <tr><td>Basic Salary</td><td>200,000.00</td><td>PAYE Tax</td><td>38,400.00</td></tr>
+        <tr><td>House Allowance</td><td>40,000.00</td><td>NHIF</td><td>1,700.00</td></tr>
+        <tr><td>Transport Allow.</td><td>25,000.00</td><td>NSSF</td><td>200.00</td></tr>
+        <tr><td>Medical Allow.</td><td>15,000.00</td><td>Loan Deduction</td><td>14,000.00</td></tr>
+        <tr><td>Airtime Allow.</td><td>5,000.00</td><td>Advance Recovery</td><td>0.00</td></tr>
+        <tr class="total-row"><td><strong>Gross Earnings</strong></td><td><strong>285,000.00</strong></td><td><strong>Total Deductions</strong></td><td><strong>72,600.00</strong></td></tr>
+        <tr class="net-row"><td colspan="3"><strong>NET PAY</strong></td><td><strong>KES ${net}</strong></td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:14px; font-size:10px; color:#777; border-top:1px solid #eee; padding-top:10px;">
+      This is a computer-generated payslip and does not require a signature. For queries contact HR: hr@meridian.co.ke
+    </div>
+  `;
+}
+
+function openLoanModal() { openModal('loanModal'); }
+function openExpenseModal() { openModal('expenseModal'); }
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+
+// ─── FORM SUBMISSIONS ────────────────────────────────
+function submitLoan() {
+  closeModal('loanModal');
+  showToast('🎉', 'Loan Application Submitted', 'Under review — you\'ll hear back within 2 business days');
+}
+
+function submitExpense() {
+  closeModal('expenseModal');
+  const newExp = {
+    id: 'EX-' + (Math.floor(Math.random()*9000)+1000),
+    desc: 'New Expense Claim',
+    category: 'Other',
+    date: new Date().toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}),
+    amount: 5000,
+    status: 'pending'
+  };
+  expensesData.unshift(newExp);
+  renderExpenses();
+  showToast('✅', 'Expense Submitted', 'Your claim is pending manager approval');
+}
+
+// ─── TABS ────────────────────────────────────────────
+function switchTab(el, tabId) {
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ─── SIDEBAR ────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ─── TOASTS ──────────────────────────────────────────
+function showToast(icon, title, sub) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-message">
+      <div class="toast-title">${title}</div>
+      ${sub ? `<div class="toast-sub">${sub}</div>` : ''}
+    </div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(20px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// ─── INIT ────────────────────────────────────────────
+renderSalaryTable();
+renderPayslipsGrid();
+renderLoans();
+renderExpenses();
+
+// Keyboard close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+    closeSidebar();
+  }
+});
+</script>
+</body>
+</html>

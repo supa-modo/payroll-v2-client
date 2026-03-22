@@ -17,6 +17,7 @@ import Select from "@/components/ui/Select";
 import DateInput from "@/components/ui/DateInput";
 import Textarea from "@/components/ui/Textarea";
 import type { EmployeeSalary, SalaryComponent, AssignSalaryComponentsInput } from "../../types/salary";
+import { autoCalcStatutoryAmount } from "@/utils/statutoryCalc";
 
 /* ─── helpers ────────────────────────────────────────────── */
 const KES = (v: number) =>
@@ -92,11 +93,12 @@ const ComponentRow = ({
 /* ─── Add Component Modal ────────────────────────────────── */
 interface AddModalProps {
   employeeId: string;
+  basicSalary: number;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const AddComponentModal: React.FC<AddModalProps> = ({ employeeId, onClose, onSuccess }) => {
+const AddComponentModal: React.FC<AddModalProps> = ({ employeeId, basicSalary, onClose, onSuccess }) => {
   const [available, setAvailable] = useState<SalaryComponent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -125,12 +127,38 @@ const AddComponentModal: React.FC<AddModalProps> = ({ employeeId, onClose, onSuc
       return { ...f, components: comps };
     });
 
+  const selectComponent = (i: number, salaryComponentId: string) => {
+    const selected = available.find(c => c.id === salaryComponentId);
+    const autoAmount =
+      selected ? autoCalcStatutoryAmount(selected, basicSalary) : null;
+
+    setForm(f => {
+      const comps = [...f.components];
+      comps[i] = {
+        ...comps[i],
+        salaryComponentId,
+        amount: autoAmount === null ? 0 : autoAmount,
+      };
+      return { ...f, components: comps };
+    });
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!form.components.length) { setError("Add at least one component."); return; }
     if (form.components.some(c => !c.salaryComponentId || c.amount < 0)) {
       setError("All components need a valid selection and non-negative amount."); return;
+    }
+    if (basicSalary <= 0) {
+      const hasStatutoryDeduction = form.components.some((c) => {
+        const selected = available.find((a) => a.id === c.salaryComponentId);
+        return selected?.type === "deduction" && selected.isStatutory;
+      });
+      if (hasStatutoryDeduction) {
+        setError("Add Basic Salary first before adding statutory deductions (PAYE, NSSF, SHIF, Housing Levy).");
+        return;
+      }
     }
     setLoading(true);
     try {
@@ -203,7 +231,7 @@ const AddComponentModal: React.FC<AddModalProps> = ({ employeeId, onClose, onSuc
                 <Select
                   label="Select Component"
                   value={comp.salaryComponentId}
-                  onChange={e => updateRow(i, "salaryComponentId", e.target.value)}
+                  onChange={e => selectComponent(i, e.target.value)}
                   options={[
                     { value: "", label: "Choose…" },
                     ...available.filter(c => c.isActive).map(c => ({ value: c.id, label: `${c.name} (${c.type})` })),
@@ -281,11 +309,28 @@ const EmployeeSalaryTab: React.FC<Props> = ({ employeeId }) => {
           <FiPlus className="w-4 h-4" /> Add Salary Components
         </Button>
         {showAddModal && (
-          <AddComponentModal employeeId={employeeId} onClose={() => setShowAddModal(false)} onSuccess={fetchSalary} />
+          <AddComponentModal
+            employeeId={employeeId}
+            basicSalary={0}
+            onClose={() => setShowAddModal(false)}
+            onSuccess={fetchSalary}
+          />
         )}
       </div>
     );
   }
+
+  const basicSalary = (() => {
+    const basicRow = salary.salaryComponents.find((c) => {
+      const comp = c.salaryComponent;
+      return (
+        comp?.type === "earning" &&
+        ((comp.code || "").toLowerCase() === "basic" ||
+          (comp.name || "").toLowerCase().includes("basic"))
+      );
+    });
+    return basicRow ? parseFloat(basicRow.amount.toString()) : 0;
+  })();
 
   const earnings = salary.salaryComponents.filter(c => c.salaryComponent?.type === "earning");
   const deductions = salary.salaryComponents.filter(c => c.salaryComponent?.type === "deduction");
@@ -386,6 +431,7 @@ const EmployeeSalaryTab: React.FC<Props> = ({ employeeId }) => {
       {showAddModal && (
         <AddComponentModal
           employeeId={employeeId}
+            basicSalary={basicSalary}
           onClose={() => setShowAddModal(false)}
           onSuccess={fetchSalary}
         />

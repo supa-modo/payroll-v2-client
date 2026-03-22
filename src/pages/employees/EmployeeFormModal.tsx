@@ -937,7 +937,7 @@ const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
                 error={errors.nssfNumber}
               />
               <Input
-                label="NHIF Number"
+                label="SHIF Number"
                 name="nhifNumber"
                 value={formData.nhifNumber}
                 onChange={handleInputChange}

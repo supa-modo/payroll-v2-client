@@ -265,7 +265,7 @@ const EmployeeDetailDrawer: React.FC<Props> = ({ employeeId, onClose, onEdit, on
                           { label: "Passport", value: employee.passportNumber },
                           { label: "KRA PIN", value: employee.kraPin },
                           { label: "NSSF Number", value: employee.nssfNumber },
-                          { label: "NHIF Number", value: employee.nhifNumber },
+                          { label: "SHIF Number", value: employee.nhifNumber },
                         ].filter(f => f.value).map(f => (
                           <div key={f.label}>
                             <p className="text-sm text-slate-400 mb-1">{f.label}</p>

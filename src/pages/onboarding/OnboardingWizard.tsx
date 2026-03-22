@@ -74,7 +74,7 @@ const OnboardingWizard = () => {
     { name: "Basic Salary", type: "earning", isTaxable: true, isStatutory: false },
     { name: "PAYE", type: "deduction", isTaxable: false, isStatutory: true },
     { name: "NSSF", type: "deduction", isTaxable: false, isStatutory: true },
-    { name: "NHIF", type: "deduction", isTaxable: false, isStatutory: true },
+    { name: "SHIF", type: "deduction", isTaxable: false, isStatutory: true },
   ]);
   const [createdDepartmentIds, setCreatedDepartmentIds] = useState<string[]>([]);
   const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
@@ -410,7 +410,7 @@ const OnboardingWizard = () => {
           </div>
           <div className="bg-primary-50 border border-primary-200 rounded-xl px-4 py-3 flex gap-2.5 items-start text-sm text-primary-700">
             <FiDollarSign size={18} className="mt-0.5 shrink-0 text-primary-500" />
-            <span><strong>Basic Salary</strong> — primary taxable earning · <strong>PAYE</strong> — income tax · <strong>NSSF / NHIF</strong> — statutory deductions</span>
+            <span><strong>Basic Salary</strong> — primary taxable earning · <strong>PAYE</strong> — income tax · <strong>NSSF / SHIF</strong> — statutory deductions</span>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="grid grid-cols-[2fr_1.2fr_80px_90px] gap-4 px-5 py-3 bg-slate-50 border-b border-slate-200 text-sm font-bold uppercase tracking-widest text-slate-400">

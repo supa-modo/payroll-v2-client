@@ -33,13 +33,13 @@ const Checkbox: React.FC<CheckboxProps> = ({
 
   const variantClasses = {
     primary: checked
-      ? 'bg-green-600 border-green-600'
+      ? 'bg-primary-600 border-primary-600'
       : 'bg-white border-gray-300',
     secondary: checked
-      ? 'bg-red-600 border-red-600'
+      ? 'bg-secondary-600 border-secondary-600'
       : 'bg-white border-gray-300',
     success: checked
-      ? 'bg-green-600 border-green-600'
+      ? 'bg-primary-600 border-primary-600'
       : 'bg-white border-gray-300',
     danger: checked
       ? 'bg-red-600 border-red-600'

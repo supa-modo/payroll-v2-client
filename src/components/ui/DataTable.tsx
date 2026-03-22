@@ -171,7 +171,7 @@ const DataTable = <T extends Record<string, any> = any>({
     <div className="p-2">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left  text-gray-600">
-          <thead className="text-sm text-gray-700 bg-blue-200">
+          <thead className="text-sm text-white bg-primary-600">
             <tr>
               {showCheckboxes && (
                 <th scope="col" className="pl-6 py-3">

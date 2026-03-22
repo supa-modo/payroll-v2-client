@@ -7,7 +7,7 @@ import { TaxRemittance } from "../types/report";
 
 export interface RemittanceFilters {
   status?: "pending" | "remitted";
-  taxType?: "PAYE" | "NSSF" | "NHIF";
+  taxType?: "PAYE" | "NSSF" | "NHIF" | "SHIF" | "HOUSING_LEVY";
   startDate?: string;
   endDate?: string;
   includeOverdue?: boolean;
@@ -22,9 +22,11 @@ export interface RemittanceReport {
     pendingPAYE: number;
     pendingNSSF: number;
     pendingNHIF: number;
+    pendingHOUSING_LEVY: number;
     remittedPAYE: number;
     remittedNSSF: number;
     remittedNHIF: number;
+    remittedHOUSING_LEVY: number;
   };
   history: TaxRemittance[];
   pending: TaxRemittance[];

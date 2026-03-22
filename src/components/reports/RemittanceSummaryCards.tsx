@@ -9,9 +9,11 @@ interface RemittanceSummaryCardsProps {
   pendingPAYE: number;
   pendingNSSF: number;
   pendingNHIF: number;
+  pendingHOUSING_LEVY: number;
   remittedPAYE: number;
   remittedNSSF: number;
   remittedNHIF: number;
+  remittedHOUSING_LEVY: number;
   overdueCount?: number;
 }
 
@@ -19,13 +21,15 @@ export default function RemittanceSummaryCards({
   pendingPAYE,
   pendingNSSF,
   pendingNHIF,
+  pendingHOUSING_LEVY,
   remittedPAYE,
   remittedNSSF,
   remittedNHIF,
+  remittedHOUSING_LEVY,
   overdueCount = 0,
 }: RemittanceSummaryCardsProps) {
-  const totalPending = pendingPAYE + pendingNSSF + pendingNHIF;
-  const totalRemitted = remittedPAYE + remittedNSSF + remittedNHIF;
+  const totalPending = pendingPAYE + pendingNSSF + pendingNHIF + pendingHOUSING_LEVY;
+  const totalRemitted = remittedPAYE + remittedNSSF + remittedNHIF + remittedHOUSING_LEVY;
   const totalStatutory = totalPending + totalRemitted;
 
   return (
@@ -44,7 +48,8 @@ export default function RemittanceSummaryCards({
         <div className="mt-3 text-xs text-yellow-700">
           <div>PAYE: {formatCurrency(pendingPAYE)}</div>
           <div>NSSF: {formatCurrency(pendingNSSF)}</div>
-          <div>NHIF: {formatCurrency(pendingNHIF)}</div>
+          <div>SHIF: {formatCurrency(pendingNHIF)}</div>
+          <div>Housing Levy: {formatCurrency(pendingHOUSING_LEVY)}</div>
         </div>
       </div>
 
@@ -62,7 +67,8 @@ export default function RemittanceSummaryCards({
         <div className="mt-3 text-xs text-green-700">
           <div>PAYE: {formatCurrency(remittedPAYE)}</div>
           <div>NSSF: {formatCurrency(remittedNSSF)}</div>
-          <div>NHIF: {formatCurrency(remittedNHIF)}</div>
+          <div>SHIF: {formatCurrency(remittedNHIF)}</div>
+          <div>Housing Levy: {formatCurrency(remittedHOUSING_LEVY)}</div>
         </div>
       </div>
 

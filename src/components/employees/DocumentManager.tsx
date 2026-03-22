@@ -15,6 +15,7 @@ import FileUpload from "../ui/FileUpload";
 import Button from "../ui/Button";
 import api from "../../services/api";
 import type { EmployeeDocument, CreateDocumentInput } from "../../types/employeeExtension";
+import { TbAlertTriangle } from "react-icons/tb";
 
 interface DocumentManagerProps {
   employeeId: string;
@@ -177,11 +178,12 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ employeeId }) => {
       </div>
 
       {documents.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 rounded-2xl border border-gray-200">
-          <p className="text-gray-500">No documents uploaded yet</p>
-          <Button onClick={handleUpload} variant="outline" className="mt-4 text-sm">
-            Upload Document
-          </Button>
+        <div className="text-center py-8 bg-gray-50 mb-2 rounded-2xl border border-gray-200">
+          <TbAlertTriangle className="w-10 h-10 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 text-[0.9rem]">No documents uploaded yet</p>
+          <button className="mt-6 hover:cursor-pointer text-primary-600 hover:text-primary-700 text-sm underline underline-offset-4" onClick={handleUpload} title="Upload document">
+            Click here to upload document
+          </button>
         </div>
       ) : (
         <div className="space-y-3 mb-2">

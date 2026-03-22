@@ -86,7 +86,10 @@ export default function TaxRemittancesPage() {
         .filter((r) => r.taxType === "NSSF")
         .reduce((sum, r) => sum + r.amount, 0),
       pendingNHIF: pending
-        .filter((r) => r.taxType === "NHIF")
+          .filter((r) => r.taxType === "SHIF" || r.taxType === "NHIF")
+        .reduce((sum, r) => sum + r.amount, 0),
+      pendingHOUSING_LEVY: pending
+        .filter((r) => r.taxType === "HOUSING_LEVY")
         .reduce((sum, r) => sum + r.amount, 0),
       remittedPAYE: remitted
         .filter((r) => r.taxType === "PAYE")
@@ -95,7 +98,10 @@ export default function TaxRemittancesPage() {
         .filter((r) => r.taxType === "NSSF")
         .reduce((sum, r) => sum + r.amount, 0),
       remittedNHIF: remitted
-        .filter((r) => r.taxType === "NHIF")
+          .filter((r) => r.taxType === "SHIF" || r.taxType === "NHIF")
+        .reduce((sum, r) => sum + r.amount, 0),
+      remittedHOUSING_LEVY: remitted
+        .filter((r) => r.taxType === "HOUSING_LEVY")
         .reduce((sum, r) => sum + r.amount, 0),
       overdueCount: pending.filter(
         (r) => new Date(r.dueDate) < new Date()
@@ -111,7 +117,7 @@ export default function TaxRemittancesPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Tax Remittances</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Track and manage tax remittances (PAYE, NSSF, NHIF) for payroll periods
+            Track and manage tax remittances (PAYE, NSSF, SHIF, Housing Levy) for payroll periods
           </p>
         </div>
         <div className="flex gap-2">
@@ -142,9 +148,11 @@ export default function TaxRemittancesPage() {
         pendingPAYE={summary.pendingPAYE}
         pendingNSSF={summary.pendingNSSF}
         pendingNHIF={summary.pendingNHIF}
+        pendingHOUSING_LEVY={summary.pendingHOUSING_LEVY}
         remittedPAYE={summary.remittedPAYE}
         remittedNSSF={summary.remittedNSSF}
         remittedNHIF={summary.remittedNHIF}
+        remittedHOUSING_LEVY={summary.remittedHOUSING_LEVY}
         overdueCount={summary.overdueCount}
       />
 
@@ -181,7 +189,13 @@ export default function TaxRemittancesPage() {
                 onChange={(e) =>
                   setFilters({
                     ...filters,
-                    taxType: e.target.value as "PAYE" | "NSSF" | "NHIF" | undefined,
+                    taxType: e.target.value as
+                      | "PAYE"
+                      | "NSSF"
+                      | "NHIF"
+                      | "SHIF"
+                      | "HOUSING_LEVY"
+                      | undefined,
                   })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
@@ -189,7 +203,8 @@ export default function TaxRemittancesPage() {
                 <option value="">All Types</option>
                 <option value="PAYE">PAYE</option>
                 <option value="NSSF">NSSF</option>
-                <option value="NHIF">NHIF</option>
+                <option value="SHIF">SHIF</option>
+                <option value="HOUSING_LEVY">HOUSING_LEVY</option>
               </select>
             </div>
 

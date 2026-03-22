@@ -16,6 +16,7 @@ import { TbAlertTriangle, TbArrowBack, TbBriefcase, TbCheck, TbLockFilled, TbShi
 import { motion } from "framer-motion";
 import Button from "@/components/ui/Button";
 import { PiUserDuotone } from "react-icons/pi";
+import { calculateHousingLevy, calculateNssf, calculatePaye, calculateShif } from "@/utils/statutoryCalc";
 
 /* ─── steps ─────────────────────────────────────────────── */
 const STEPS = [
@@ -216,14 +217,6 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
         return Object.keys(e).length === 0;
     };
 
-    const payeBands = [
-        { min: 0, max: 24000, rate: 10 },
-        { min: 24000, max: 32333, rate: 25 },
-        { min: 32333, max: 500000, rate: 30 },
-        { min: 500000, max: 800000, rate: 32.5 },
-        { min: 800000, max: Number.POSITIVE_INFINITY, rate: 35 },
-    ];
-    const round2 = (n: number) => Math.round(n * 100) / 100;
     const getTemplateById = (id: string) => salaryTemplates.find(s => s.id === id);
     const getBasicTemplate = () =>
         salaryTemplates.find(s =>
@@ -250,20 +243,6 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
     const removeSalaryRow = (salaryComponentId: string) => {
         setSalaryRows(prev => prev.filter(row => row.salaryComponentId !== salaryComponentId));
     };
-    const calculatePaye = (taxable: number, shifAmount: number) => {
-        let remaining = Math.max(0, taxable);
-        let tax = 0;
-        for (const band of payeBands) {
-            if (remaining <= 0) break;
-            const width = band.max === Number.POSITIVE_INFINITY ? remaining : Math.max(0, band.max - band.min);
-            const taxableInBand = Math.min(remaining, width);
-            tax += (taxableInBand * band.rate) / 100;
-            remaining -= taxableInBand;
-        }
-        const personalRelief = 2400;
-        const insuranceRelief = Math.min((shifAmount * 15) / 100, 5000);
-        return round2(Math.max(0, tax - personalRelief - insuranceRelief));
-    };
     const applyMandatoryDeductions = (basicSalary: number) => {
         if (basicSalary <= 0) return;
         const nssfTemplate = salaryTemplates.find(s => s.type === "deduction" && s.isStatutory && (s.statutoryType || "").toLowerCase() === "nssf");
@@ -271,9 +250,9 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
         const shifTemplate = salaryTemplates.find(s => s.type === "deduction" && s.isStatutory && ["shif", "nhif"].includes((s.statutoryType || "").toLowerCase()));
         const housingTemplate = salaryTemplates.find(s => s.type === "deduction" && s.isStatutory && ["housing_levy", "ahl"].includes((s.statutoryType || "").toLowerCase()));
 
-        const nssf = round2(Math.min(basicSalary, 9000) * 0.06 + Math.max(0, Math.min(basicSalary, 108000) - 9000) * 0.06);
-        const shif = round2(Math.max(300, basicSalary * 0.0275));
-        const housing = round2(basicSalary * 0.015);
+        const nssf = calculateNssf(basicSalary);
+        const shif = calculateShif(basicSalary);
+        const housing = calculateHousingLevy(basicSalary);
         const paye = calculatePaye(Math.max(0, basicSalary - nssf), shif);
 
         if (nssfTemplate) upsertSalaryRow(nssfTemplate.id, nssf, "auto");
@@ -478,7 +457,7 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                         </div>
                         <div>
                             <p className="text-sm font-bold text-primary-800 mb-0.5">Optional but recommended</p>
-                            <p className="text-sm text-primary-600">These IDs are required for accurate PAYE, NSSF and NHIF statutory deductions.</p>
+                            <p className="text-sm text-primary-600">These IDs are required for accurate PAYE, NSSF and SHIF statutory deductions.</p>
                         </div>
                     </div>
                     <FormSection title="Government & Statutory IDs">
@@ -487,7 +466,7 @@ const EmployeeFormDrawer: React.FC<Props> = ({ employee, onClose, onSuccess }) =
                             <Input label="Passport Number" name="passportNumber" value={form.passportNumber || ""} onChange={e => set("passportNumber", e.target.value)} />
                             <Input label="KRA PIN" name="kraPin" value={form.kraPin || ""} onChange={e => set("kraPin", e.target.value)} />
                             <Input label="NSSF Number" name="nssfNumber" value={form.nssfNumber || ""} onChange={e => set("nssfNumber", e.target.value)} />
-                            <Input label="NHIF Number" name="nhifNumber" value={form.nhifNumber || ""} onChange={e => set("nhifNumber", e.target.value)} />
+                            <Input label="SHIF Number" name="nhifNumber" value={form.nhifNumber || ""} onChange={e => set("nhifNumber", e.target.value)} />
                         </div>
                     </FormSection>
                 </div>

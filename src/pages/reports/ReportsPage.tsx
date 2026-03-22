@@ -35,7 +35,7 @@ export default function ReportsPage() {
           <ul className="space-y-2 mb-4 text-sm text-gray-600">
             <li>• Monthly payroll summary</li>
             <li>• Departmental breakdown</li>
-            <li>• Tax summaries (PAYE, NSSF, NHIF)</li>
+            <li>• Tax summaries (PAYE, NSSF, SHIF)</li>
             <li>• Employee payroll history</li>
             <li>• Payroll trends</li>
           </ul>
@@ -84,7 +84,7 @@ export default function ReportsPage() {
           <ul className="space-y-2 mb-4 text-sm text-gray-600">
             <li>• View pending tax remittances</li>
             <li>• Mark remittances as paid</li>
-            <li>• Track PAYE, NSSF, and NHIF</li>
+            <li>• Track PAYE, NSSF, and SHIF</li>
             <li>• Monitor due dates and overdue items</li>
             <li>• View remittance history</li>
           </ul>

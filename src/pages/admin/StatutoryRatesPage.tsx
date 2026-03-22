@@ -275,7 +275,7 @@ const StatutoryRatesPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 font-google">Statutory Rates</h1>
-          <p className="text-sm text-slate-500 mt-1 font-source">Manage PAYE, NSSF and NHIF rate configurations</p>
+          <p className="text-sm text-slate-500 mt-1 font-source">Manage PAYE, NSSF and SHIF rate configurations</p>
         </div>
         <Button onClick={() => { setEditing(null); setDrawerOpen(true); }} className="font-source">
           <FiPlus className="w-4 h-4" /> Add Rate

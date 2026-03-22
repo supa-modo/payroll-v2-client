@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Meridian HR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f4f5f7;
+  --bg-white: #ffffff;
+  --bg-subtle: #f9fafb;
+  --surface: #ffffff;
+  --border: #e8eaed;
+  --border-strong: #d1d5db;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --ink: #1a1f2e;
+
+  --emerald: #059669;
+  --emerald-light: #d1fae5;
+  --emerald-mid: #10b981;
+  --crimson: #dc2626;
+  --crimson-light: #fee2e2;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --sapphire: #2563eb;
+  --sapphire-light: #dbeafe;
+  --violet: #7c3aed;
+  --violet-light: #ede9fe;
+  --slate: #475569;
+  --slate-light: #f1f5f9;
+
+  --gold: #b45309;
+  --gold-light: #fef3c7;
+
+  --sidebar-w: 255px;
+  --topbar-h: 60px;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─── LAYOUT ──────────────────────────────────────── */
+.app { display: flex; min-height: 100vh; }
+
+/* ─── SIDEBAR ─────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 600;
+  color: #111;
+  flex-shrink: 0;
+}
+
+.logo-name { font-family: var(--font-display); font-size: 18px; color: #fff; font-weight: 500; }
+.logo-tag { font-size: 9.5px; color: rgba(255,255,255,0.35); letter-spacing: 0.15em; text-transform: uppercase; margin-top: -1px; }
+
+.admin-badge {
+  margin: 12px 20px;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 6px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #fbbf24;
+}
+.admin-badge-dot { width: 7px; height: 7px; background: #fbbf24; border-radius: 50%; flex-shrink: 0; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+.sidebar-nav::-webkit-scrollbar { width: 0; }
+
+.nav-group-label {
+  padding: 14px 20px 5px;
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 400;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  position: relative;
+}
+
+.nav-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+
+.nav-item.active {
+  color: #fbbf24;
+  border-left-color: #fbbf24;
+  background: rgba(251,191,36,0.07);
+  font-weight: 500;
+}
+
+.nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+.nav-item.active .nav-icon { color: #fbbf24; }
+
+.nav-count {
+  margin-left: auto;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+
+.nav-item.active .nav-count { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.nav-count.red { background: rgba(220,38,38,0.2); color: #f87171; }
+
+.sidebar-bottom {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 14px 20px;
+}
+
+.admin-info {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+
+.admin-avatar {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #111;
+  flex-shrink: 0;
+}
+
+.admin-name { font-size: 12.5px; color: #fff; font-weight: 500; }
+.admin-role { font-size: 10px; color: rgba(255,255,255,0.35); }
+
+/* ─── MAIN ────────────────────────────────────────── */
+.main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ─── TOPBAR ──────────────────────────────────────── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 14px;
+  position: sticky; top: 0;
+  z-index: 90;
+  box-shadow: var(--shadow-sm);
+}
+
+.menu-toggle {
+  display: none;
+  width: 34px; height: 34px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.topbar-breadcrumb {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.breadcrumb-root { color: var(--text-muted); }
+.breadcrumb-sep { color: var(--text-muted); }
+.breadcrumb-current { font-weight: 600; color: var(--text-primary); }
+
+.topbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  width: 280px;
+  transition: all 0.2s;
+}
+
+.search-bar:focus-within {
+  border-color: var(--sapphire);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+
+.search-bar input {
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.search-bar input::placeholder { color: var(--text-muted); }
+
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+.topbar-btn {
+  width: 34px; height: 34px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  position: relative;
+  font-size: 15px;
+}
+
+.topbar-btn:hover { border-color: var(--border-strong); color: var(--text-primary); background: #fff; }
+
+.notif-badge {
+  position: absolute;
+  top: -2px; right: -2px;
+  width: 16px; height: 16px;
+  background: var(--crimson);
+  border-radius: 50%;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+}
+
+.payroll-run-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.payroll-run-btn:hover { background: #2a3140; box-shadow: var(--shadow); }
+
+/* ─── PAGES ───────────────────────────────────────── */
+.page-wrap { padding: 24px 28px; flex: 1; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─── PAGE HEADER ─────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.page-title span { color: var(--sapphire); font-style: italic; }
+.page-title em { font-style: italic; color: var(--emerald); }
+
+.page-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+.page-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* ─── CARDS ───────────────────────────────────────── */
+.card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+
+.card:hover { box-shadow: var(--shadow); }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.card-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── KPI CARDS ───────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.kpi-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--kpi-color, var(--sapphire));
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.kpi-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  margin-bottom: 12px;
+}
+
+.kpi-value {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.kpi-label { font-size: 11.5px; color: var(--text-muted); margin-top: 5px; font-weight: 500; }
+
+.kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  margin-top: 7px;
+}
+
+.kpi-delta.up { color: var(--emerald); }
+.kpi-delta.down { color: var(--crimson); }
+.kpi-delta.neutral { color: var(--text-muted); }
+
+/* ─── GRID ────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.col-2 { grid-column: span 2; }
+.col-3 { grid-column: span 3; }
+
+/* ─── TABLE ───────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg-subtle); }
+.data-table td.mono { font-family: var(--font-mono); font-size: 12.5px; }
+
+/* ─── BADGES ──────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.badge-green { background: var(--emerald-light); color: var(--emerald); }
+.badge-red { background: var(--crimson-light); color: var(--crimson); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-blue { background: var(--sapphire-light); color: var(--sapphire); }
+.badge-violet { background: var(--violet-light); color: var(--violet); }
+.badge-slate { background: var(--slate-light); color: var(--slate); }
+
+/* ─── BUTTONS ─────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; border: none; text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary { background: var(--ink); color: #fff; }
+.btn-primary:hover { background: #2a3140; box-shadow: var(--shadow); }
+
+.btn-blue { background: var(--sapphire); color: #fff; }
+.btn-blue:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+
+.btn-green { background: var(--emerald); color: #fff; }
+.btn-green:hover { background: #047857; }
+
+.btn-red { background: var(--crimson); color: #fff; }
+.btn-red:hover { background: #b91c1c; }
+
+.btn-outline {
+  background: #fff; border: 1.5px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+.btn-outline:hover { border-color: var(--ink); color: var(--ink); }
+
+.btn-ghost { background: var(--bg); color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--border); color: var(--text-primary); }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; gap: 5px; }
+.btn-xs { padding: 4px 9px; font-size: 11px; gap: 4px; font-weight: 500; }
+.btn-icon { padding: 7px; }
+
+/* ─── FORMS ───────────────────────────────────────── */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-row.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-full { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; }
+
+.form-input, .form-select, .form-textarea {
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body); font-size: 13.5px;
+  padding: 9px 12px; width: 100%; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--sapphire);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  background: #fff;
+}
+
+.form-select { appearance: none; cursor: pointer; }
+.form-select option { background: #fff; }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* ─── PROGRESS ────────────────────────────────────── */
+.progress-track {
+  height: 7px; background: var(--border);
+  border-radius: 6px; overflow: hidden; margin: 7px 0 4px;
+}
+.progress-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── DONUT CHART (pure CSS) ──────────────────────── */
+.donut-wrap { display: flex; align-items: center; gap: 24px; }
+
+.donut-chart {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.donut-inner {
+  position: absolute;
+  width: 72px; height: 72px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+.donut-value { font-family: var(--font-mono); font-size: 17px; font-weight: 500; color: var(--ink); line-height: 1; }
+.donut-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1px; }
+
+.donut-legend { flex: 1; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12.5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend-name { flex: 1; color: var(--text-secondary); }
+.legend-pct { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--text-primary); }
+
+/* ─── BAR CHART ───────────────────────────────────── */
+.bar-chart { padding: 4px 0; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bar-label { font-size: 11.5px; color: var(--text-secondary); width: 100px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 22px; background: var(--bg); border-radius: 5px; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 5px;
+  display: flex; align-items: center; padding-left: 8px;
+  font-size: 10.5px; font-family: var(--font-mono); font-weight: 500;
+  color: rgba(255,255,255,0.9); transition: width 1s cubic-bezier(0.4,0,0.2,1);
+  white-space: nowrap;
+}
+
+/* ─── SPARKLINE ───────────────────────────────────── */
+.spark-grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 3px; align-items: flex-end; height: 42px; margin-top: 12px; }
+.spark-bar { border-radius: 2px 2px 0 0; transition: opacity 0.2s; cursor: default; }
+.spark-bar:hover { opacity: 0.7; }
+
+/* ─── TIMELINE / ACTIVITY ─────────────────────────── */
+.activity-list { display: flex; flex-direction: column; gap: 0; }
+.activity-item {
+  display: flex; gap: 12px; padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0; margin-top: 1px;
+}
+.activity-body { flex: 1; }
+.activity-text { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+.activity-text strong { font-weight: 600; }
+.activity-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.activity-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; margin-left: auto; flex-shrink: 0; white-space: nowrap; align-self: center; }
+
+/* ─── TABS ────────────────────────────────────────── */
+.tab-bar {
+  display: flex; gap: 0;
+  border-bottom: 1.5px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.tab-item {
+  padding: 9px 18px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tab-item:hover { color: var(--text-primary); }
+.tab-item.active { color: var(--sapphire); border-bottom-color: var(--sapphire); }
+
+/* ─── MODAL ───────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(17,24,39,0.5);
+  backdrop-filter: blur(3px);
+  z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 580px; max-height: 92vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalPop 0.25s cubic-bezier(0.34,1.4,0.64,1);
+}
+
+@keyframes modalPop {
+  from { opacity:0; transform:scale(0.94) translateY(10px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.modal-hd {
+  padding: 22px 26px 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+
+.modal-title { font-family: var(--font-display); font-size: 20px; font-weight: 500; color: var(--ink); }
+.modal-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.modal-close {
+  width: 28px; height: 28px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-secondary); font-size: 14px;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.modal-close:hover { background: var(--crimson-light); color: var(--crimson); border-color: transparent; }
+
+.modal-body { padding: 18px 26px 26px; }
+
+.modal-footer {
+  padding: 0 26px 22px;
+  display: flex; gap: 10px; justify-content: flex-end;
+  border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px;
+}
+
+/* ─── EMPLOYEE AVATAR ─────────────────────────────── */
+.emp-cell { display: flex; align-items: center; gap: 10px; }
+.emp-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.emp-name { font-weight: 600; font-size: 13px; }
+.emp-id { font-size: 10.5px; color: var(--text-muted); font-family: var(--font-mono); }
+
+/* ─── PAYROLL STATUS CARD ─────────────────────────── */
+.payroll-status {
+  background: linear-gradient(135deg, var(--ink) 0%, #2a3654 100%);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.payroll-status::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%);
+}
+
+.ps-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.ps-period { font-family: var(--font-display); font-size: 22px; font-weight: 500; margin-bottom: 16px; }
+.ps-amount { font-family: var(--font-mono); font-size: 36px; font-weight: 400; letter-spacing: -0.03em; }
+.ps-currency { font-size: 18px; opacity: 0.6; vertical-align: super; font-family: var(--font-body); }
+.ps-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 18px; }
+.ps-item { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 14px; }
+.ps-item-label { font-size: 9.5px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; }
+.ps-item-value { font-family: var(--font-mono); font-size: 15px; color: #fff; margin-top: 3px; }
+.ps-item-value.positive { color: #6ee7b7; }
+.ps-item-value.negative { color: #fca5a5; }
+.ps-progress { margin-top: 18px; }
+.ps-prog-label { font-size: 11px; color: rgba(255,255,255,0.5); display: flex; justify-content: space-between; margin-bottom: 6px; }
+.ps-prog-track { height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+.ps-prog-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #6ee7b7); border-radius: 3px; }
+
+/* ─── APPROVAL QUEUE ──────────────────────────────── */
+.approval-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.approval-item:last-child { border-bottom: none; }
+.approval-meta { flex: 1; }
+.approval-title { font-size: 13px; font-weight: 600; }
+.approval-detail { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.approval-actions { display: flex; gap: 6px; flex-shrink: 0; align-self: center; }
+
+/* ─── INLINE CHART BARS ───────────────────────────── */
+.inline-bar { display: inline-flex; align-items: center; gap: 7px; }
+.inline-bar-track { width: 80px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.inline-bar-fill { height: 100%; border-radius: 3px; }
+
+/* ─── DEPARTMENT TABLE ────────────────────────────── */
+.dept-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+/* ─── TOAST ───────────────────────────────────────── */
+.toast-container { position: fixed; bottom: 22px; right: 22px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+
+.toast {
+  background: var(--ink); color: #fff;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  min-width: 260px; max-width: 340px;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s cubic-bezier(0.34,1.3,0.64,1);
+  font-size: 13px;
+}
+
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+.toast-icon { font-size: 15px; flex-shrink: 0; }
+.toast-msg { flex: 1; }
+.toast-title { font-weight: 600; }
+.toast-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+
+/* ─── MOBILE ──────────────────────────────────────── */
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+@media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .col-2, .col-3 { grid-column: span 1; }
+  .ps-breakdown { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+  .sidebar-overlay.open { display: block; }
+  .menu-toggle { display: flex; }
+  .main { margin-left: 0; }
+  .page-wrap { padding: 18px 16px; }
+  .topbar { padding: 0 16px; }
+  .kpi-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .search-bar { width: 180px; }
+  .payroll-run-btn span { display: none; }
+  .ps-breakdown { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.cols3 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-value { font-size: 17px; }
+  .search-bar { display: none; }
+}
+
+/* ─── UTILITY ─────────────────────────────────────── */
+.text-green { color: var(--emerald); }
+.text-red { color: var(--crimson); }
+.text-amber { color: var(--amber); }
+.text-blue { color: var(--sapphire); }
+.text-muted { color: var(--text-muted); }
+.mono { font-family: var(--font-mono); }
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.mt-4 { margin-top: 16px; }
+.mb-4 { margin-bottom: 16px; }
+
+.section-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--sapphire-light); color: var(--sapphire);
+  border-radius: 5px; padding: 3px 9px;
+  font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+.section-tag.green { background: var(--emerald-light); color: var(--emerald); }
+.section-tag.amber { background: var(--amber-light); color: var(--amber); }
+.section-tag.violet { background: var(--violet-light); color: var(--violet); }
+
+/* ─── CHECKBOX ────────────────────────────────────── */
+.checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-primary); }
+.checkbox-row input[type=checkbox] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--sapphire); }
+
+/* ─── EMPTY STATE ─────────────────────────────────── */
+.empty-state { text-align: center; padding: 40px 20px; }
+.empty-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.5; }
+.empty-text { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+.empty-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ─── NUMBER HIGHLIGHT ────────────────────────────── */
+.highlight-number { font-family: var(--font-mono); font-weight: 500; }
+
+/* Alert banner */
+.alert-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+.alert-amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.alert-blue { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.alert-green { background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; }
+
+/* tooltip-like info */
+.info-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--text-muted);
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 3px 9px; border-radius: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- ─── SIDEBAR ─────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">M</div>
+    <div>
+      <div class="logo-name">Meridian</div>
+      <div class="logo-tag">HR Platform</div>
+    </div>
+  </div>
+
+  <div class="admin-badge">
+    <div class="admin-badge-dot"></div>
+    Admin Control Panel
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">Core</div>
+    <div class="nav-item active" onclick="navigate('dashboard',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" onclick="navigate('payroll',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      Payroll Processing
+      <span class="nav-count" style="background:rgba(251,191,36,0.15);color:#fbbf24;">LIVE</span>
+    </div>
+    <div class="nav-item" onclick="navigate('employees',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Employees
+      <span class="nav-count">247</span>
+    </div>
+
+    <div class="nav-group-label">Approvals</div>
+    <div class="nav-item" onclick="navigate('loans',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Loan Approvals
+      <span class="nav-count red">7</span>
+    </div>
+    <div class="nav-item" onclick="navigate('expenses',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Expense Claims
+      <span class="nav-count red">12</span>
+    </div>
+
+    <div class="nav-group-label">Reports</div>
+    <div class="nav-item" onclick="navigate('reports',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics & Reports
+    </div>
+    <div class="nav-item" onclick="navigate('settings',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      System Settings
+    </div>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="admin-info">
+      <div class="admin-avatar">DK</div>
+      <div>
+        <div class="admin-name">David Kimani</div>
+        <div class="admin-role">HR Administrator</div>
+      </div>
+    </div>
+    <div class="nav-item" style="padding:8px 0; border-left:none; border-radius:6px;" onclick="toast('👋','Signing out','Redirecting to login...')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </div>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ─── MAIN ───────────────────────────────────────── -->
+<main class="main">
+  <div class="topbar">
+    <div class="menu-toggle" onclick="toggleSidebar()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </div>
+    <div class="topbar-breadcrumb">
+      <span class="breadcrumb-root">Meridian HR</span>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current" id="breadcrumbCurrent">Dashboard</span>
+    </div>
+    <div class="topbar-center">
+      <div class="search-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search employees, payslips…" />
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="topbar-btn" onclick="toast('📋','7 pending loan applications','Redirecting to Loans...')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div class="notif-badge">7</div>
+      </div>
+      <div class="topbar-btn" onclick="toast('🔔','3 new notifications','2 expense approvals, 1 system alert')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="notif-badge" style="background:var(--amber)">3</div>
+      </div>
+      <button class="payroll-run-btn" onclick="openRunPayrollModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Run Payroll</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+
+    <!-- ════════ OVERVIEW / DASHBOARD ════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Payroll <span>Overview</span></div>
+          <div class="page-meta">March 2025 · Period closes in <strong>8 days</strong></div>
+        </div>
+        <div class="page-actions">
+          <span class="info-chip">📅 FY 2024/2025 · Q4</span>
+          <button class="btn btn-outline btn-sm" onclick="toast('📤','Report exported','Monthly summary PDF generated')">Export Report</button>
+        </div>
+      </div>
+
+      <div class="alert-banner alert-amber">
+        <span>⚠️</span>
+        <div><strong>Action Required:</strong> March 2025 payroll has not been run. 7 loan applications and 12 expense claims are awaiting approval. <a href="#" style="color:inherit;font-weight:700;" onclick="navigate('payroll',document.querySelectorAll('.nav-item')[1]); return false;">Process now →</a></div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card" style="--kpi-color: #2563eb">
+          <div class="kpi-icon" style="background:#dbeafe">👥</div>
+          <div class="kpi-value">247</div>
+          <div class="kpi-label">Active Employees</div>
+          <div class="kpi-delta up">↑ +3 this month</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: #059669">
+          <div class="kpi-icon" style="background:#d1fae5">💰</div>
+          <div class="kpi-value">KES 52.4M</div>
+          <div class="kpi-label">Monthly Gross Payroll</div>
+          <div class="kpi-delta up">↑ +5.2% YoY</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: #7c3aed">
+          <div class="kpi-icon" style="background:#ede9fe">🏦</div>
+          <div class="kpi-value">KES 38.7M</div>
+          <div class="kpi-label">Net Disbursement</div>
+          <div class="kpi-delta neutral">— March est.</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: #d97706">
+          <div class="kpi-icon" style="background:#fef3c7">📋</div>
+          <div class="kpi-value">KES 13.7M</div>
+          <div class="kpi-label">Total Deductions</div>
+          <div class="kpi-delta up">↑ Tax + Loans</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: #dc2626">
+          <div class="kpi-icon" style="background:#fee2e2">⚠️</div>
+          <div class="kpi-value">19</div>
+          <div class="kpi-label">Pending Approvals</div>
+          <div class="kpi-delta down">↓ Needs attention</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-4">
+        <!-- Payroll Status -->
+        <div class="payroll-status">
+          <div class="ps-label">Current Payroll Run</div>
+          <div class="ps-period">March 2025 — Not Yet Processed</div>
+          <div class="ps-amount"><span class="ps-currency">KES </span>52,418,300</div>
+          <div class="ps-breakdown">
+            <div class="ps-item">
+              <div class="ps-item-label">Gross Earnings</div>
+              <div class="ps-item-value positive">52.4M</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-item-label">Total Deductions</div>
+              <div class="ps-item-value negative">13.7M</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-item-label">Net Pay Out</div>
+              <div class="ps-item-value">38.7M</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-item-label">PAYE (KRA)</div>
+              <div class="ps-item-value negative">9.1M</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-item-label">NHIF</div>
+              <div class="ps-item-value negative">419K</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-item-label">Loan Deductions</div>
+              <div class="ps-item-value negative">2.8M</div>
+            </div>
+          </div>
+          <div class="ps-progress">
+            <div class="ps-prog-label"><span>Payroll Completion</span><span>0 / 247 employees</span></div>
+            <div class="ps-prog-track"><div class="ps-prog-fill" style="width:0%"></div></div>
+          </div>
+          <button class="btn btn-outline mt-4" style="border-color:rgba(255,255,255,0.2); color:#fff; width:100%; justify-content:center;" onclick="openRunPayrollModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Process March 2025 Payroll
+          </button>
+        </div>
+
+        <!-- Department Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Payroll by Department</div>
+              <div class="card-sub">Monthly gross — March 2025</div>
+            </div>
+            <span class="section-tag">Cost Split</span>
+          </div>
+          <div class="bar-chart" id="deptBarChart"></div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-4">
+        <!-- Monthly Trend -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Payroll Trend</div>
+              <div class="card-sub">Gross payroll — last 12 months</div>
+            </div>
+            <span class="info-chip">KES Millions</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:4px;">
+            <div>
+              <div class="highlight-number" style="font-size:24px; color:var(--ink);">52.4M</div>
+              <div style="font-size:11.5px; color:var(--text-muted);">March 2025 (projected)</div>
+            </div>
+            <div class="kpi-delta up" style="font-size:13px;">↑ +5.2%</div>
+          </div>
+          <div class="spark-grid" id="sparklineChart"></div>
+          <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:10px; color:var(--text-muted);">
+            <span>Apr '24</span><span>Jul '24</span><span>Oct '24</span><span>Mar '25</span>
+          </div>
+        </div>
+
+        <!-- Headcount Donut -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Workforce Breakdown</div>
+              <div class="card-sub">By employment type</div>
+            </div>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut-chart" style="background: conic-gradient(#2563eb 0% 68%, #059669 68% 84%, #d97706 84% 94%, #9ca3af 94% 100%);">
+              <div class="donut-inner">
+                <div class="donut-value">247</div>
+                <div class="donut-label">Total</div>
+              </div>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-name">Permanent</span><span class="legend-pct">168 · 68%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#059669"></div><span class="legend-name">Contract</span><span class="legend-pct">40 · 16%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div><span class="legend-name">Part-Time</span><span class="legend-pct">25 · 10%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#9ca3af"></div><span class="legend-name">Intern</span><span class="legend-pct">14 · 6%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Approvals Queue -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Approval Queue</div>
+              <div class="card-sub">Loans & expenses awaiting action</div>
+            </div>
+            <span class="badge badge-red">19 pending</span>
+          </div>
+          <div id="approvalQueueList"></div>
+          <button class="btn btn-ghost btn-sm mt-4" style="width:100%; justify-content:center;" onclick="navigate('loans',document.querySelectorAll('.nav-item')[3])">View All Approvals →</button>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Recent Activity</div>
+              <div class="card-sub">System-wide audit log</div>
+            </div>
+          </div>
+          <div class="activity-list" id="activityLog"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ PAYROLL PROCESSING ═════════ -->
+    <div class="page" id="page-payroll">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Payroll <em>Processing</em></div>
+          <div class="page-meta">March 2025 · Due: 31 March 2025</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline btn-sm" onclick="toast('📥','Payroll template downloaded','Excel file ready')">Download Template</button>
+          <button class="btn btn-primary" onclick="openRunPayrollModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Payroll
+          </button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card" style="--kpi-color:#059669">
+          <div class="kpi-icon" style="background:var(--emerald-light)">✅</div>
+          <div class="kpi-value">0</div>
+          <div class="kpi-label">Processed</div>
+          <div class="kpi-delta neutral">— Not started</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#d97706">
+          <div class="kpi-icon" style="background:var(--amber-light)">⏳</div>
+          <div class="kpi-value">247</div>
+          <div class="kpi-label">Pending</div>
+          <div class="kpi-delta neutral">— This cycle</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#dc2626">
+          <div class="kpi-icon" style="background:var(--crimson-light)">⚠️</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-label">Exceptions</div>
+          <div class="kpi-delta down">↓ Resolve before run</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#2563eb">
+          <div class="kpi-icon" style="background:var(--sapphire-light)">🏦</div>
+          <div class="kpi-value">KES 38.7M</div>
+          <div class="kpi-label">Estimated Net Disbursement</div>
+          <div class="kpi-delta up">↑ +2.1% vs last month</div>
+        </div>
+      </div>
+
+      <div class="alert-banner alert-amber" style="margin-bottom:14px;">
+        ⚠️ <div><strong>4 payroll exceptions detected</strong> — 2 employees have missing bank details, 1 has a negative salary adjustment pending, and 1 new hire is missing their tax PIN. Please resolve before running payroll.</div>
+      </div>
+
+      <div class="grid-2 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Payroll Summary — March 2025</div>
+            <span class="badge badge-amber">Not Processed</span>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Component</th><th>Employees</th><th>Amount (KES)</th></tr></thead>
+            <tbody>
+              <tr><td>Basic Salaries</td><td class="mono">247</td><td class="mono text-green">36,820,000</td></tr>
+              <tr><td>Housing Allowances</td><td class="mono">198</td><td class="mono text-green">7,920,000</td></tr>
+              <tr><td>Transport Allowances</td><td class="mono">247</td><td class="mono text-green">4,940,000</td></tr>
+              <tr><td>Medical Allowances</td><td class="mono">210</td><td class="mono text-green">2,738,300</td></tr>
+              <tr style="background:var(--bg-subtle)"><td><strong>Gross Earnings</strong></td><td class="mono"><strong>247</strong></td><td class="mono" style="font-weight:700; font-size:15px;">52,418,300</td></tr>
+              <tr><td style="color:var(--crimson)">PAYE Tax</td><td class="mono">247</td><td class="mono text-red">-9,100,000</td></tr>
+              <tr><td style="color:var(--crimson)">NHIF Contributions</td><td class="mono">247</td><td class="mono text-red">-419,000</td></tr>
+              <tr><td style="color:var(--crimson)">NSSF Contributions</td><td class="mono">247</td><td class="mono text-red">-49,400</td></tr>
+              <tr><td style="color:var(--crimson)">Loan Deductions</td><td class="mono">38</td><td class="mono text-red">-2,856,000</td></tr>
+              <tr><td style="color:var(--crimson)">Salary Advances</td><td class="mono">5</td><td class="mono text-red">-310,000</td></tr>
+              <tr style="background:#f0fdf4"><td><strong>NET PAY</strong></td><td class="mono"><strong>247</strong></td><td class="mono text-green" style="font-weight:700; font-size:15px;">39,683,900</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Payroll Exceptions</div>
+            <span class="badge badge-red">4 issues</span>
+          </div>
+          <div id="payrollExceptions"></div>
+          <hr class="divider">
+          <div class="card-header" style="margin-bottom:12px;">
+            <div class="card-title">Previous Payroll Runs</div>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Period</th><th>Processed</th><th>Net Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Feb 2025</td><td style="font-size:12px;color:var(--text-muted)">28 Feb 2025</td><td class="mono text-green">38.9M</td><td><span class="badge badge-green">Completed</span></td></tr>
+              <tr><td>Jan 2025</td><td style="font-size:12px;color:var(--text-muted)">31 Jan 2025</td><td class="mono text-green">38.6M</td><td><span class="badge badge-green">Completed</span></td></tr>
+              <tr><td>Dec 2024</td><td style="font-size:12px;color:var(--text-muted)">30 Dec 2024</td><td class="mono text-green">42.1M</td><td><span class="badge badge-green">Completed</span></td></tr>
+              <tr><td>Nov 2024</td><td style="font-size:12px;color:var(--text-muted)">29 Nov 2024</td><td class="mono text-green">35.8M</td><td><span class="badge badge-green">Completed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ EMPLOYEES ═══════════════════ -->
+    <div class="page" id="page-employees">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Employee <span>Directory</span></div>
+          <div class="page-meta">247 active records · 3 added this month</div>
+        </div>
+        <div class="page-actions">
+          <select class="form-select" style="width:150px; padding:8px 12px; font-size:13px;">
+            <option>All Departments</option>
+            <option>Engineering</option><option>Finance</option><option>HR</option>
+            <option>Sales</option><option>Operations</option>
+          </select>
+          <button class="btn btn-primary" onclick="openAddEmployeeModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Employee
+          </button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:18px;">
+        <div class="kpi-card" style="--kpi-color:#2563eb">
+          <div class="kpi-icon" style="background:var(--sapphire-light)">👤</div>
+          <div class="kpi-value">168</div><div class="kpi-label">Permanent</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#059669">
+          <div class="kpi-icon" style="background:var(--emerald-light)">📝</div>
+          <div class="kpi-value">40</div><div class="kpi-label">Contract</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#d97706">
+          <div class="kpi-icon" style="background:var(--amber-light)">⏱️</div>
+          <div class="kpi-value">25</div><div class="kpi-label">Part-Time</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#7c3aed">
+          <div class="kpi-icon" style="background:var(--violet-light)">🎓</div>
+          <div class="kpi-value">14</div><div class="kpi-label">Interns</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Employees</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-ghost btn-sm" onclick="toast('📤','Export initiated','Employee list CSV downloading...')">Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="empTable">
+            <thead>
+              <tr>
+                <th><input type="checkbox" style="cursor:pointer; accent-color:var(--sapphire)"></th>
+                <th>Employee</th><th>Department</th><th>Job Grade</th>
+                <th>Gross Salary</th><th>Start Date</th><th>Type</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="empTableBody"></tbody>
+          </table>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; flex-wrap:wrap; gap:10px;">
+          <span style="font-size:12px; color:var(--text-muted);">Showing 1–10 of 247 employees</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-ghost btn-sm">← Prev</button>
+            <button class="btn btn-primary btn-sm">1</button>
+            <button class="btn btn-ghost btn-sm">2</button>
+            <button class="btn btn-ghost btn-sm">3</button>
+            <button class="btn btn-ghost btn-sm">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ LOAN APPROVALS ══════════════ -->
+    <div class="page" id="page-loans">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Loan <em>Approvals</em></div>
+          <div class="page-meta">7 applications pending review</div>
+        </div>
+        <div class="page-actions">
+          <select class="form-select" style="width:140px; padding:8px 12px; font-size:13px;" onchange="filterLoans(this.value)">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:18px;">
+        <div class="kpi-card" style="--kpi-color:#d97706">
+          <div class="kpi-icon" style="background:var(--amber-light)">⏳</div>
+          <div class="kpi-value">7</div><div class="kpi-label">Pending Review</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#059669">
+          <div class="kpi-icon" style="background:var(--emerald-light)">✅</div>
+          <div class="kpi-value">23</div><div class="kpi-label">Active Loans</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#7c3aed">
+          <div class="kpi-icon" style="background:var(--violet-light)">💎</div>
+          <div class="kpi-value">KES 3.4M</div><div class="kpi-label">Total Outstanding</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#2563eb">
+          <div class="kpi-icon" style="background:var(--sapphire-light)">📈</div>
+          <div class="kpi-value">94%</div><div class="kpi-label">Repayment Rate</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Loan Applications</div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Employee</th><th>Loan Type</th><th>Amount</th><th>Term</th><th>Monthly</th><th>Purpose</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="loanTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ EXPENSE APPROVALS ══════════ -->
+    <div class="page" id="page-expenses">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Expense <span>Claims</span></div>
+          <div class="page-meta">12 claims awaiting approval · KES 284,500 total</div>
+        </div>
+        <div class="page-actions">
+          <select class="form-select" style="width:140px; padding:8px 12px; font-size:13px;" onchange="filterExpenses(this.value)">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="paid">Paid</option>
+          </select>
+          <button class="btn btn-green btn-sm" onclick="bulkApprove()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Bulk Approve
+          </button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:18px;">
+        <div class="kpi-card" style="--kpi-color:#d97706">
+          <div class="kpi-icon" style="background:var(--amber-light)">⏳</div>
+          <div class="kpi-value">12</div><div class="kpi-label">Pending Approval</div>
+          <div class="kpi-delta down">↓ KES 284,500</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#059669">
+          <div class="kpi-icon" style="background:var(--emerald-light)">✅</div>
+          <div class="kpi-value">KES 1.2M</div><div class="kpi-label">Approved YTD</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#2563eb">
+          <div class="kpi-icon" style="background:var(--sapphire-light)">💸</div>
+          <div class="kpi-value">KES 1.1M</div><div class="kpi-label">Reimbursed YTD</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#dc2626">
+          <div class="kpi-icon" style="background:var(--crimson-light)">❌</div>
+          <div class="kpi-value">KES 48K</div><div class="kpi-label">Rejected YTD</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Expense Claims</div>
+          <button class="btn btn-ghost btn-sm" onclick="toast('📤','Export started','Expense claims CSV downloading')">Export</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr>
+              <th><input type="checkbox" style="cursor:pointer; accent-color:var(--sapphire)" onclick="toggleAll(this)"></th>
+              <th>Employee</th><th>Description</th><th>Category</th><th>Date</th><th>Amount</th><th>Receipt</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="expenseTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ REPORTS ═════════════════════ -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Analytics &amp; <em>Reports</em></div>
+          <div class="page-meta">FY 2024/2025 · Data as of March 2025</div>
+        </div>
+        <div class="page-actions">
+          <select class="form-select" style="width:150px; padding:8px 12px; font-size:13px;">
+            <option>FY 2024/2025</option>
+            <option>FY 2023/2024</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="toast('📊','Report generated','Full annual report PDF ready')">Generate Report</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:18px;">
+        <div class="kpi-card" style="--kpi-color:#2563eb">
+          <div class="kpi-icon" style="background:var(--sapphire-light)">📅</div>
+          <div class="kpi-value">KES 574M</div><div class="kpi-label">Annual Payroll YTD</div>
+          <div class="kpi-delta up">↑ +6.8% vs LY</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#059669">
+          <div class="kpi-icon" style="background:var(--emerald-light)">💼</div>
+          <div class="kpi-value">KES 99.7M</div><div class="kpi-label">Total Tax Remitted</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#7c3aed">
+          <div class="kpi-icon" style="background:var(--violet-light)">📈</div>
+          <div class="kpi-value">KES 212K</div><div class="kpi-label">Avg. Monthly Salary</div>
+          <div class="kpi-delta up">↑ +4.2% YoY</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#d97706">
+          <div class="kpi-icon" style="background:var(--amber-light)">🔄</div>
+          <div class="kpi-value">8.4%</div><div class="kpi-label">Staff Turnover Rate</div>
+          <div class="kpi-delta down">↓ -1.2% vs LY</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Payroll Cost by Department</div>
+            <span class="section-tag green">Annual</span>
+          </div>
+          <div id="reportDeptChart"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Salary Grade Distribution</div>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut-chart" style="background: conic-gradient(#1d4ed8 0% 8%, #2563eb 8% 22%, #3b82f6 22% 45%, #60a5fa 45% 72%, #93c5fd 72% 88%, #bfdbfe 88% 100%);">
+              <div class="donut-inner">
+                <div class="donut-value">247</div>
+                <div class="donut-label">Staff</div>
+              </div>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#1d4ed8"></div><span class="legend-name">Grade 9 (Exec)</span><span class="legend-pct">8%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-name">Grade 7–8 (Senior)</span><span class="legend-pct">14%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span class="legend-name">Grade 5–6 (Mid)</span><span class="legend-pct">23%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div><span class="legend-name">Grade 3–4 (Junior)</span><span class="legend-pct">27%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div><span class="legend-name">Grade 1–2 (Entry)</span><span class="legend-pct">16%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#bfdbfe"></div><span class="legend-name">Contract / Intern</span><span class="legend-pct">12%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Statutory Compliance Summary</div>
+          <span class="section-tag green">Compliant</span>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Statutory Obligation</th><th>Rate</th><th>YTD Remitted</th><th>Last Remittance</th><th>Next Due</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>PAYE (KRA)</td><td class="mono">10–30%</td><td class="mono text-green">KES 99.7M</td><td style="font-size:12px;color:var(--text-muted)">28 Feb 2025</td><td style="font-size:12px;">31 Mar 2025</td><td><span class="badge badge-green">Up to Date</span></td></tr>
+            <tr><td>NHIF</td><td class="mono">KES 1,700/mo</td><td class="mono text-green">KES 4.2M</td><td style="font-size:12px;color:var(--text-muted)">28 Feb 2025</td><td style="font-size:12px;">9 Apr 2025</td><td><span class="badge badge-green">Up to Date</span></td></tr>
+            <tr><td>NSSF</td><td class="mono">KES 200/mo</td><td class="mono text-green">KES 494K</td><td style="font-size:12px;color:var(--text-muted)">28 Feb 2025</td><td style="font-size:12px;">15 Apr 2025</td><td><span class="badge badge-green">Up to Date</span></td></tr>
+            <tr><td>HELB Deductions</td><td class="mono">Varied</td><td class="mono text-green">KES 1.8M</td><td style="font-size:12px;color:var(--text-muted)">28 Feb 2025</td><td style="font-size:12px;">31 Mar 2025</td><td><span class="badge badge-amber">Due Soon</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════ SETTINGS ════════════════════ -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">System <span>Settings</span></div>
+          <div class="page-meta">Payroll configuration and company setup</div>
+        </div>
+        <button class="btn btn-primary" onclick="toast('💾','Settings saved','Configuration updated successfully')">Save Changes</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Company Information</div></div>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" value="Meridian Holdings Ltd."></div>
+            <div class="form-group"><label class="form-label">KRA PIN</label><input class="form-input" value="P051498276X" style="font-family:var(--font-mono)"></div>
+            <div class="form-group"><label class="form-label">NHIF Employer No.</label><input class="form-input" value="NHIF-028493" style="font-family:var(--font-mono)"></div>
+            <div class="form-group"><label class="form-label">NSSF Employer No.</label><input class="form-input" value="NSSF-93847" style="font-family:var(--font-mono)"></div>
+            <div class="form-group"><label class="form-label">Financial Year Start</label><select class="form-select"><option selected>April</option><option>January</option><option>July</option></select></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Payroll Cycle Configuration</div></div>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="form-group"><label class="form-label">Pay Frequency</label>
+              <select class="form-select"><option selected>Monthly (last working day)</option><option>Bi-weekly</option><option>Weekly</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Currency</label>
+              <select class="form-select"><option selected>KES — Kenyan Shilling</option><option>USD — US Dollar</option><option>EUR — Euro</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Overtime Rate (× basic hourly)</label><input class="form-input" value="1.5" type="number"></div>
+            <div class="form-group"><label class="form-label">Max Salary Advance (%)</label><input class="form-input" value="50" type="number"></div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:6px;">
+              <label class="checkbox-row"><input type="checkbox" checked> Enable loan deductions from payroll</label>
+              <label class="checkbox-row"><input type="checkbox" checked> Auto-calculate PAYE using KRA slabs</label>
+              <label class="checkbox-row"><input type="checkbox"> Require dual approval for payroll above KES 50M</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Loan Policy Settings</div></div>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Max Loan Amount (KES)</label><input class="form-input" value="150,000"></div>
+              <div class="form-group"><label class="form-label">Max Repayment Term</label><select class="form-select"><option>6 months</option><option selected>12 months</option><option>24 months</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Interest Rate (%)</label><input class="form-input" value="0" type="number" placeholder="0 = interest-free"></div>
+              <div class="form-group"><label class="form-label">Min. Tenure to Qualify</label><select class="form-select"><option>6 months</option><option selected>1 year</option><option>2 years</option></select></div>
+            </div>
+            <div class="form-group"><label class="form-label">Max Active Loans per Employee</label>
+              <select class="form-select"><option selected>1</option><option>2</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Expense Policy Settings</div></div>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Max Claim per Month (KES)</label><input class="form-input" value="50,000"></div>
+              <div class="form-group"><label class="form-label">Approval Threshold (KES)</label><input class="form-input" value="10,000" placeholder="Above = manager + HR"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Receipt Required Above (KES)</label><input class="form-input" value="500" type="number"></div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+              <label class="checkbox-row"><input type="checkbox" checked> Require receipt for all claims</label>
+              <label class="checkbox-row"><input type="checkbox" checked> Auto-reject claims submitted after 30 days</label>
+              <label class="checkbox-row"><input type="checkbox"> Allow managers to approve their own expenses</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- ═══ RUN PAYROLL MODAL ═════════════════════════════ -->
+<div class="modal-overlay" id="runPayrollModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">Run March 2025 Payroll</div>
+        <div class="modal-sub">This will process payroll for all 247 employees</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('runPayrollModal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="alert-banner alert-amber" style="margin-bottom:16px;">
+        ⚠️ 4 exceptions must be resolved before processing. Running anyway will skip affected employees.
+      </div>
+      <table class="data-table" style="margin-bottom:16px;">
+        <thead><tr><th>Item</th><th>Employees</th><th>Amount (KES)</th></tr></thead>
+        <tbody>
+          <tr><td>Gross Earnings</td><td class="mono">247</td><td class="mono text-green">52,418,300</td></tr>
+          <tr><td>Total Deductions</td><td class="mono">247</td><td class="mono text-red">-12,734,400</td></tr>
+          <tr style="background:#f0fdf4;"><td><strong>Net Disbursement</strong></td><td class="mono"><strong>247</strong></td><td class="mono text-green" style="font-weight:700;">39,683,900</td></tr>
+        </tbody>
+      </table>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Disbursement Date</label>
+        <input type="date" class="form-input" value="2025-03-31">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Notes / Reference</label>
+        <input type="text" class="form-input" placeholder="e.g. March 2025 Regular Payroll Run">
+      </div>
+      <label class="checkbox-row" style="margin-bottom:6px;"><input type="checkbox"> I confirm this payroll data has been reviewed and approved for processing</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('runPayrollModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="processPayroll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Confirm & Process
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD EMPLOYEE MODAL ═════════════════════════════ -->
+<div class="modal-overlay" id="addEmpModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">Add New Employee</div>
+        <div class="modal-sub">Create a new employee record in the system</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('addEmpModal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="tab-bar" style="margin-bottom:18px;">
+        <div class="tab-item active" onclick="tabSwitch(this,'empTab1')">Personal Info</div>
+        <div class="tab-item" onclick="tabSwitch(this,'empTab2')">Employment</div>
+        <div class="tab-item" onclick="tabSwitch(this,'empTab3')">Compensation</div>
+        <div class="tab-item" onclick="tabSwitch(this,'empTab4')">Bank Details</div>
+      </div>
+      <div id="empTab1">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">First Name</label><input class="form-input" placeholder="e.g. Wanjiku"></div>
+          <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" placeholder="e.g. Kamau"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">National ID / Passport</label><input class="form-input" placeholder="National ID number" style="font-family:var(--font-mono)"></div>
+          <div class="form-group"><label class="form-label">KRA PIN</label><input class="form-input" placeholder="e.g. A00392847X" style="font-family:var(--font-mono)"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" placeholder="name@meridian.co.ke"></div>
+          <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input" placeholder="+254 7XX XXX XXX"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Gender</label><select class="form-select"><option>Female</option><option>Male</option><option>Prefer not to say</option></select></div>
+          <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" class="form-input"></div>
+        </div>
+      </div>
+      <div id="empTab2" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Employee ID</label><input class="form-input" placeholder="Auto-generated" readonly style="color:var(--text-muted)"></div>
+          <div class="form-group"><label class="form-label">Department</label><select class="form-select"><option>Engineering</option><option>Finance</option><option>HR</option><option>Sales</option><option>Operations</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Job Title</label><input class="form-input" placeholder="e.g. Software Engineer"></div>
+          <div class="form-group"><label class="form-label">Job Grade</label><select class="form-select"><option>Grade 1</option><option>Grade 2</option><option>Grade 3</option><option>Grade 4 (Mid)</option><option selected>Grade 5</option><option>Grade 6</option><option>Grade 7 (Senior)</option><option>Grade 8</option><option>Grade 9 (Exec)</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Employment Type</label><select class="form-select"><option selected>Permanent</option><option>Contract</option><option>Part-Time</option><option>Intern</option></select></div>
+          <div class="form-group"><label class="form-label">Start Date</label><input type="date" class="form-input"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Reports To (Manager)</label><select class="form-select"><option>David Kimani — VP Engineering</option><option>Sarah Omondi — CFO</option><option>James Waweru — HR Director</option></select></div>
+      </div>
+      <div id="empTab3" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Basic Salary (KES)</label><input class="form-input" type="number" placeholder="e.g. 120,000"></div>
+          <div class="form-group"><label class="form-label">Housing Allowance (KES)</label><input class="form-input" type="number" placeholder="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Transport Allowance (KES)</label><input class="form-input" type="number" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Medical Allowance (KES)</label><input class="form-input" type="number" placeholder="0"></div>
+        </div>
+        <div class="form-group"><label class="form-label">NHIF Employee Deduction</label><select class="form-select"><option selected>KES 1,700/mo (Standard)</option><option>Exempt</option></select></div>
+      </div>
+      <div id="empTab4" style="display:none">
+        <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Bank Name</label><select class="form-select"><option>Equity Bank</option><option>KCB Bank</option><option>Co-operative Bank</option><option>NCBA Bank</option><option>Stanbic Bank</option><option>Absa Bank</option></select></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Account Number</label><input class="form-input" placeholder="0012345678" style="font-family:var(--font-mono)"></div>
+          <div class="form-group"><label class="form-label">Branch</label><input class="form-input" placeholder="e.g. Nairobi CBD"></div>
+        </div>
+        <div class="form-group"><label class="form-label">M-PESA Fallback Number</label><input class="form-input" placeholder="+254 7XX XXX XXX"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addEmpModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOAN REVIEW MODAL ════════════════════════════ -->
+<div class="modal-overlay" id="loanReviewModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">Review Loan Application</div>
+        <div class="modal-sub" id="loanReviewSub">LN-2025-XXXX</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('loanReviewModal')">✕</div>
+    </div>
+    <div class="modal-body" id="loanReviewBody">
+      <!-- Filled by JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('loanReviewModal')">Cancel</button>
+      <button class="btn btn-red" onclick="decideLoan('reject')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Reject
+      </button>
+      <button class="btn btn-green" onclick="decideLoan('approve')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────
+const employees = [
+  { id:'EMP-00247', name:'Amina Mwangi',   dept:'Engineering', grade:'Grade 7', salary:285000, start:'14 Mar 2020', type:'Permanent', status:'active', initials:'AM', color:'#2563eb' },
+  { id:'EMP-00246', name:'Brian Odhiambo', dept:'Finance',      grade:'Grade 6', salary:220000, start:'1 Aug 2021',  type:'Permanent', status:'active', initials:'BO', color:'#059669' },
+  { id:'EMP-00245', name:'Carol Njeri',    dept:'HR',           grade:'Grade 5', salary:180000, start:'15 Jan 2022', type:'Permanent', status:'active', initials:'CN', color:'#7c3aed' },
+  { id:'EMP-00244', name:'Daniel Kiprono', dept:'Sales',        grade:'Grade 4', salary:145000, start:'3 Jun 2022',  type:'Contract',  status:'active', initials:'DK', color:'#d97706' },
+  { id:'EMP-00243', name:'Esther Wambui',  dept:'Operations',   grade:'Grade 5', salary:172000, start:'20 Sep 2021', type:'Permanent', status:'active', initials:'EW', color:'#dc2626' },
+  { id:'EMP-00242', name:'Felix Muthoni',  dept:'Engineering',  grade:'Grade 6', salary:240000, start:'5 Mar 2020',  type:'Permanent', status:'active', initials:'FM', color:'#0891b2' },
+  { id:'EMP-00241', name:'Grace Atieno',   dept:'Finance',      grade:'Grade 4', salary:138000, start:'12 Nov 2022', type:'Permanent', status:'active', initials:'GA', color:'#059669' },
+  { id:'EMP-00240', name:'Hassan Omar',    dept:'IT',           grade:'Grade 5', salary:195000, start:'8 Feb 2021',  type:'Contract',  status:'active', initials:'HO', color:'#7c3aed' },
+  { id:'EMP-00239', name:'Ivy Mukami',     dept:'Marketing',    grade:'Grade 3', salary:110000, start:'1 Jan 2023',  type:'Part-Time', status:'active', initials:'IM', color:'#db2777' },
+  { id:'EMP-00238', name:'James Otieno',   dept:'Legal',        grade:'Grade 7', salary:310000, start:'14 Jul 2019', type:'Permanent', status:'active', initials:'JO', color:'#1d4ed8' },
+];
+
+const loansData = [
+  { id:'LN-2025-0041', emp:'Amina Mwangi',   empId:'EMP-00247', type:'Personal Loan',    amount:80000,  term:6,  monthly:13333, purpose:'Home improvements',     applied:'10 Mar 2025', status:'pending' },
+  { id:'LN-2025-0040', emp:'Brian Odhiambo', empId:'EMP-00246', type:'School Fees Loan', amount:120000, term:12, monthly:10000, purpose:'Children\'s school fees', applied:'9 Mar 2025',  status:'pending' },
+  { id:'LN-2025-0039', emp:'Carol Njeri',    empId:'EMP-00245', type:'Emergency Loan',   amount:50000,  term:3,  monthly:16667, purpose:'Medical emergency',      applied:'7 Mar 2025',  status:'pending' },
+  { id:'LN-2025-0038', emp:'Daniel Kiprono', empId:'EMP-00244', type:'Personal Loan',    amount:30000,  term:6,  monthly:5000,  purpose:'Car repair',             applied:'5 Mar 2025',  status:'approved' },
+  { id:'LN-2025-0037', emp:'Esther Wambui',  empId:'EMP-00243', type:'Housing Loan',     amount:150000, term:12, monthly:12500, purpose:'Rent deposit',           applied:'4 Mar 2025',  status:'pending' },
+  { id:'LN-2025-0036', emp:'Felix Muthoni',  empId:'EMP-00242', type:'Personal Loan',    amount:60000,  term:6,  monthly:10000, purpose:'Electronics purchase',   applied:'3 Mar 2025',  status:'rejected' },
+  { id:'LN-2025-0035', emp:'Grace Atieno',   empId:'EMP-00241', type:'Medical Loan',     amount:40000,  term:4,  monthly:10000, purpose:'Surgical procedure',     applied:'2 Mar 2025',  status:'pending' },
+  { id:'LN-2025-0034', emp:'Hassan Omar',    empId:'EMP-00240', type:'Personal Loan',    amount:100000, term:10, monthly:10000, purpose:'Business capital',       applied:'1 Mar 2025',  status:'pending' },
+];
+
+const expensesData = [
+  { id:'EX-0288', emp:'Amina Mwangi',   dept:'Engineering', desc:'Flight to Mombasa — Team Offsite', cat:'Travel',        date:'15 Feb 2025', amount:12500, receipt:true,  status:'pending' },
+  { id:'EX-0287', emp:'Brian Odhiambo', dept:'Finance',     desc:'Client Lunch — Serena Hotel',       cat:'Entertainment', date:'14 Feb 2025', amount:18000, receipt:true,  status:'pending' },
+  { id:'EX-0286', emp:'Daniel Kiprono', dept:'Sales',       desc:'Sales Conference Registration',     cat:'Training',      date:'12 Feb 2025', amount:45000, receipt:true,  status:'pending' },
+  { id:'EX-0285', emp:'Carol Njeri',    dept:'HR',          desc:'HR Software Subscription',          cat:'Software',      date:'10 Feb 2025', amount:8400,  receipt:true,  status:'pending' },
+  { id:'EX-0284', emp:'Felix Muthoni',  dept:'Engineering', desc:'AWS Credits — Project Beta',        cat:'IT/Cloud',      date:'8 Feb 2025',  amount:32000, receipt:true,  status:'approved' },
+  { id:'EX-0283', emp:'Grace Atieno',   dept:'Finance',     desc:'Taxi to Client Meeting',            cat:'Travel',        date:'7 Feb 2025',  amount:2100,  receipt:false, status:'pending' },
+  { id:'EX-0282', emp:'Ivy Mukami',     dept:'Marketing',   desc:'Social Media Ads Campaign',         cat:'Marketing',     date:'5 Feb 2025',  amount:25000, receipt:true,  status:'approved' },
+  { id:'EX-0281', emp:'James Otieno',   dept:'Legal',       desc:'Legal Reference Books',             cat:'Office',        date:'3 Feb 2025',  amount:6800,  receipt:true,  status:'paid' },
+];
+
+const departmentPayroll = [
+  { name:'Engineering',  amount:14800000, color:'#2563eb', pct:28 },
+  { name:'Sales',        amount:10500000, color:'#059669', pct:20 },
+  { name:'Finance',      amount:7350000,  color:'#7c3aed', pct:14 },
+  { name:'Operations',   amount:6280000,  color:'#d97706', pct:12 },
+  { name:'HR',           amount:5240000,  color:'#dc2626', pct:10 },
+  { name:'IT',           amount:4714000,  color:'#0891b2', pct:9  },
+  { name:'Marketing',    amount:3534000,  color:'#db2777', pct:7  },
+];
+
+const monthlyPayroll = [46.2,47.1,46.8,47.5,48.0,48.9,49.2,49.8,50.1,50.8,51.4,52.4];
+
+const activityLog = [
+  { icon:'✅', color:'#d1fae5', text:'<strong>Carol Njeri</strong> expense claim <strong>EX-0284</strong> approved by James Waweru', time:'Today, 10:41 AM', tag:'Expense', tagColor:'#dbeafe', tagText:'#1d4ed8' },
+  { icon:'👤', color:'#ede9fe', text:'New employee <strong>Ivy Mukami</strong> added to Marketing department', time:'Today, 09:15 AM', tag:'Employee', tagColor:'#ede9fe', tagText:'#7c3aed' },
+  { icon:'🏦', color:'#d1fae5', text:'February 2025 payroll disbursed — <strong>KES 38.9M</strong> to 247 employees', time:'Yesterday, 4:02 PM', tag:'Payroll', tagColor:'#d1fae5', tagText:'#059669' },
+  { icon:'❌', color:'#fee2e2', text:'Loan application <strong>LN-2025-0036</strong> (Felix Muthoni) rejected', time:'Yesterday, 2:18 PM', tag:'Loan', tagColor:'#fef3c7', tagText:'#92400e' },
+  { icon:'⚙️', color:'#f1f5f9', text:'Payroll settings updated — <strong>Max loan amount</strong> changed to KES 150,000', time:'2 days ago', tag:'Settings', tagColor:'#f1f5f9', tagText:'#475569' },
+];
+
+const approvalQueue = [
+  { type:'loan', icon:'🏦', name:'Esther Wambui', detail:'Housing Loan · KES 150,000', urgency:'high' },
+  { type:'loan', icon:'🏦', name:'Amina Mwangi',  detail:'Personal Loan · KES 80,000', urgency:'medium' },
+  { type:'expense', icon:'🧾', name:'Brian Odhiambo', detail:'Client Lunch · KES 18,000', urgency:'medium' },
+  { type:'expense', icon:'🧾', name:'Daniel Kiprono',  detail:'Conference Reg. · KES 45,000', urgency:'high' },
+];
+
+const exceptions = [
+  { emp:'Hassan Omar',     issue:'Missing bank account details', severity:'error' },
+  { emp:'Ivy Mukami',      issue:'Missing KRA PIN — tax cannot be calculated', severity:'error' },
+  { emp:'EMP-00231',       issue:'Negative net pay due to loan deduction', severity:'warning' },
+  { emp:'James Kariuki',   issue:'New employee — pending onboarding documents', severity:'warning' },
+];
+
+// ─── RENDERS ─────────────────────────────────────────
+function renderAll() {
+  renderDeptBarChart('deptBarChart', departmentPayroll);
+  renderSparkline();
+  renderActivityLog();
+  renderApprovalQueue();
+  renderEmpTable();
+  renderLoanTable();
+  renderExpenseTable();
+  renderPayrollExceptions();
+  renderDeptBarChart('reportDeptChart', departmentPayroll, true);
+}
+
+function renderDeptBarChart(id, data, showFull) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const max = Math.max(...data.map(d => d.amount));
+  el.innerHTML = data.map(d => `
+    <div class="bar-row">
+      <div class="bar-label">${d.name}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${(d.amount/max*100)}%; background:${d.color};">
+          ${showFull ? 'KES '+Math.round(d.amount/1e6*10)/10+'M' : 'KES '+Math.round(d.amount/1e6*10)/10+'M'}
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);width:32px;text-align:right;flex-shrink:0;">${d.pct}%</div>
+    </div>
+  `).join('');
+}
+
+function renderSparkline() {
+  const el = document.getElementById('sparklineChart');
+  if (!el) return;
+  const max = Math.max(...monthlyPayroll);
+  const min = Math.min(...monthlyPayroll);
+  const colors = ['#93c5fd','#93c5fd','#93c5fd','#60a5fa','#60a5fa','#3b82f6','#3b82f6','#2563eb','#2563eb','#1d4ed8','#1d4ed8','#1e40af'];
+  el.innerHTML = monthlyPayroll.map((v, i) => {
+    const h = Math.max(20, Math.round(((v-min)/(max-min))*100));
+    return `<div class="spark-bar" style="height:${h}%;background:${colors[i]};border-radius:2px 2px 0 0;" title="KES ${v}M"></div>`;
+  }).join('');
+}
+
+function renderActivityLog() {
+  const el = document.getElementById('activityLog');
+  if (!el) return;
+  el.innerHTML = activityLog.map(a => `
+    <div class="activity-item">
+      <div class="activity-dot" style="background:${a.color}">${a.icon}</div>
+      <div class="activity-body">
+        <div class="activity-text">${a.text}</div>
+        <div class="activity-time">${a.time}</div>
+      </div>
+      <div class="activity-tag" style="background:${a.tagColor};color:${a.tagText}">${a.tag}</div>
+    </div>
+  `).join('');
+}
+
+function renderApprovalQueue() {
+  const el = document.getElementById('approvalQueueList');
+  if (!el) return;
+  el.innerHTML = approvalQueue.map((a,i) => `
+    <div class="approval-item">
+      <div class="activity-dot" style="background:${a.type==='loan'?'#dbeafe':'#fef3c7'}">${a.icon}</div>
+      <div class="approval-meta">
+        <div class="approval-title">${a.name}</div>
+        <div class="approval-detail">${a.detail}</div>
+      </div>
+      <div class="approval-actions">
+        <button class="btn btn-xs" style="background:var(--emerald-light);color:var(--emerald);" onclick="quickApprove(${i})">✓ Approve</button>
+        <button class="btn btn-xs" style="background:var(--crimson-light);color:var(--crimson);" onclick="quickReject(${i})">✗</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderEmpTable() {
+  const el = document.getElementById('empTableBody');
+  if (!el) return;
+  el.innerHTML = employees.map(e => `
+    <tr>
+      <td><input type="checkbox" style="cursor:pointer; accent-color:var(--sapphire)"></td>
+      <td>
+        <div class="emp-cell">
+          <div class="emp-av" style="background:${e.color}20;color:${e.color}">${e.initials}</div>
+          <div>
+            <div class="emp-name">${e.name}</div>
+            <div class="emp-id">${e.id}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:13px;color:var(--text-secondary)">${e.dept}</td>
+      <td style="font-size:12px;">${e.grade}</td>
+      <td class="mono text-green">KES ${e.salary.toLocaleString()}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${e.start}</td>
+      <td><span class="badge ${e.type==='Permanent'?'badge-blue':e.type==='Contract'?'badge-amber':e.type==='Part-Time'?'badge-violet':'badge-slate'}">${e.type}</span></td>
+      <td><span class="badge badge-green">Active</span></td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-ghost btn-xs" onclick="toast('👁️','Viewing profile','Loading ${e.name}...')">View</button>
+          <button class="btn btn-ghost btn-xs" onclick="toast('✏️','Edit mode','Editing ${e.name}...')">Edit</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+let loanFilter = 'all';
+function renderLoanTable(filter = loanFilter) {
+  loanFilter = filter;
+  const el = document.getElementById('loanTableBody');
+  if (!el) return;
+  const data = filter === 'all' ? loansData : loansData.filter(l => l.status === filter);
+  const statusBadge = { pending:'badge-amber', approved:'badge-green', rejected:'badge-red', active:'badge-blue' };
+  el.innerHTML = data.map(l => `
+    <tr>
+      <td>
+        <div class="emp-cell">
+          <div class="emp-av" style="background:#dbeafe;color:#2563eb">${l.emp.split(' ').map(n=>n[0]).join('')}</div>
+          <div>
+            <div class="emp-name">${l.emp}</div>
+            <div class="emp-id">${l.empId}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:13px">${l.type}</td>
+      <td class="mono">KES ${l.amount.toLocaleString()}</td>
+      <td style="font-size:13px">${l.term} mo.</td>
+      <td class="mono text-red">KES ${l.monthly.toLocaleString()}</td>
+      <td style="font-size:12px;color:var(--text-secondary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.purpose}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${l.applied}</td>
+      <td><span class="badge ${statusBadge[l.status]||'badge-slate'}">${l.status}</span></td>
+      <td>
+        ${l.status === 'pending' ? `
+          <div style="display:flex;gap:5px;">
+            <button class="btn btn-xs" style="background:var(--emerald-light);color:var(--emerald);" onclick="reviewLoan('${l.id}')">Review</button>
+          </div>
+        ` : `<span style="font-size:12px;color:var(--text-muted)">—</span>`}
+      </td>
+    </tr>
+  `).join('');
+  if (!data.length) el.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No ${filter} loans</div></div></td></tr>`;
+}
+
+function filterLoans(v) { renderLoanTable(v); }
+
+let expFilter = 'all';
+function renderExpenseTable(filter = expFilter) {
+  expFilter = filter;
+  const el = document.getElementById('expenseTableBody');
+  if (!el) return;
+  const data = filter === 'all' ? expensesData : expensesData.filter(e => e.status === filter);
+  const statusBadge = { pending:'badge-amber', approved:'badge-green', rejected:'badge-red', paid:'badge-blue' };
+  const catColors = { Travel:'#dbeafe', Entertainment:'#fef3c7', Training:'#ede9fe', Software:'#d1fae5', 'IT/Cloud':'#dbeafe', Marketing:'#fce7f3', Office:'#f1f5f9' };
+  el.innerHTML = data.map(e => `
+    <tr>
+      <td><input type="checkbox" style="cursor:pointer; accent-color:var(--sapphire)"></td>
+      <td>
+        <div class="emp-cell">
+          <div class="emp-av" style="background:#ede9fe;color:#7c3aed">${e.emp.split(' ').map(n=>n[0]).join('')}</div>
+          <div>
+            <div class="emp-name">${e.emp}</div>
+            <div class="emp-id">${e.dept}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="font-size:13px;font-weight:500;">${e.desc}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${e.id}</div>
+      </td>
+      <td><span style="background:${catColors[e.cat]||'#f1f5f9'};padding:3px 8px;border-radius:4px;font-size:11.5px;font-weight:500;">${e.cat}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${e.date}</td>
+      <td class="mono" style="font-weight:600;">KES ${e.amount.toLocaleString()}</td>
+      <td>${e.receipt ? '<span style="color:var(--emerald);font-size:13px;">📎 Yes</span>' : '<span style="color:var(--crimson);font-size:12px;">⚠️ None</span>'}</td>
+      <td><span class="badge ${statusBadge[e.status]||'badge-slate'}">${e.status}</span></td>
+      <td>
+        ${e.status === 'pending' ? `
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="btn btn-xs" style="background:var(--emerald-light);color:var(--emerald);" onclick="approveExpense('${e.id}')">✓</button>
+            <button class="btn btn-xs" style="background:var(--crimson-light);color:var(--crimson);" onclick="rejectExpense('${e.id}')">✗</button>
+          </div>
+        ` : `<span style="font-size:12px;color:var(--text-muted)">—</span>`}
+      </td>
+    </tr>
+  `).join('');
+  if (!data.length) el.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">No ${filter} expenses</div></div></td></tr>`;
+}
+
+function filterExpenses(v) { renderExpenseTable(v); }
+
+function renderPayrollExceptions() {
+  const el = document.getElementById('payrollExceptions');
+  if (!el) return;
+  const colors = { error: { bg:'#fee2e2', text:'#dc2626', icon:'🔴' }, warning: { bg:'#fef3c7', text:'#d97706', icon:'⚠️' } };
+  el.innerHTML = exceptions.map(ex => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:${colors[ex.severity].bg};border-radius:var(--radius-sm);margin-bottom:8px;">
+      <span>${colors[ex.severity].icon}</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:${colors[ex.severity].text}">${ex.emp}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:1px">${ex.issue}</div>
+      </div>
+      <button class="btn btn-xs btn-ghost" style="margin-left:auto;flex-shrink:0;" onclick="toast('✏️','Editing record','Opening ${ex.emp}\'s profile...')">Fix</button>
+    </div>
+  `).join('');
+}
+
+// ─── NAVIGATION ──────────────────────────────────────
+function navigate(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+  const crumbs = { dashboard:'Dashboard', payroll:'Payroll Processing', employees:'Employee Directory', loans:'Loan Approvals', expenses:'Expense Claims', reports:'Analytics & Reports', settings:'System Settings' };
+  document.getElementById('breadcrumbCurrent').textContent = crumbs[page] || page;
+  closeSidebar();
+}
+
+// ─── MODALS ──────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); });
+});
+
+function openRunPayrollModal() { openModal('runPayrollModal'); }
+function openAddEmployeeModal() { navigate('employees', document.querySelectorAll('.nav-item')[2]); setTimeout(() => openModal('addEmpModal'), 100); }
+
+// ─── LOAN ACTIONS ─────────────────────────────────────
+let reviewingLoan = null;
+function reviewLoan(id) {
+  const loan = loansData.find(l => l.id === id);
+  if (!loan) return;
+  reviewingLoan = id;
+  document.getElementById('loanReviewSub').textContent = loan.id + ' · ' + loan.emp;
+  document.getElementById('loanReviewBody').innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+      <div style="background:var(--bg-subtle);border-radius:var(--radius-sm);padding:14px;">
+        <div style="font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Applicant</div>
+        <div style="font-size:15px;font-weight:600;margin-top:3px;">${loan.emp}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${loan.empId}</div>
+      </div>
+      <div style="background:var(--bg-subtle);border-radius:var(--radius-sm);padding:14px;">
+        <div style="font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Amount Requested</div>
+        <div style="font-family:var(--font-mono);font-size:20px;font-weight:500;color:var(--sapphire);margin-top:3px;">KES ${loan.amount.toLocaleString()}</div>
+      </div>
+    </div>
+    <table class="data-table" style="margin-bottom:16px;">
+      <tbody>
+        <tr><td style="color:var(--text-muted)">Loan Type</td><td><strong>${loan.type}</strong></td></tr>
+        <tr><td style="color:var(--text-muted)">Term</td><td>${loan.term} months</td></tr>
+        <tr><td style="color:var(--text-muted)">Monthly Deduction</td><td class="mono text-red">KES ${loan.monthly.toLocaleString()}</td></tr>
+        <tr><td style="color:var(--text-muted)">Purpose</td><td>${loan.purpose}</td></tr>
+        <tr><td style="color:var(--text-muted)">Applied</td><td>${loan.applied}</td></tr>
+      </tbody>
+    </table>
+    <div class="alert-banner alert-blue" style="margin-bottom:14px;">
+      ℹ️ Employee's current monthly salary is sufficient to cover the deduction. No existing active loans found.
+    </div>
+    <div class="form-group">
+      <label class="form-label">Admin Notes (optional)</label>
+      <textarea class="form-textarea" style="min-height:60px" placeholder="Add any notes for this decision..."></textarea>
+    </div>
+  `;
+  openModal('loanReviewModal');
+}
+
+function decideLoan(decision) {
+  closeModal('loanReviewModal');
+  const loan = loansData.find(l => l.id === reviewingLoan);
+  if (loan) { loan.status = decision === 'approve' ? 'approved' : 'rejected'; renderLoanTable(); }
+  toast(decision==='approve'?'✅':'❌', 'Loan '+(decision==='approve'?'Approved':'Rejected'), reviewingLoan + ' — Decision recorded');
+}
+
+// ─── EXPENSE ACTIONS ──────────────────────────────────
+function approveExpense(id) {
+  const exp = expensesData.find(e => e.id === id);
+  if (exp) { exp.status = 'approved'; renderExpenseTable(); }
+  toast('✅','Expense Approved', id + ' approved successfully');
+}
+
+function rejectExpense(id) {
+  const exp = expensesData.find(e => e.id === id);
+  if (exp) { exp.status = 'rejected'; renderExpenseTable(); }
+  toast('❌','Expense Rejected', id + ' has been rejected');
+}
+
+function bulkApprove() {
+  let count = 0;
+  expensesData.forEach(e => { if (e.status === 'pending') { e.status = 'approved'; count++; } });
+  renderExpenseTable();
+  toast('✅','Bulk Approval Complete', count + ' expense claims approved');
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('#expenseTableBody input[type=checkbox]').forEach(c => c.checked = cb.checked);
+}
+
+// ─── QUICK APPROVAL ───────────────────────────────────
+function quickApprove(i) { toast('✅','Approved', approvalQueue[i].name + ' — ' + approvalQueue[i].detail); approvalQueue.splice(i,1); renderApprovalQueue(); }
+function quickReject(i)  { toast('❌','Rejected', approvalQueue[i].name + ' — Request declined'); approvalQueue.splice(i,1); renderApprovalQueue(); }
+
+// ─── PAYROLL PROCESS ──────────────────────────────────
+function processPayroll() {
+  closeModal('runPayrollModal');
+  toast('🚀','Payroll Processing Started','March 2025 · KES 38.7M · 247 employees');
+  setTimeout(() => toast('🎉','Payroll Completed','All employees processed. Disbursement: 31 Mar 2025'),3000);
+}
+
+// ─── EMPLOYEE SAVE ────────────────────────────────────
+function saveEmployee() {
+  closeModal('addEmpModal');
+  toast('👤','Employee Created','New employee record added to the system');
+}
+
+// ─── MODAL TABS ───────────────────────────────────────
+function tabSwitch(el, tabId) {
+  el.closest('.tab-bar').querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const modal = el.closest('.modal-body') || el.closest('.modal');
+  ['empTab1','empTab2','empTab3','empTab4'].forEach(id => {
+    const t = document.getElementById(id);
+    if (t) t.style.display = (id === tabId) ? 'block' : 'none';
+  });
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
+function closeSidebar()  { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+
+// ─── TOAST ────────────────────────────────────────────
+function toast(icon, title, sub) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<div class="toast-icon">${icon}</div><div class="toast-msg"><div class="toast-title">${title}</div>${sub?`<div class="toast-sub">${sub}</div>`:''}</div>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),300); }, 3800);
+}
+
+// ─── INIT ─────────────────────────────────────────────
+renderAll();
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id)); closeSidebar(); }
+});
+</script>
+</body>
+</html>

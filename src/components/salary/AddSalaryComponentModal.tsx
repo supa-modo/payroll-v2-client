@@ -9,15 +9,22 @@ import Input from "../ui/Input";
 import Select from "../ui/Select";
 import DateInput from "../ui/DateInput";
 import Textarea from "../ui/Textarea";
+import { autoCalcStatutoryAmount } from "@/utils/statutoryCalc";
 
 /* ─── Add Salary Component Modal ────────────────────────────────── */
 interface AddSalaryComponentModalProps {
   employeeId: string;
+  basicSalary?: number;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const AddSalaryComponentModal: React.FC<AddSalaryComponentModalProps> = ({ employeeId, onClose, onSuccess }) => {
+const AddSalaryComponentModal: React.FC<AddSalaryComponentModalProps> = ({
+  employeeId,
+  basicSalary = 0,
+  onClose,
+  onSuccess,
+}) => {
   const [available, setAvailable] = useState<SalaryComponent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -46,12 +53,37 @@ const AddSalaryComponentModal: React.FC<AddSalaryComponentModalProps> = ({ emplo
       return { ...f, components: comps };
     });
 
+  const selectComponent = (i: number, salaryComponentId: string) => {
+    const selected = available.find((c) => c.id === salaryComponentId);
+    const autoAmount = selected ? autoCalcStatutoryAmount(selected, basicSalary) : null;
+
+    setForm((f) => {
+      const comps = [...f.components];
+      comps[i] = {
+        ...comps[i],
+        salaryComponentId,
+        amount: autoAmount === null ? 0 : autoAmount,
+      };
+      return { ...f, components: comps };
+    });
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!form.components.length) { setError("Add at least one component."); return; }
     if (form.components.some(c => !c.salaryComponentId || c.amount < 0)) {
       setError("All components need a valid selection and non-negative amount."); return;
+    }
+    if (basicSalary <= 0) {
+      const hasStatutoryDeduction = form.components.some((c) => {
+        const selected = available.find((a) => a.id === c.salaryComponentId);
+        return selected?.type === "deduction" && selected.isStatutory;
+      });
+      if (hasStatutoryDeduction) {
+        setError("Add Basic Salary first before adding statutory deductions (PAYE, NSSF, SHIF, Housing Levy).");
+        return;
+      }
     }
     setLoading(true);
     try {
@@ -124,7 +156,7 @@ const AddSalaryComponentModal: React.FC<AddSalaryComponentModalProps> = ({ emplo
                 <Select
                   label="Select Component"
                   value={comp.salaryComponentId}
-                  onChange={e => updateRow(i, "salaryComponentId", e.target.value)}
+                  onChange={e => selectComponent(i, e.target.value)}
                   options={[
                     { value: "", label: "Choose…" },
                     ...available.filter(c => c.isActive).map(c => ({ value: c.id, label: `${c.name} (${c.type})` })),

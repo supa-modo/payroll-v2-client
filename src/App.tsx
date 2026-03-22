@@ -66,10 +66,7 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import StatutoryRatesPage from "./pages/admin/StatutoryRatesPage";
 import PortalDashboard from "./pages/portal/PortalDashboard";
 import PortalPayslips from "./pages/portal/PortalPayslips";
-import PortalSalaryHistory from "./pages/portal/PortalSalaryHistory";
-import PortalExpenses from "./pages/portal/PortalExpenses";
-import PortalLoans from "./pages/portal/PortalLoans";
-import PortalProfile from "./pages/portal/PortalProfile";
+import { PortalSalaryHistory, PortalExpenses, PortalLoans, PortalProfile } from "./pages/portal/PortalPages";
 
 const isEmployeePortalUser = (user: any) => {
   if (!user) return false;

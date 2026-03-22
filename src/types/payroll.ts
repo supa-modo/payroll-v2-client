@@ -47,6 +47,11 @@ export interface Payroll {
   payeAmount: number;
   nssfAmount: number;
   nhifAmount: number;
+  shifAmount: number;
+  housingLevyAmount: number;
+  taxableIncome: number;
+  personalRelief: number;
+  insuranceRelief: number;
   status: string;
   paidAt?: string | null;
   paymentReference?: string | null;
@@ -104,6 +109,10 @@ export interface PayrollSummary {
       };
       grossPay: number;
       totalDeductions: number;
+      payeAmount: number;
+      nssfAmount: number;
+      shifAmount: number;
+      housingLevyAmount: number;
       netPay: number;
       status: string;
     }>;

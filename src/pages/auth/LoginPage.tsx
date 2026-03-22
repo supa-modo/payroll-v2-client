@@ -90,7 +90,7 @@ const LoginPage: React.FC = () => {
           features={[
             { icon: <TbShieldHalfFilled size={22} />, text: "Secure, role-based access control" },
             { icon: <PiUsersThreeDuotone size={22} />, text: "Multi-department employee management" },
-            { icon: <TbTrendingUp size={22} />, text: "Automated PAYE, NSSF & NHIF" },
+            { icon: <TbTrendingUp size={22} />, text: "Automated PAYE, NSSF & SHIF" },
             { icon: <FiCheckCircle size={21} />, text: "Payslip generation in seconds" },
           ]}
         />

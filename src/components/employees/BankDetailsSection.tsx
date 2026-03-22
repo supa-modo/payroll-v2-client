@@ -10,7 +10,7 @@ import type {
   CreateBankDetailsInput,
 } from "../../types/employeeExtension";
 import ToggleSwitch from "../ui/ToggleSwitch";
-import { TbEdit, TbTrash } from "react-icons/tb";
+import { TbAlertTriangle, TbEdit, TbTrash } from "react-icons/tb";
 
 interface BankDetailsSectionProps {
   employeeId: string;
@@ -159,11 +159,12 @@ const BankDetailsSection: React.FC<BankDetailsSectionProps> = ({ employeeId }) =
       </div>
 
       {bankDetails.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-gray-500">No bank details added yet</p>
-          <Button onClick={handleCreate} variant="outline" className="mt-4">
-            Add Bank Details
-          </Button>
+        <div className="text-center py-8 bg-gray-50 rounded-2xl mb-2 border border-gray-200">
+          <TbAlertTriangle className="w-10 h-10 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 text-[0.9rem]">No bank details added yet</p>
+          <button className="mt-6 hover:cursor-pointer text-primary-600 hover:text-primary-700 text-sm underline underline-offset-4" onClick={handleCreate} title="Add payment method">
+            Click here to add payment method
+          </button>
         </div>
       ) : (
         <div className="space-y-3 mb-2">

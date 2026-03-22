@@ -428,6 +428,50 @@ const ReviewPayrollPage: React.FC = () => {
               ),
             },
             {
+              header: "PAYE",
+              cell: (payroll: any) => (
+                <span>
+                  {new Intl.NumberFormat("en-KE", {
+                    style: "currency",
+                    currency: "KES",
+                  }).format(payroll.payeAmount)}
+                </span>
+              ),
+            },
+            {
+              header: "NSSF",
+              cell: (payroll: any) => (
+                <span>
+                  {new Intl.NumberFormat("en-KE", {
+                    style: "currency",
+                    currency: "KES",
+                  }).format(payroll.nssfAmount)}
+                </span>
+              ),
+            },
+            {
+              header: "SHIF",
+              cell: (payroll: any) => (
+                <span>
+                  {new Intl.NumberFormat("en-KE", {
+                    style: "currency",
+                    currency: "KES",
+                  }).format(payroll.shifAmount)}
+                </span>
+              ),
+            },
+            {
+              header: "Housing Levy",
+              cell: (payroll: any) => (
+                <span>
+                  {new Intl.NumberFormat("en-KE", {
+                    style: "currency",
+                    currency: "KES",
+                  }).format(payroll.housingLevyAmount)}
+                </span>
+              ),
+            },
+            {
               header: "Net Pay",
               cell: (payroll: any) => (
                 <span className="font-semibold text-primary-600">

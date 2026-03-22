@@ -2,7 +2,13 @@
  * Report Types
  */
 
-export type PayrollReportType = "summary" | "department" | "tax" | "history" | "trends";
+export type PayrollReportType =
+  | "summary"
+  | "department"
+  | "tax"
+  | "history"
+  | "trends"
+  | "deductions";
 export type ExpenseReportType = "category" | "department" | "trends" | "top-spenders";
 export type ExportFormat = "csv" | "excel" | "pdf";
 
@@ -78,9 +84,11 @@ export interface TaxSummary {
     pendingPAYE: number;
     pendingNSSF: number;
     pendingNHIF: number;
+    pendingHOUSING_LEVY: number;
     remittedPAYE: number;
     remittedNSSF: number;
     remittedNHIF: number;
+    remittedHOUSING_LEVY: number;
   };
 }
 
@@ -88,7 +96,7 @@ export interface TaxRemittance {
   id: string;
   tenantId: string;
   payrollPeriodId: string;
-  taxType: "PAYE" | "NSSF" | "NHIF";
+  taxType: "PAYE" | "NSSF" | "NHIF" | "SHIF" | "HOUSING_LEVY";
   amount: number;
   dueDate: string;
   remittedAt?: string | null;
@@ -120,6 +128,16 @@ export interface EmployeePayrollHistory {
   nssfAmount: number;
   nhifAmount: number;
   status: string;
+}
+
+export interface DeductionBreakdownRow {
+  salaryComponentId: string | null;
+  name: string;
+  category: string;
+  totalAmount: number;
+  lineCount: number;
+  payrollCount: number;
+  employeeCount: number;
 }
 
 export interface PayrollTrend {
@@ -164,7 +182,13 @@ export interface TopSpender {
 }
 
 export interface PayrollReportResponse {
-  report: MonthlyPayrollSummary[] | DepartmentalPayrollBreakdown[] | TaxSummary | EmployeePayrollHistory[] | PayrollTrend[];
+  report:
+    | MonthlyPayrollSummary[]
+    | DepartmentalPayrollBreakdown[]
+    | TaxSummary
+    | EmployeePayrollHistory[]
+    | PayrollTrend[]
+    | DeductionBreakdownRow[];
   type: PayrollReportType;
   startDate: string;
   endDate: string;

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
-  FiSearch, FiDollarSign,
-  FiEye, FiEdit2, FiTrash2,
+  FiSearch, FiDollarSign, FiTrash2,
   FiMoreVertical, FiDownload, FiUserCheck, FiUserX,
   FiX, FiRefreshCw,
 } from "react-icons/fi";
-import { PiUserPlusDuotone, PiUsersThreeDuotone } from "react-icons/pi";
+import { PiUserDuotone, PiUserPlusDuotone, PiUsersThreeDuotone } from "react-icons/pi";
 import api from "../../services/api";
 import NotificationModal, { NotificationType } from "../../components/ui/NotificationModal";
 import type { Employee } from "../../types/employee";
@@ -17,6 +17,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import DataTable from "@/components/ui/DataTable";
+import { TbEdit, TbMoneybag } from "react-icons/tb";
 
 /* ── status config ── */
 const STATUS_MAP: Record<string, { bg: string; text: string; dot: string }> = {
@@ -40,43 +41,104 @@ const QuickActionsMenu = ({
   onDelete: () => void;
 }) => {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const h = (e: MouseEvent) => {
+      if (!open) return;
+      const target = e.target as Node;
+      if (buttonRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
-  }, []);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !buttonRef.current) return;
+
+    const MENU_WIDTH = 192; // w-48
+    const MARGIN = 8;
+
+    const rect = buttonRef.current.getBoundingClientRect();
+    const menuHeight = menuRef.current?.getBoundingClientRect().height ?? 220;
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const placeBelow = spaceBelow >= menuHeight + MARGIN;
+
+    const top = placeBelow ? rect.bottom + MARGIN : rect.top - menuHeight - MARGIN;
+
+    let left = rect.right - MENU_WIDTH;
+    left = Math.max(MARGIN, Math.min(left, window.innerWidth - MENU_WIDTH - MARGIN));
+
+    setPosition({ top, left });
+  }, [open]);
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={buttonRef}
         onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
         className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
       >
         <FiMoreVertical className="w-4 h-4" />
       </button>
-      {open && (
-        <div className="absolute right-0 top-9 z-50 w-48 bg-white rounded-xl border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.12)] py-1 overflow-hidden">
-          <button onClick={() => { onView(); setOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
-            <FiEye className="w-3.5 h-3.5" /> View Profile
-          </button>
-          <button onClick={() => { onEdit(); setOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
-            <FiEdit2 className="w-3.5 h-3.5" /> Edit Details
-          </button>
-          <button onClick={() => { onSalary(); setOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            <FiDollarSign className="w-3.5 h-3.5" /> View Salary
-          </button>
-          <div className="h-px bg-slate-100 my-1" />
-          <button onClick={() => { onDelete(); setOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition-colors">
-            <FiTrash2 className="w-3.5 h-3.5" /> Delete
-          </button>
-        </div>
-      )}
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: position.top,
+              left: position.left,
+              zIndex: 9999,
+            }}
+            className="min-w-48 bg-white rounded-xl border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden"
+          >
+            <button
+              onClick={() => {
+                onView();
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            >
+              <PiUserDuotone className="w-5 h-5" /> View Profile
+            </button>
+            <button
+              onClick={() => {
+                onEdit();
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            >
+              <TbEdit className="w-5 h-5" /> Edit Details
+            </button>
+            <button
+              onClick={() => {
+                onSalary();
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+            >
+              <TbMoneybag className="w-5 h-5" /> View Salary
+            </button>
+            <div className="h-px bg-slate-200/80 " />
+            <button
+              onClick={() => {
+                onDelete();
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition-colors"
+            >
+              <FiTrash2 className="w-3.5 h-3.5" /> Delete
+            </button>
+          </div>,
+          document.body
+        )
+      }
     </div>
   );
 };
@@ -326,7 +388,7 @@ const EmployeesPage: React.FC = () => {
             <div className="flex items-center gap-4">
 
 
-              <div className="relative flex-1 min-w-sm lg:min-w-md max-w-lg">
+              <div className="relative flex-1 min-w-sm lg:min-w-lg">
                 <Input
                   type="text"
                   placeholder="Search employees..."
@@ -355,7 +417,7 @@ const EmployeesPage: React.FC = () => {
                     label: dept.name,
                   })),
                 ]}
-                wrapperClassName="mb-0"
+                wrapperClassName="mb-0 min-w-[12rem]"
                 className="text-sm"
               />
               <Select
@@ -373,7 +435,7 @@ const EmployeesPage: React.FC = () => {
                   { value: "terminated", label: "Terminated" },
                   { value: "resigned", label: "Resigned" },
                 ]}
-                wrapperClassName="mb-0"
+                wrapperClassName="mb-0 min-w-[8rem]"
                 className="text-sm"
               />
               <Select
@@ -390,8 +452,8 @@ const EmployeesPage: React.FC = () => {
                   { value: "casual", label: "Casual" },
                   { value: "intern", label: "Intern" },
                 ]}
-                wrapperClassName="mb-0"
-                className="text-sm"
+                wrapperClassName="mb-0 min-w-[10rem]"
+                className="text-sm "
               />
             </div>
 
@@ -564,12 +626,15 @@ const EmployeesPage: React.FC = () => {
                       >
                         <FiTrash2 className="w-4 h-4" />
                       </button>
+
                       <QuickActionsMenu
                         onView={() => setDetailEmpId(emp.id)}
                         onEdit={() => { setEditEmployee(emp); setShowFormDrawer(true); }}
                         onSalary={() => navigate(`/employees/${emp.id}/salary`)}
                         onDelete={() => handleDelete(emp.id)}
                       />
+
+
                     </div>
                   ),
                 },

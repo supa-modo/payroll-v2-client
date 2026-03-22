@@ -22,6 +22,7 @@ const REPORT_TYPES: Array<{ value: PayrollReportType; label: string }> = [
   { value: "summary", label: "Monthly Summary" },
   { value: "department", label: "Department Breakdown" },
   { value: "tax", label: "Tax Summary" },
+  { value: "deductions", label: "Deduction Breakdown" },
   { value: "trends", label: "Trends" },
 ];
 
@@ -135,7 +136,7 @@ export default function PayrollReportsPage() {
                   format: formatCurrency,
                 },
                 {
-                  header: "NHIF",
+                  header: "SHIF",
                   accessor: "totalNHIF",
                   format: formatCurrency,
                 },
@@ -186,9 +187,11 @@ export default function PayrollReportsPage() {
           pendingPAYE: 0,
           pendingNSSF: 0,
           pendingNHIF: 0,
+          pendingHOUSING_LEVY: 0,
           remittedPAYE: 0,
           remittedNSSF: 0,
           remittedNHIF: 0,
+          remittedHOUSING_LEVY: 0,
         };
 
         return (
@@ -199,9 +202,11 @@ export default function PayrollReportsPage() {
                 pendingPAYE={remittanceStatus.pendingPAYE}
                 pendingNSSF={remittanceStatus.pendingNSSF}
                 pendingNHIF={remittanceStatus.pendingNHIF}
+                pendingHOUSING_LEVY={remittanceStatus.pendingHOUSING_LEVY}
                 remittedPAYE={remittanceStatus.remittedPAYE}
                 remittedNSSF={remittanceStatus.remittedNSSF}
                 remittedNHIF={remittanceStatus.remittedNHIF}
+                remittedHOUSING_LEVY={remittanceStatus.remittedHOUSING_LEVY}
               />
             </div>
 
@@ -256,7 +261,7 @@ export default function PayrollReportsPage() {
                     </p>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <p className="text-sm text-gray-600">Total NHIF</p>
+                    <p className="text-sm text-gray-600">Total SHIF</p>
                     <p className="text-2xl font-bold text-purple-600">
                       {formatCurrency(taxSummary?.totalNHIF || 0)}
                     </p>
@@ -280,7 +285,7 @@ export default function PayrollReportsPage() {
                     { header: "Month", accessor: "month" },
                     { header: "PAYE", accessor: "paye", format: formatCurrency },
                     { header: "NSSF", accessor: "nssf", format: formatCurrency },
-                    { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                    { header: "SHIF", accessor: "nhif", format: formatCurrency },
                   ]}
                   onExport={handleExport}
                 />
@@ -298,7 +303,7 @@ export default function PayrollReportsPage() {
                     { header: "Status", accessor: "status" },
                     { header: "PAYE", accessor: "paye", format: formatCurrency },
                     { header: "NSSF", accessor: "nssf", format: formatCurrency },
-                    { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                    { header: "SHIF", accessor: "nhif", format: formatCurrency },
                   ]}
                   onExport={handleExport}
                 />
@@ -313,7 +318,7 @@ export default function PayrollReportsPage() {
                     { header: "Department", accessor: "departmentName" },
                     { header: "PAYE", accessor: "paye", format: formatCurrency },
                     { header: "NSSF", accessor: "nssf", format: formatCurrency },
-                    { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                    { header: "SHIF", accessor: "nhif", format: formatCurrency },
                   ]}
                   onExport={handleExport}
                 />
@@ -330,7 +335,7 @@ export default function PayrollReportsPage() {
                       { header: "Employee Name", accessor: "employeeName" },
                       { header: "PAYE", accessor: "paye", format: formatCurrency },
                       { header: "NSSF", accessor: "nssf", format: formatCurrency },
-                      { header: "NHIF", accessor: "nhif", format: formatCurrency },
+                      { header: "SHIF", accessor: "nhif", format: formatCurrency },
                     ]}
                     onExport={handleExport}
                   />
@@ -378,6 +383,27 @@ export default function PayrollReportsPage() {
           </>
         );
 
+      case "deductions":
+        return (
+          <ReportTable
+            data={safeReportData}
+            columns={[
+              { header: "Salary Component ID", accessor: "salaryComponentId" },
+              { header: "Name", accessor: "name" },
+              { header: "Category", accessor: "category" },
+              {
+                header: "Total Amount",
+                accessor: "totalAmount",
+                format: formatCurrency,
+              },
+              { header: "Payroll Count", accessor: "payrollCount" },
+              { header: "Line Count", accessor: "lineCount" },
+              { header: "Employee Count", accessor: "employeeCount" },
+            ]}
+            onExport={handleExport}
+          />
+        );
+
       default:
         return null;
     }
@@ -415,7 +441,7 @@ export default function PayrollReportsPage() {
         <ReportFilters
           filters={filters}
           onChange={setFilters}
-          showDepartment={reportType === "department"}
+          showDepartment={reportType === "department" || reportType === "deductions"}
         />
       </div>
 

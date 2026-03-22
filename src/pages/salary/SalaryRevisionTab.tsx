@@ -18,6 +18,7 @@ import DateInput from "@/components/ui/DateInput";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import type { EmployeeSalary, SalaryComponent, SalaryRevisionHistory } from "../../types/salary";
+import { autoCalcStatutoryAmount } from "@/utils/statutoryCalc";
 
 /* ─── helpers ────────────────────────────────────────────── */
 const KES = (v: number) =>
@@ -108,6 +109,7 @@ const CreateRevisionPanel: React.FC<PanelProps> = ({
     id?: string; salaryComponentId: string; amount: number;
     effectiveTo: string | null; isNew: boolean; isDeleted: boolean;
     componentName?: string; componentType?: string;
+    amountSource?: "manual" | "auto";
   };
 
   const [components, setComponents] = useState<CompRow[]>([]);
@@ -128,6 +130,7 @@ const CreateRevisionPanel: React.FC<PanelProps> = ({
       isDeleted: false,
       componentName: esc.salaryComponent?.name || "Unknown",
       componentType: esc.salaryComponent?.type || "earning",
+      amountSource: "manual",
     }));
     setComponents(comps);
     setOriginals(comps.map(c => ({ id: c.id!, amount: c.amount, effectiveTo: c.effectiveTo })));
@@ -137,7 +140,10 @@ const CreateRevisionPanel: React.FC<PanelProps> = ({
   const handleClose = () => { setVisible(false); setTimeout(onClose, 300); };
 
   const addRow = () =>
-    setComponents(cs => [...cs, { salaryComponentId: "", amount: 0, effectiveTo: null, isNew: true, isDeleted: false }]);
+    setComponents(cs => [
+      { salaryComponentId: "", amount: 0, effectiveTo: null, isNew: true, isDeleted: false, amountSource: "manual" },
+      ...cs,
+    ]);
 
   const removeRow = (i: number) =>
     setComponents(cs => {
@@ -153,9 +159,67 @@ const CreateRevisionPanel: React.FC<PanelProps> = ({
   const updateRow = (i: number, field: string, value: any) =>
     setComponents(cs => {
       const updated = [...cs];
-      updated[i] = { ...updated[i], [field]: field === "amount" ? parseFloat(value) || 0 : (value || null) };
+      if (field === "salaryComponentId") {
+        const selected = available.find(a => a.id === value);
+        const basicSalary = (() => {
+          const basicRow = cs
+            .filter(r => !r.isDeleted)
+            .find(r => {
+              const comp = available.find(a => a.id === r.salaryComponentId);
+              const code = (comp?.code || "").toLowerCase();
+              const name = (comp?.name || r.componentName || "").toLowerCase();
+              return comp?.type === "earning" && (code === "basic" || name.includes("basic"));
+            });
+          return basicRow?.amount || 0;
+        })();
+
+        const autoAmount = selected ? autoCalcStatutoryAmount(selected, basicSalary) : null;
+        updated[i] = {
+          ...updated[i],
+          salaryComponentId: value,
+          amount: autoAmount === null ? 0 : autoAmount,
+          amountSource: autoAmount === null ? "manual" : "auto",
+        };
+      } else if (field === "amount") {
+        updated[i] = { ...updated[i], amount: parseFloat(value) || 0, amountSource: "manual" };
+      } else {
+        updated[i] = { ...updated[i], [field]: value || null };
+      }
       return updated;
     });
+
+  const basicSalary = (() => {
+    const basicRow = components
+      .filter(r => !r.isDeleted)
+      .find(r => {
+        const comp = available.find(a => a.id === r.salaryComponentId);
+        const code = (comp?.code || "").toLowerCase();
+        const name = (comp?.name || r.componentName || "").toLowerCase();
+        return comp?.type === "earning" && (code === "basic" || name.includes("basic"));
+      });
+    return basicRow?.amount || 0;
+  })();
+
+  // If the user changes Basic salary, keep auto-calculated statutory deduction rows in sync.
+  // We only update rows marked as `amountSource: "auto"` so manual overrides remain untouched.
+  React.useEffect(() => {
+    if (!available.length) return;
+    setComponents(prev => {
+      let changed = false;
+      const next = prev.map(row => {
+        if (row.isDeleted) return row;
+        if (row.amountSource !== "auto") return row;
+        const comp = available.find(a => a.id === row.salaryComponentId);
+        if (!comp) return row;
+        const autoAmount = autoCalcStatutoryAmount(comp, basicSalary);
+        if (autoAmount === null) return row;
+        if (Number(row.amount) === Number(autoAmount)) return row;
+        changed = true;
+        return { ...row, amount: autoAmount };
+      });
+      return changed ? next : prev;
+    });
+  }, [basicSalary, available]);
 
   const currentGross = components
     .filter(c => !c.isDeleted)
@@ -174,6 +238,16 @@ const CreateRevisionPanel: React.FC<PanelProps> = ({
 
     const deletedIds = components.filter(c => c.isDeleted && c.id).map(c => c.id!);
     const newComps = components.filter(c => c.isNew && !c.isDeleted);
+    if (basicSalary <= 0) {
+      const hasStatutoryDeduction = newComps.some((c) => {
+        const selected = available.find((a) => a.id === c.salaryComponentId);
+        return selected?.type === "deduction" && selected.isStatutory;
+      });
+      if (hasStatutoryDeduction) {
+        setError("Add Basic Salary first before adding statutory deductions (PAYE, NSSF, SHIF, Housing Levy).");
+        return;
+      }
+    }
     const modComps = components.filter(c => {
       if (c.isNew || c.isDeleted || !c.id) return false;
       const orig = originals.find(o => o.id === c.id);
@@ -302,7 +376,9 @@ const CreateRevisionPanel: React.FC<PanelProps> = ({
                           {comp.isNew && <span className="text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full px-2 py-0.5">New</span>}
                         </div>
                       ) : (
-                        <Select label="Select Component" value={comp.salaryComponentId || ""}
+                  <Select
+                          label="Select Component"
+                          value={comp.salaryComponentId || ""}
                           onChange={e => updateRow(actualIdx, "salaryComponentId", e.target.value)}
                           options={[
                             { value: "", label: "Choose a component…" },
@@ -375,16 +451,28 @@ const SalaryRevisionTab: React.FC<Props> = ({ employeeId, employee }) => {
   const [salary, setSalary] = useState<EmployeeSalary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPanel, setShowPanel] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setHistoryError(null);
     try {
       const [salaryRes, historyRes] = await Promise.allSettled([
         api.get(`/employees/${employeeId}/salary`),
         api.get(`/employees/${employeeId}/salary/history`),
       ]);
       if (salaryRes.status === "fulfilled") setSalary(salaryRes.value.data || null);
-      if (historyRes.status === "fulfilled") setRevisions(historyRes.value.data.revisions || []);
+      if (historyRes.status === "fulfilled") {
+        setRevisions(historyRes.value.data.revisions || []);
+      } else {
+        const responseData = (historyRes.reason as any)?.response?.data;
+        const message =
+          responseData?.error ||
+          responseData?.details ||
+          "Unable to load revision history right now.";
+        setHistoryError(message);
+        setRevisions([]);
+      }
     } catch { }
     finally { setLoading(false); }
   }, [employeeId]);
@@ -414,6 +502,12 @@ const SalaryRevisionTab: React.FC<Props> = ({ employeeId, employee }) => {
           </Button>
         )}
       </div>
+
+      {historyError && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-sm text-amber-800">{historyError}</p>
+        </div>
+      )}
 
       {/* History list */}
       {revisions.length === 0 ? (

@@ -98,6 +98,8 @@ export default function RemittanceTable({
                           ? "bg-blue-100 text-blue-800"
                           : remittance.taxType === "NSSF"
                           ? "bg-green-100 text-green-800"
+                          : remittance.taxType === "HOUSING_LEVY"
+                          ? "bg-orange-100 text-orange-800"
                           : "bg-purple-100 text-purple-800"
                       }`}
                     >
