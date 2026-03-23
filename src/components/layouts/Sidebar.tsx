@@ -1,14 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  FiHome, FiUsers, FiBriefcase, FiX, FiShield, FiSettings,
-  FiDollarSign, FiCalendar, FiFileText, FiTag, FiCreditCard,
-  FiBarChart2, FiDatabase, FiTrendingUp, FiChevronLeft, FiChevronRight,
-  FiPackage
+  FiTrendingUp, FiChevronLeft, FiChevronRight,
+  FiX
 } from "react-icons/fi";
 import { clsx } from "clsx";
 import { useAuthStore } from "../../store/authStore";
 import { TbBriefcase, TbCalendarDot, TbCoins, TbDatabaseCog, TbMoneybag, TbPresentationAnalyticsFilled, TbSettings, TbShieldHalfFilled, TbShieldLockFilled, TbTags, TbTagsFilled } from "react-icons/tb";
-import { PiCoinsDuotone, PiHandCoinsDuotone, PiUsersThreeDuotone } from "react-icons/pi";
+import { PiHandCoinsDuotone, PiUsersThreeDuotone } from "react-icons/pi";
 import { MdSpaceDashboard } from "react-icons/md";
 
 interface SidebarProps {
