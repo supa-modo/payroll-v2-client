@@ -27,9 +27,23 @@
 import React from "react";
 import { FiArrowUpRight, FiArrowDownRight } from "react-icons/fi";
 
-const StatCard = ({
+interface StatCardProps {
+  icon?: React.ComponentType<{ size?: number; className?: string }> | React.ReactNode;
+  iconColor?: string;
+  title?: string;
+  label?: string;
+  value?: string | number;
+  sub?: string;
+  badge?: { label: string; positive?: boolean | null };
+  onClick?: () => void;
+  className?: string;
+  gradient?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({
   icon: Icon,
-  iconColor = "#2563eb",
+  iconColor = "#101828",
+  title,
   label = "Metric",
   value = "—",
   sub,
@@ -37,41 +51,41 @@ const StatCard = ({
   onClick,
   className = "",
 }) => {
-  /* Derive a very light tint from iconColor for the icon bg */
-  const iconBg = iconColor + "14"; // 8% opacity hex
+
 
   return (
     <div
       onClick={onClick}
       className={`
-        group relative bg-white border border-gray-600 rounded-2xl
-        px-4 py-4 flex items-center gap-4
+        group relative bg-white border border-gray-600 rounded-[1.2rem]
+        px-4 py-3.5 flex items-center gap-4
         shadow-[0_1px_4px_rgba(0,0,0,0.06)]
         hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)]
-        hover:border-slate-200
         transition-all duration-200 ease-out
         ${onClick ? "cursor-pointer" : "cursor-default"}
         ${className}
       `}
     >
-      {/* Left accent bar */}
-      <div
-        className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        style={{ background: iconColor }}
-      />
+
 
       {/* Icon block */}
       <div
         className="w-11 h-11 flex items-center justify-center shrink-0"
-        
+        style={{ color: iconColor }}
+
       >
-        {Icon && <Icon size={40} />}
+        {Icon &&
+          (typeof Icon === "function" ? (
+            <Icon size={40} />
+          ) : (
+            <span className="inline-flex items-center justify-center text-[28px] leading-none">{Icon}</span>
+          ))}
       </div>
 
       {/* Text block */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-700 truncate mb-0.5">
-          {label}
+          {title ?? label}
         </p>
         <p className="text-2xl font-extrabold font-google text-slate-900 leading-tight tracking-tight truncate">
           {value}
@@ -93,8 +107,8 @@ const StatCard = ({
               ${badge.positive === false
                 ? "bg-red-50 text-red-500"
                 : badge.positive === true
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-slate-100 text-slate-500"}
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-slate-100 text-slate-500"}
             `}
           >
             {badge.positive === true && <FiArrowUpRight size={11} />}

@@ -25,7 +25,7 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-white overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}

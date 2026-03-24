@@ -9,6 +9,12 @@ import {
   TbAlertHexagon, TbCircleCheck, TbProgress, TbLock,
 } from "react-icons/tb";
 import { PiUsersThreeDuotone } from "react-icons/pi";
+import Button from "@/components/ui/Button";
+import StatCard from "@/components/ui/StatCard";
+import SectionCard from "@/components/ui/SectionCard";
+import DataTable from "@/components/ui/DataTable";
+import { PayrollPeriod } from "@/types/payroll";
+import NotificationModal, { NotificationType } from "@/components/ui/NotificationModal";
 
 // ─── NOTE ────────────────────────────────────────────────────────────────────
 // Replace these stub imports with your real components & api service:
@@ -23,79 +29,57 @@ import { PiUsersThreeDuotone } from "react-icons/pi";
 //   import { useNavigate } from "react-router-dom";
 // ─────────────────────────────────────────────────────────────────────────────
 
+
 /* ─── MOCK DATA (remove when wiring real API) ──────────── */
 const MOCK_PERIODS = [
-  { id: "1", name: "March 2025",    periodType: "monthly", startDate: "2025-03-01", endDate: "2025-03-31", payDate: "2025-03-31", status: "draft",           totalEmployees: 247, totalNet: 39683900, totalGross: 52418300, totalDeductions: 12734400 },
-  { id: "2", name: "February 2025", periodType: "monthly", startDate: "2025-02-01", endDate: "2025-02-28", payDate: "2025-02-28", status: "locked",          totalEmployees: 244, totalNet: 38920000, totalGross: 51200000, totalDeductions: 12280000 },
-  { id: "3", name: "January 2025",  periodType: "monthly", startDate: "2025-01-01", endDate: "2025-01-31", payDate: "2025-01-31", status: "locked",          totalEmployees: 241, totalNet: 38600000, totalGross: 50800000, totalDeductions: 12200000 },
-  { id: "4", name: "December 2024", periodType: "monthly", startDate: "2024-12-01", endDate: "2024-12-31", payDate: "2024-12-31", status: "locked",          totalEmployees: 238, totalNet: 42100000, totalGross: 55400000, totalDeductions: 13300000 },
-  { id: "5", name: "November 2024", periodType: "monthly", startDate: "2024-11-01", endDate: "2024-11-30", payDate: "2024-11-30", status: "locked",          totalEmployees: 235, totalNet: 35800000, totalGross: 47200000, totalDeductions: 11400000 },
-  { id: "6", name: "April 2025",    periodType: "monthly", startDate: "2025-04-01", endDate: "2025-04-30", payDate: "2025-04-30", status: "pending_approval",totalEmployees: 0,   totalNet: 0,        totalGross: 0,        totalDeductions: 0 },
+  { id: "1", name: "March 2025", periodType: "monthly", startDate: "2025-03-01", endDate: "2025-03-31", payDate: "2025-03-31", status: "draft", totalEmployees: 247, totalNet: 39683900, totalGross: 52418300, totalDeductions: 12734400 },
+  { id: "2", name: "February 2025", periodType: "monthly", startDate: "2025-02-01", endDate: "2025-02-28", payDate: "2025-02-28", status: "locked", totalEmployees: 244, totalNet: 38920000, totalGross: 51200000, totalDeductions: 12280000 },
+  { id: "3", name: "January 2025", periodType: "monthly", startDate: "2025-01-01", endDate: "2025-01-31", payDate: "2025-01-31", status: "locked", totalEmployees: 241, totalNet: 38600000, totalGross: 50800000, totalDeductions: 12200000 },
+  { id: "4", name: "December 2024", periodType: "monthly", startDate: "2024-12-01", endDate: "2024-12-31", payDate: "2024-12-31", status: "locked", totalEmployees: 238, totalNet: 42100000, totalGross: 55400000, totalDeductions: 13300000 },
+  { id: "5", name: "November 2024", periodType: "monthly", startDate: "2024-11-01", endDate: "2024-11-30", payDate: "2024-11-30", status: "locked", totalEmployees: 235, totalNet: 35800000, totalGross: 47200000, totalDeductions: 11400000 },
+  { id: "6", name: "April 2025", periodType: "monthly", startDate: "2025-04-01", endDate: "2025-04-30", payDate: "2025-04-30", status: "pending_approval", totalEmployees: 0, totalNet: 0, totalGross: 0, totalDeductions: 0 },
 ];
 
 const MOCK_EXCEPTIONS = [
-  { id: "e1", employee: "Hassan Omar",   employeeId: "EMP-00240", issue: "Missing bank account details",               severity: "error"   },
-  { id: "e2", employee: "Ivy Mukami",    employeeId: "EMP-00239", issue: "Missing KRA PIN — tax cannot be calculated", severity: "error"   },
-  { id: "e3", employee: "EMP-00231",     employeeId: "EMP-00231", issue: "Negative net pay due to loan deduction",     severity: "warning" },
-  { id: "e4", employee: "James Kariuki", employeeId: "EMP-00225", issue: "New hire — pending onboarding documents",   severity: "warning" },
+  { id: "e1", employee: "Hassan Omar", employeeId: "EMP-00240", issue: "Missing bank account details", severity: "error" },
+  { id: "e2", employee: "Ivy Mukami", employeeId: "EMP-00239", issue: "Missing KRA PIN — tax cannot be calculated", severity: "error" },
+  { id: "e3", employee: "EMP-00231", employeeId: "EMP-00231", issue: "Negative net pay due to loan deduction", severity: "warning" },
+  { id: "e4", employee: "James Kariuki", employeeId: "EMP-00225", issue: "New hire — pending onboarding documents", severity: "warning" },
 ];
 
 const PAYROLL_SUMMARY = [
-  { label: "Basic Salaries",        employees: 247, amount: 36820000, type: "earning"   },
-  { label: "Housing Allowances",    employees: 198, amount: 7920000,  type: "earning"   },
-  { label: "Transport Allowances",  employees: 247, amount: 4940000,  type: "earning"   },
-  { label: "Medical Allowances",    employees: 210, amount: 2738300,  type: "earning"   },
-  { label: "PAYE Tax",              employees: 247, amount: 9100000,  type: "deduction" },
-  { label: "NHIF Contributions",    employees: 247, amount: 419000,   type: "deduction" },
-  { label: "NSSF Contributions",    employees: 247, amount: 49400,    type: "deduction" },
-  { label: "Loan Deductions",       employees: 38,  amount: 2856000,  type: "deduction" },
-  { label: "Salary Advances",       employees: 5,   amount: 310000,   type: "deduction" },
+  { label: "Basic Salaries", employees: 247, amount: 36820000, type: "earning" },
+  { label: "Housing Allowances", employees: 198, amount: 7920000, type: "earning" },
+  { label: "Transport Allowances", employees: 247, amount: 4940000, type: "earning" },
+  { label: "Medical Allowances", employees: 210, amount: 2738300, type: "earning" },
+  { label: "PAYE Tax", employees: 247, amount: 9100000, type: "deduction" },
+  { label: "NHIF Contributions", employees: 247, amount: 419000, type: "deduction" },
+  { label: "NSSF Contributions", employees: 247, amount: 49400, type: "deduction" },
+  { label: "Loan Deductions", employees: 38, amount: 2856000, type: "deduction" },
+  { label: "Salary Advances", employees: 5, amount: 310000, type: "deduction" },
 ];
 
 /* ─── STATUS CONFIG ─────────────────────────────────────── */
 const STATUS_CONFIG = {
-  draft:            { label: "Draft",            bg: "bg-slate-100",   text: "text-slate-600",  dot: "bg-slate-400",   icon: TbProgress     },
-  processing:       { label: "Processing",       bg: "bg-blue-50",     text: "text-blue-700",   dot: "bg-blue-500",    icon: FiRefreshCw    },
-  pending_approval: { label: "Pending Approval", bg: "bg-amber-50",    text: "text-amber-700",  dot: "bg-amber-500",   icon: FiClock        },
-  approved:         { label: "Approved",         bg: "bg-emerald-50",  text: "text-emerald-700",dot: "bg-emerald-500", icon: FiCheckCircle  },
-  paid:             { label: "Paid",             bg: "bg-violet-50",   text: "text-violet-700", dot: "bg-violet-500",  icon: TbBuildingBank },
-  locked:           { label: "Locked",           bg: "bg-rose-50",     text: "text-rose-700",   dot: "bg-rose-500",    icon: TbLock         },
+  draft: { label: "Draft", bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400", icon: TbProgress },
+  processing: { label: "Processing", bg: "bg-primary-50", text: "text-primary-700", dot: "bg-primary-500", icon: FiRefreshCw },
+  pending_approval: { label: "Pending Approval", bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500", icon: FiClock },
+  approved: { label: "Approved", bg: "bg-secondary-50", text: "text-secondary-700", dot: "bg-secondary-500", icon: FiCheckCircle },
+  paid: { label: "Paid", bg: "bg-violet-50", text: "text-violet-700", dot: "bg-violet-500", icon: TbBuildingBank },
+  locked: { label: "Locked", bg: "bg-rose-50", text: "text-rose-700", dot: "bg-rose-500", icon: TbLock },
 };
 
 /* ─── HELPERS ───────────────────────────────────────────── */
 const fmt = (n) => new Intl.NumberFormat("en-KE").format(n);
 const fmtDate = (d) => new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
-/* ─── STAT CARD ─────────────────────────────────────────── */
-const StatCard = ({ label, value, sub, icon: Icon, iconBg, iconColor, change, positive, delay = 0 }) => {
-  const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), delay); return () => clearTimeout(t); }, [delay]);
-  return (
-    <div className={`bg-white rounded-3xl border border-gray-100 shadow-sm p-5 hover:shadow-md hover:border-blue-100 transition-all duration-300 cursor-default ${vis ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
-      style={{ transition: `opacity 0.4s ${delay}ms ease, transform 0.4s ${delay}ms ease, box-shadow 0.2s, border-color 0.2s` }}>
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-2xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          <Icon className="w-5 h-5" style={{ color: iconColor }} />
-        </div>
-        {change && (
-          <span className={`flex items-center gap-0.5 text-[11px] font-bold px-2.5 py-1 rounded-full ${positive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"}`}>
-            <FiArrowUpRight className="w-3 h-3" /> {change}
-          </span>
-        )}
-      </div>
-      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-1">{label}</p>
-      <p className="text-[22px] font-extrabold text-slate-900 tracking-tight leading-none">{value}</p>
-      {sub && <p className="text-[11.5px] text-slate-400 mt-1.5 font-medium">{sub}</p>}
-    </div>
-  );
-};
 
 /* ─── STATUS BADGE ──────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.draft;
   return (
-    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.text} ${cfg.bg.replace("bg-","border-").replace("-50","-100").replace("-100","-200")}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+    <span className={`inline-flex items-center gap-1.5 text-[0.72rem] font-semibold pl-1 pr-2.5 py-0.5 rounded-lg border ${cfg.bg} ${cfg.text} ${cfg.bg.replace("bg-", "border-").replace("-50", "-100").replace("-100", "-200")}`}>
+      <span className={`w-1 h-2.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
     </span>
   );
@@ -108,10 +92,9 @@ const PeriodFormModal = ({ editing, formData, setFormData, onClose, onSubmit, is
     onClick={e => e.target === e.currentTarget && onClose()}>
     <div className="bg-white rounded-3xl w-full max-w-[540px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden"
       style={{ animation: "modalPop 0.25s cubic-bezier(0.34,1.3,0.64,1)" }}>
-      <div className="h-1 w-full bg-gradient-to-r from-blue-700 to-blue-400" />
       <div className="px-7 pt-6 pb-0 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-primary-600 flex items-center justify-center flex-shrink-0">
             <FiCalendar className="w-4.5 h-4.5 text-white" />
           </div>
           <div>
@@ -133,13 +116,13 @@ const PeriodFormModal = ({ editing, formData, setFormData, onClose, onSubmit, is
         <div>
           <label className="block text-[10.5px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Period Name</label>
           <input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13.5px] text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder-slate-300"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13.5px] text-slate-800 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all placeholder-slate-300"
             placeholder="e.g. Payroll March 2025" required />
         </div>
         <div>
           <label className="block text-[10.5px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Period Type</label>
           <select value={formData.periodType} onChange={e => setFormData(p => ({ ...p, periodType: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13.5px] text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all appearance-none">
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13.5px] text-slate-800 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all appearance-none">
             <option value="monthly">Monthly</option>
             <option value="bi-weekly">Bi-Weekly</option>
             <option value="weekly">Weekly</option>
@@ -149,13 +132,13 @@ const PeriodFormModal = ({ editing, formData, setFormData, onClose, onSubmit, is
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: "Start Date", key: "startDate" },
-            { label: "End Date",   key: "endDate"   },
-            { label: "Pay Date",   key: "payDate"   },
+            { label: "End Date", key: "endDate" },
+            { label: "Pay Date", key: "payDate" },
           ].map(({ label, key }) => (
             <div key={key}>
               <label className="block text-[10.5px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
               <input type="date" value={formData[key]} onChange={e => setFormData(p => ({ ...p, [key]: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" required />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" required />
             </div>
           ))}
         </div>
@@ -163,7 +146,7 @@ const PeriodFormModal = ({ editing, formData, setFormData, onClose, onSubmit, is
       <div className="flex gap-2.5 justify-end px-7 pb-6">
         <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 text-[13px] font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors">Cancel</button>
         <button onClick={onSubmit} disabled={isSubmitting}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-[0_4px_14px_rgba(37,99,235,0.3)]">
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 transition-colors shadow-[0_4px_14px_rgba(37,99,235,0.3)]">
           {isSubmitting
             ? <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             : <FiCheck className="w-3.5 h-3.5" />
@@ -185,13 +168,13 @@ const ConfirmModal = ({ config, onClose, onConfirm }) => {
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-3xl w-full max-w-[420px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden"
         style={{ animation: "modalPop 0.25s cubic-bezier(0.34,1.3,0.64,1)" }}>
-        <div className={`h-1 w-full ${isDelete ? "bg-gradient-to-r from-red-600 to-red-400" : "bg-gradient-to-r from-blue-700 to-blue-400"}`} />
+        <div className={`h-1 w-full ${isDelete ? "bg-gradient-to-r from-red-600 to-red-400" : "bg-gradient-to-r from-primary-700 to-primary-400"}`} />
         <div className="p-7">
           <div className="flex items-start gap-4 mb-5">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${isDelete ? "bg-red-50 border border-red-100" : "bg-blue-50 border border-blue-100"}`}>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${isDelete ? "bg-red-50 border border-red-100" : "bg-primary-50 border border-primary-100"}`}>
               {isDelete
                 ? <FiTrash2 className="w-4.5 h-4.5 text-red-600" />
-                : <FiAlertTriangle className="w-4.5 h-4.5 text-blue-600" />
+                : <FiAlertTriangle className="w-4.5 h-4.5 text-primary-600" />
               }
             </div>
             <div>
@@ -202,7 +185,7 @@ const ConfirmModal = ({ config, onClose, onConfirm }) => {
           <div className="flex gap-2.5 justify-end">
             <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 text-[13px] font-semibold text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
             <button onClick={onConfirm}
-              className={`px-5 py-2.5 rounded-xl text-[13px] font-bold text-white transition-colors ${isDelete ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}`}>
+              className={`px-5 py-2.5 rounded-xl text-[13px] font-bold text-white transition-colors ${isDelete ? "bg-red-600 hover:bg-red-700" : "bg-primary-600 hover:bg-primary-700"}`}>
               {config.confirmText || "Confirm"}
             </button>
           </div>
@@ -217,17 +200,24 @@ const ConfirmModal = ({ config, onClose, onConfirm }) => {
    ═══════════════════════════════════════════════════════════ */
 const PeriodsPage = () => {
   // ── state ──────────────────────────────────────────────────
-  const [periods, setPeriods]               = useState(MOCK_PERIODS);
-  const [isLoading, setIsLoading]           = useState(false);
-  const [filterStatus, setFilterStatus]     = useState("");
-  const [currentPage, setCurrentPage]       = useState(1);
-  const [isFormOpen, setIsFormOpen]         = useState(false);
-  const [editingPeriod, setEditingPeriod]   = useState(null);
-  const [isSubmitting, setIsSubmitting]     = useState(false);
-  const [formError, setFormError]           = useState("");
-  const [confirmModal, setConfirmModal]     = useState(null);
-  const [exceptions, setExceptions]         = useState(MOCK_EXCEPTIONS);
-  const PAGE_SIZE = 10;
+  const [periods, setPeriods] = useState(MOCK_PERIODS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingPeriod, setEditingPeriod] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [exceptions, setExceptions] = useState(MOCK_EXCEPTIONS);
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    type: NotificationType;
+    title: string;
+    message: string;
+  } | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const PAGE_SIZE = 25;
 
   const [formData, setFormData] = useState({
     name: "", periodType: "monthly", startDate: "", endDate: "", payDate: "",
@@ -235,26 +225,26 @@ const PeriodsPage = () => {
 
   // ── derived ────────────────────────────────────────────────
   const currentPeriod = periods.find(p => p.status === "draft") || periods[0];
-  const filtered      = periods.filter(p => !filterStatus || p.status === filterStatus);
-  const paginated     = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  const totalPages    = Math.ceil(filtered.length / PAGE_SIZE);
+  const filtered = periods.filter(p => !filterStatus || p.status === filterStatus);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
 
   const stats = [
     {
       label: "Periods This Year", value: "3", sub: "Processed successfully",
-      icon: FiCalendar, iconBg: "bg-blue-50", iconColor: "#2563eb", change: null, delay: 0,
+      icon: FiCalendar, change: null, delay: 0,
     },
     {
       label: "Total Employees", value: "247", sub: "Active this cycle",
-      icon: PiUsersThreeDuotone, iconBg: "bg-cyan-50", iconColor: "#0891b2", change: "+3 this month", positive: true, delay: 70,
+      icon: PiUsersThreeDuotone, change: "+3 this month", positive: true, delay: 70,
     },
     {
       label: "Estimated Gross", value: "KES 52.4M", sub: "March 2025",
-      icon: TbMoneybag, iconBg: "bg-emerald-50", iconColor: "#059669", change: "+7.2%", positive: true, delay: 140,
+      icon: TbMoneybag, change: "+7.2%", positive: true, delay: 140,
     },
     {
       label: "Payroll Exceptions", value: String(exceptions.length), sub: "Resolve before processing",
-      icon: TbAlertHexagon, iconBg: "bg-red-50", iconColor: "#dc2626", change: null, delay: 210,
+      icon: TbAlertHexagon, change: null, delay: 210,
     },
   ];
 
@@ -263,14 +253,14 @@ const PeriodsPage = () => {
     setEditingPeriod(null);
     const today = new Date();
     const first = new Date(today.getFullYear(), today.getMonth(), 1);
-    const last  = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    const pay   = new Date(today.getFullYear(), today.getMonth() + 1, 5);
+    const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const pay = new Date(today.getFullYear(), today.getMonth() + 1, 5);
     setFormData({
       name: `Payroll ${today.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`,
       periodType: "monthly",
       startDate: first.toISOString().split("T")[0],
-      endDate:   last.toISOString().split("T")[0],
-      payDate:   pay.toISOString().split("T")[0],
+      endDate: last.toISOString().split("T")[0],
+      payDate: pay.toISOString().split("T")[0],
     });
     setFormError("");
     setIsFormOpen(true);
@@ -299,41 +289,54 @@ const PeriodsPage = () => {
     setIsFormOpen(false);
   };
 
-  const triggerConfirm = (config) => setConfirmModal(config);
+  const handleDelete = (id: string) => {
+    setPendingDeleteId(id);
+    setNotification({
+      open: true,
+      type: "delete",
+      title: "Delete payroll period",
+      message: "Are you sure you want to delete this payroll period? This cannot be undone.",
+    });
+  };
 
-  const handleProcess = (id) => triggerConfirm({
-    type: "confirm", title: "Process Payroll Period",
-    message: "This will calculate payroll for all employees in this period. Continue?",
-    confirmText: "Process",
-    onConfirm: () => { setPeriods(p => p.map(x => x.id === id ? { ...x, status: "pending_approval" } : x)); setConfirmModal(null); },
-  });
 
-  const handleApprove = (id) => triggerConfirm({
-    type: "confirm", title: "Approve Payroll Period",
-    message: "Approve this payroll period and mark it ready for disbursement?",
-    confirmText: "Approve",
-    onConfirm: () => { setPeriods(p => p.map(x => x.id === id ? { ...x, status: "approved" } : x)); setConfirmModal(null); },
-  });
+  const handleProcess = (id: string) => {
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Process Payroll Period",
+      message: "This will calculate payroll for all employees in this period. Continue?",
+      confirmText: "Process Payroll",
+      onConfirm: () => { setPeriods(p => p.map(x => x.id === id ? { ...x, status: "pending_approval" } : x)); setConfirmModal(null); },
+    })
+  };
 
-  const handleLock = (id) => triggerConfirm({
-    type: "confirm", title: "Lock Payroll Period",
-    message: "Locking this period is permanent and cannot be undone. Proceed?",
-    confirmText: "Lock",
-    onConfirm: () => { setPeriods(p => p.map(x => x.id === id ? { ...x, status: "locked" } : x)); setConfirmModal(null); },
-  });
 
-  const handleDelete = (id) => triggerConfirm({
-    type: "delete", title: "Delete Payroll Period",
-    message: "This will permanently delete the payroll period. This action cannot be undone.",
-    confirmText: "Delete",
-    onConfirm: () => { setPeriods(p => p.filter(x => x.id !== id)); setConfirmModal(null); },
-  });
+  const handleApprove = (id: string) => {
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Approve Payroll Period",
+      message: "Approve this payroll period and mark it ready for disbursement?",
+      confirmText: "Approve",
+      onConfirm: () => { setPeriods(p => p.map(x => x.id === id ? { ...x, status: "approved" } : x)); setConfirmModal(null); },
+    });
+  };
 
-  const dismissException = (id) => setExceptions(e => e.filter(x => x.id !== id));
+  const handleLock = (id: string) => {
+    setNotification({
+      open: true,
+      type: "confirm",
+      title: "Lock Payroll Period",
+      message: "Locking this period is permanent and cannot be undone. Proceed?",
+      confirmText: "Lock",
+      onConfirm: () => { setPeriods(p => p.map(x => x.id === id ? { ...x, status: "locked" } : x)); setConfirmModal(null); },
+    });
+  };
 
-  const grossTotal    = PAYROLL_SUMMARY.filter(r => r.type === "earning").reduce((s, r) => s + r.amount, 0);
-  const dedTotal      = PAYROLL_SUMMARY.filter(r => r.type === "deduction").reduce((s, r) => s + r.amount, 0);
-  const netTotal      = grossTotal - dedTotal;
+  const grossTotal = PAYROLL_SUMMARY.filter(r => r.type === "earning").reduce((s, r) => s + r.amount, 0);
+  const dedTotal = PAYROLL_SUMMARY.filter(r => r.type === "deduction").reduce((s, r) => s + r.amount, 0);
+  const netTotal = grossTotal - dedTotal;
 
   return (
     <>
@@ -347,71 +350,69 @@ const PeriodsPage = () => {
 
         {/* ── PAGE HEADER ─────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 fade-up">
+
           <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center text-white">
                 <TbReceiptTax className="w-5 h-5" />
               </div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-[24px] font-extrabold text-slate-900 tracking-tight">Payroll Processing</h1>
-                <div className="w-px h-6 bg-slate-200" />
-                <p className="text-[13px] text-slate-500 font-medium">Manage payroll periods, summaries & exceptions</p>
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-extrabold font-source text-gray-900">Payroll Processing</h1>
+                <div className="bg-gray-300 w-px h-6" />
+                <p className="text-sm font-source text-gray-600">
+                  Manage payroll periods, summaries & exceptions
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-2 ml-12">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse" />
-              <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">March 2025 — Not Yet Processed</span>
-            </div>
+
           </div>
           <div className="flex items-center gap-2.5">
-            <button onClick={() => {}} className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+            <button onClick={() => { }} className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-colors">
               <FiRefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
             </button>
-            <button onClick={handleCreate}
-              className="flex items-center gap-2 text-[12.5px] font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2.5 rounded-xl transition-all shadow-[0_4px_14px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)]">
-              <FiPlus className="w-4 h-4" /> New Period
-            </button>
+            <Button
+              rounded="xl"
+              size="sm"
+              className="py-2 px-6"
+              onClick={handleCreate}
+              leftIcon={<FiPlus className="w-4 h-4" />}
+            >
+              Create New Period
+            </Button>
+
           </div>
         </div>
 
         {/* ── STAT CARDS ──────────────────────────────── */}
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          {stats.map((s, i) => <StatCard key={i} {...s} />)}
+        {/* map stats here through the StatCard component in a four grid for lg and 2 grid for md*/}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {stats.map((s, i) => <StatCard key={i} label={s.label} value={s.value} sub={s.sub} icon={s.icon} />)}
         </div>
-
         {/* ── PAYROLL SUMMARY + EXCEPTIONS ROW ────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
           {/* ── Payroll Summary Card ── */}
-          <div className="lg:col-span-3 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            {/* Blue header strip */}
-            <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100">
-              <div>
-                <h3 className="text-[14px] font-bold text-slate-800">Payroll Summary</h3>
-                <p className="text-[11.5px] text-slate-400 mt-0.5 font-medium">March 2025 · Estimated breakdown</p>
-              </div>
-              <span className="text-[10.5px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg">Not Processed</span>
-            </div>
+          <SectionCard title="Payroll Summary" sub="March 2025 · Estimated breakdown" badge={<span className="text-[0.8rem] font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-lg">Not Processed</span>} className="lg:col-span-3">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm mb-1 rounded-b-2xl overflow-hidden">
                 <thead>
                   <tr className="bg-slate-50/70 border-b border-slate-100">
-                    <th className="text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] px-5 py-2.5">Component</th>
-                    <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] px-5 py-2.5">Employees</th>
-                    <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] px-5 py-2.5">Amount (KES)</th>
+                    <th className="text-left text-[0.8rem] font-bold text-tertiary-600 uppercase tracking-wide px-5 py-2.5">Component</th>
+                    <th className="text-right text-[0.8rem] font-bold text-tertiary-600 uppercase tracking-wide px-5 py-2.5">Employees</th>
+                    <th className="text-right text-[0.8rem] font-bold text-tertiary-600 uppercase tracking-wide px-5 py-2.5">Amount (KES)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-slate-100">
                   {PAYROLL_SUMMARY.map((row, i) => (
-                    <tr key={i} className="hover:bg-slate-50/40 transition-colors">
+                    <tr key={i} className="hover:bg-slate-100/80 transition-colors">
                       <td className="px-5 py-2.5">
-                        <span className={`text-[13px] font-medium ${row.type === "deduction" ? "text-slate-500" : "text-slate-700"}`}>
+                        <span className={`text-[0.9rem]  ${row.type === "deduction" ? "text-slate-500 " : "text-slate-800"}`}>
                           {row.type === "deduction" && <span className="text-red-400 mr-1 font-bold">−</span>}
                           {row.label}
                         </span>
                       </td>
-                      <td className="px-5 py-2.5 text-right font-mono text-[12.5px] text-slate-400">{row.employees}</td>
-                      <td className={`px-5 py-2.5 text-right font-mono font-semibold text-[13px] ${row.type === "deduction" ? "text-red-500" : "text-emerald-600"}`}>
+                      <td className="px-5 py-2.5 text-right font-mono text-sm text-gray-500">{row.employees}</td>
+                      <td className={`px-5 py-2.5 text-right font-mono font-bold text-[0.9rem] ${row.type === "deduction" ? "text-red-500" : "text-secondary-600"}`}>
                         {row.type === "deduction" ? "−" : ""}{fmt(row.amount)}
                       </td>
                     </tr>
@@ -419,53 +420,32 @@ const PeriodsPage = () => {
                 </tbody>
                 <tfoot>
                   <tr className="bg-slate-50 border-t-2 border-slate-200">
-                    <td className="px-5 py-3 text-[12px] font-bold text-slate-500 uppercase tracking-wide">Total Gross</td>
-                    <td className="px-5 py-3 text-right font-mono text-[12.5px] text-slate-400">247</td>
-                    <td className="px-5 py-3 text-right font-mono font-extrabold text-[14px] text-emerald-600">{fmt(grossTotal)}</td>
+                    <td className="px-5 py-3 text-[0.8rem] font-bold text-slate-500 uppercase tracking-wide">Total Gross</td>
+                    <td className="px-5 py-3 text-right font-mono text-sm text-gray-500">247</td>
+                    <td className="px-5 py-3 text-right font-mono font-extrabold text-sm text-secondary-600">{fmt(grossTotal)}</td>
                   </tr>
-                  <tr className="bg-blue-50/50 border-t border-blue-100">
+                  <tr className="bg-primary-100 border-t border-primary-100">
                     <td className="px-5 py-3 text-[13px] font-extrabold text-slate-800 uppercase tracking-wide">NET PAY</td>
                     <td className="px-5 py-3 text-right font-mono text-[12.5px] font-bold text-slate-600">247</td>
-                    <td className="px-5 py-3 text-right font-mono font-extrabold text-[16px] text-blue-600">{fmt(netTotal)}</td>
+                    <td className="px-5 py-3 text-right font-mono font-extrabold text-[16px] text-primary-600">{fmt(netTotal)}</td>
                   </tr>
                 </tfoot>
               </table>
             </div>
-            {/* Total bar */}
-            <div className="px-5 py-4 border-t border-slate-100 grid grid-cols-3 gap-4">
-              {[
-                { label: "Gross Earnings", value: `KES ${(grossTotal/1e6).toFixed(1)}M`, color: "text-emerald-600" },
-                { label: "Total Deductions", value: `−KES ${(dedTotal/1e6).toFixed(1)}M`, color: "text-red-500" },
-                { label: "Net Disbursement", value: `KES ${(netTotal/1e6).toFixed(1)}M`, color: "text-blue-600" },
-              ].map((s, i) => (
-                <div key={i} className={`rounded-2xl px-4 py-3 ${i === 2 ? "bg-blue-50 border border-blue-100" : "bg-slate-50 border border-slate-100"}`}>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{s.label}</p>
-                  <p className={`font-mono font-extrabold text-[15px] ${s.color}`}>{s.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* ── Exceptions Card ── */}
-          <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100">
-              <div>
-                <h3 className="text-[14px] font-bold text-slate-800">Payroll Exceptions</h3>
-                <p className="text-[11.5px] text-slate-400 mt-0.5 font-medium">Issues to resolve before processing</p>
-              </div>
-              {exceptions.length > 0 && (
-                <span className="text-[10.5px] font-bold text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-lg">{exceptions.length} issues</span>
-              )}
-            </div>
-            <div className="flex-1 px-4 py-4 space-y-2.5">
+          </SectionCard>
+
+
+          <SectionCard title="Payroll Exceptions" sub="Resolve before processing" badge={<span className="text-[0.8rem] font-bold text-red-700 bg-red-100 border border-red-300 px-2.5 py-0.5 rounded-lg">{exceptions.length} issues</span>} className="lg:col-span-2">
+
+            <div className="flex-1 py-2 space-y-2.5">
               {exceptions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                    <TbCircleCheck className="w-6 h-6 text-emerald-600" />
+                  <div className=" flex items-center justify-center">
+                    <TbCircleCheck className="w-12 h-12 text-gray-400" />
                   </div>
                   <div className="text-center">
-                    <p className="text-[13.5px] font-bold text-slate-700">All exceptions resolved</p>
-                    <p className="text-[12px] text-slate-400 mt-0.5">Ready to process payroll</p>
+                    <p className=" text-[0.9rem] font-medium text-slate-400">No issues to resolve. ready to process payroll</p>
                   </div>
                 </div>
               ) : exceptions.map(ex => {
@@ -495,8 +475,10 @@ const PeriodsPage = () => {
                 );
               })}
             </div>
+
+
             {exceptions.length > 0 && (
-              <div className="px-4 pb-4">
+              <div className="mt-auto pb-4">
                 <button
                   onClick={() => triggerConfirm({
                     type: "confirm", title: "Process Payroll Anyway",
@@ -504,167 +486,198 @@ const PeriodsPage = () => {
                     confirmText: "Process Anyway",
                     onConfirm: () => setConfirmModal(null),
                   })}
-                  className="w-full flex items-center justify-center gap-2 text-[12.5px] font-bold text-white bg-blue-600 hover:bg-blue-700 py-2.5 rounded-2xl transition-colors shadow-[0_4px_14px_rgba(37,99,235,0.25)]">
+                  className="w-full flex items-center justify-center gap-2 text-[12.5px] font-bold text-white bg-primary-600 hover:bg-primary-700 py-2.5 rounded-2xl transition-colors shadow-[0_4px_14px_rgba(37,99,235,0.25)]">
                   <FiPlay className="w-3.5 h-3.5" /> Process March 2025 Payroll
                 </button>
               </div>
             )}
-          </div>
+          </SectionCard>
+
+
         </div>
 
         {/* ── PREVIOUS PERIODS TABLE ───────────────────── */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-            <div>
-              <h3 className="text-[14px] font-bold text-slate-800">Payroll Periods</h3>
-              <p className="text-[11.5px] text-slate-400 mt-0.5 font-medium">{filtered.length} total periods</p>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Filter pills */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {["", "draft", "pending_approval", "approved", "locked", "paid"].map(s => (
-                  <button key={s} onClick={() => { setFilterStatus(s); setCurrentPage(1); }}
-                    className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all duration-150 ${filterStatus === s ? "bg-blue-600 text-white border-blue-600 shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700"}`}>
-                    {s === "" ? "All" : STATUS_CONFIG[s]?.label || s}
-                  </button>
-                ))}
-              </div>
-            </div>
+        <SectionCard title="Payroll Periods" sub={`${paginated.length} total periods`} className="lg:col-span-5" badge={<div className="flex items-center gap-3">
+          {/* Filter pills */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {["", "draft", "pending_approval", "approved", "locked", "paid"].map(s => (
+              <button key={s} onClick={() => { setFilterStatus(s); setCurrentPage(1); }}
+                className={`text-[0.8rem] font-bold px-4 py-1 rounded-xl border transition-all duration-150 ${filterStatus === s ? "bg-primary-600 text-white border-primary-600 shadow-sm" : "bg-white text-slate-500 border-slate-300 hover:border-slate-300 hover:text-slate-700"}`}>
+                {s === "" ? "All" : STATUS_CONFIG[s]?.label || s}
+              </button>
+            ))}
           </div>
+        </div>}>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50/70 border-b border-slate-100">
-                  {["Period", "Type", "Dates", "Pay Date", "Employees", "Gross", "Net Pay", "Status", "Actions"].map(h => (
-                    <th key={h} className="text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] px-5 py-3 whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <tr key={i} className="border-t border-slate-50">
-                      {Array.from({ length: 9 }).map((_, j) => (
-                        <td key={j} className="px-5 py-4">
-                          <div className="h-4 bg-slate-100 rounded-lg animate-pulse" style={{ width: j === 0 ? 120 : j === 8 ? 80 : 70 }} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="px-5 py-12 text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center">
-                          <FiCalendar className="w-6 h-6 text-slate-400" />
-                        </div>
-                        <div>
-                          <p className="text-[14px] font-bold text-slate-600">No periods found</p>
-                          <p className="text-[12px] text-slate-400 mt-0.5">Try adjusting your filter or create a new period</p>
-                        </div>
-                        <button onClick={handleCreate}
-                          className="flex items-center gap-1.5 text-[12px] font-bold text-blue-600 hover:text-blue-700 border border-blue-200 px-3.5 py-2 rounded-xl hover:bg-blue-50 transition-colors mt-1">
-                          <FiPlus className="w-3.5 h-3.5" /> New Period
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginated.map((period) => (
-                  <tr key={period.id} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-5 py-4">
-                      <p className="text-[13.5px] font-semibold text-slate-800 whitespace-nowrap">{period.name}</p>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="text-[11.5px] font-medium text-slate-500 capitalize bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">{period.periodType}</span>
-                    </td>
-                    <td className="px-5 py-4 text-[12.5px] text-slate-500 whitespace-nowrap font-medium">
-                      {fmtDate(period.startDate)} – {fmtDate(period.endDate)}
-                    </td>
-                    <td className="px-5 py-4 text-[12.5px] text-slate-500 whitespace-nowrap font-medium">
-                      {fmtDate(period.payDate)}
-                    </td>
-                    <td className="px-5 py-4 text-[13px] font-mono text-slate-600">
-                      {period.totalEmployees > 0 ? period.totalEmployees : "—"}
-                    </td>
-                    <td className="px-5 py-4 font-mono text-[12.5px] font-semibold text-emerald-600 whitespace-nowrap">
-                      {period.totalGross > 0 ? `${(period.totalGross/1e6).toFixed(1)}M` : "—"}
-                    </td>
-                    <td className="px-5 py-4 font-mono text-[13px] font-bold text-blue-600 whitespace-nowrap">
-                      {period.totalNet > 0 ? `KES ${(period.totalNet/1e6).toFixed(1)}M` : "—"}
-                    </td>
-                    <td className="px-5 py-4"><StatusBadge status={period.status} /></td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                        {/* View */}
-                        <button className="w-7 h-7 rounded-lg text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors" title="View / Review">
-                          <FiEye className="w-3.5 h-3.5" />
-                        </button>
-                        {/* Edit (draft only) */}
-                        {period.status === "draft" && (
-                          <button onClick={() => handleEdit(period)} className="w-7 h-7 rounded-lg text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors" title="Edit">
-                            <FiEdit2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        {/* Process (draft) */}
-                        {period.status === "draft" && (
-                          <button onClick={() => handleProcess(period.id)} className="w-7 h-7 rounded-lg text-violet-600 hover:bg-violet-50 flex items-center justify-center transition-colors" title="Process">
-                            <FiPlay className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        {/* Approve (pending_approval) */}
-                        {period.status === "pending_approval" && (
-                          <button onClick={() => handleApprove(period.id)} className="w-7 h-7 rounded-lg text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-colors" title="Approve">
-                            <FiCheck className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        {/* Lock (approved) */}
-                        {period.status === "approved" && (
-                          <button onClick={() => handleLock(period.id)} className="w-7 h-7 rounded-lg text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors" title="Lock">
-                            <FiLock className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        {/* Delete (draft only) */}
-                        {period.status === "draft" && (
-                          <button onClick={() => handleDelete(period.id)} className="w-7 h-7 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors" title="Delete">
-                            <FiTrash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={[
+              {
+                header: "Period",
+                cell: (p: PayrollPeriod) => (
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {p.name}
+                    </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-              <span className="text-[12px] text-slate-400 font-medium">
-                {filtered.length > 0 ? `${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}` : ""}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                  className="px-3.5 py-1.5 text-[12px] font-semibold text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                  ← Prev
+                  </div>
+                ),
+              },
+              {
+                header: "Type",
+                cell: (p: PayrollPeriod) => (
+                  <span className="text-[11.5px] font-medium text-slate-500 capitalize bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">{p.periodType}</span>
+                ),
+              },
+              {
+                header: "Dates",
+                cell: (p: PayrollPeriod) => (
+                  <div className="text-sm font-medium text-gray-900">
+                    {fmtDate(p.startDate)} – {fmtDate(p.endDate)}
+                  </div>
+                ),
+              },
+              {
+                header: "Pay Date",
+                cell: (p: PayrollPeriod) => (
+                  <span className="text-sm font-medium text-gray-900">
+                    {fmtDate(p.payDate)}
+                  </span>
+                ),
+              },
+              {
+                header: "Employees",
+                cell: (p: PayrollPeriod) => (
+                  <div className="flex items-center justify-center">
+                    <span className="text-sm font-mono font-bold text-right text-tertiary-600">
+                      {p.totalEmployees}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                header: "Gross",
+                cell: (p: PayrollPeriod) => (
+                  <span className="text-sm font-mono font-bold text-secondary-600">
+                    {fmt(p.totalGross)}
+                  </span>
+                ),
+              },
+              {
+                header: "Net Pay",
+                cell: (p: PayrollPeriod) => (
+                  <span className="text-sm font-mono font-bold text-primary-600">
+                    {fmt(p.totalNet)}
+                  </span>
+                ),
+              },
+              {
+                header: "Status",
+                cell: (p: PayrollPeriod) => (
+                  <StatusBadge status={p.status} />
+                ),
+              },
+              {
+                header: "Actions",
+                cell: (p: PayrollPeriod) => (
+                  <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                    {/* View */}
+                    <button className="w-7 h-7 rounded-lg text-primary-600 hover:bg-primary-50 flex items-center justify-center transition-colors" title="View / Review">
+                      <FiEye className="w-3.5 h-3.5" />
+                    </button>
+                    {/* Edit (draft only) */}
+                    {p.status === "draft" && (
+                      <button onClick={() => handleEdit(p)} className="w-7 h-7 rounded-lg text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors" title="Edit">
+                        <FiEdit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {/* Process (draft) */}
+                    {p.status === "draft" && (
+                      <button onClick={() => handleProcess(p.id)} className="w-7 h-7 rounded-lg text-violet-600 hover:bg-violet-50 flex items-center justify-center transition-colors" title="Process">
+                        <FiPlay className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {/* Approve (pending_approval) */}
+                    {p.status === "pending_approval" && (
+                      <button onClick={() => handleApprove(p.id)} className="w-7 h-7 rounded-lg text-secondary-600 hover:bg-secondary-50 flex items-center justify-center transition-colors" title="Approve">
+                        <FiCheck className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {/* Lock (approved) */}
+                    {p.status === "approved" && (
+                      <button onClick={() => handleLock(p.id)} className="w-7 h-7 rounded-lg text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors" title="Lock">
+                        <FiLock className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {/* Delete (draft only) */}
+                    {p.status === "draft" && (
+                      <button onClick={() => handleDelete(p.id)} className="w-7 h-7 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors" title="Delete">
+                        <FiTrash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ),
+              },
+            ]}
+            rows={paginated.map(p => ({
+              id: p.id,
+              name: p.name,
+              periodType: p.periodType,
+              startDate: p.startDate,
+              payDate: p.payDate,
+              totalEmployees: p.totalEmployees,
+              totalGross: p.totalGross,
+              totalNet: p.totalNet,
+              status: p.status,
+              actions: <div className="flex items-center gap-1">
+                <button className="w-7 h-7 rounded-lg text-primary-600 hover:bg-primary-50 flex items-center justify-center transition-colors" title="View / Review">
+                  <FiEye className="w-3.5 h-3.5" />
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pg => (
-                  <button key={pg} onClick={() => setCurrentPage(pg)}
-                    className={`w-8 h-8 text-[12px] font-bold rounded-xl transition-colors ${currentPage === pg ? "bg-blue-600 text-white border border-blue-600" : "text-slate-500 border border-slate-200 hover:bg-slate-50"}`}>
-                    {pg}
+                {/* View */}
+                <button className="w-7 h-7 rounded-lg text-primary-600 hover:bg-primary-50 flex items-center justify-center transition-colors" title="View / Review">
+                  <FiEye className="w-3.5 h-3.5" />
+                </button>
+                {/* Edit (draft only) */}
+                {p.status === "draft" && (
+                  <button onClick={() => handleEdit(p)} className="w-7 h-7 rounded-lg text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors" title="Edit">
+                    <FiEdit2 className="w-3.5 h-3.5" />
                   </button>
-                ))}
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                  className="px-3.5 py-1.5 text-[12px] font-semibold text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                  Next →
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+                )}
+                {/* Process (draft) */}
+                {p.status === "draft" && (
+                  <button onClick={() => handleProcess(p.id)} className="w-7 h-7 rounded-lg text-violet-600 hover:bg-violet-50 flex items-center justify-center transition-colors" title="Process">
+                    <FiPlay className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {/* Approve (pending_approval) */}
+                {p.status === "pending_approval" && (
+                  <button onClick={() => handleApprove(p.id)} className="w-7 h-7 rounded-lg text-secondary-600 hover:bg-secondary-50 flex items-center justify-center transition-colors" title="Approve">
+                    <FiCheck className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {/* Lock (approved) */}
+                {p.status === "approved" && (
+                  <button onClick={() => handleLock(p.id)} className="w-7 h-7 rounded-lg text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors" title="Lock">
+                    <FiLock className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {/* Delete (draft only) */}
+                {p.status === "draft" && (
+                  <button onClick={() => handleDelete(p.id)} className="w-7 h-7 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors" title="Delete">
+                    <FiTrash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>,
+            }))}
+            totalItems={paginated.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            // onRowClick={handleViewPeriod}
+            showCheckboxes={false}
+            pageSize={PAGE_SIZE}
+          // onPageSizeChange={setPageSize}
+          />
+        </SectionCard>
 
       </div>
 
@@ -681,6 +694,20 @@ const PeriodsPage = () => {
         />
       )}
 
+      {notification && (
+        <NotificationModal
+          isOpen={notification.open}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          confirmText={notification.type === "delete" ? "Delete" : "OK"}
+          cancelText="Cancel"
+          showCancel={notification.type === "delete"}
+          onConfirm={handleNotificationConfirm}
+          onClose={handleNotificationClose}
+        />
+      )}
+
       <ConfirmModal
         config={confirmModal}
         onClose={() => setConfirmModal(null)}
@@ -688,6 +715,6 @@ const PeriodsPage = () => {
       />
     </>
   );
-};
+}
 
 export default PeriodsPage;

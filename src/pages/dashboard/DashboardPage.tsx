@@ -11,6 +11,7 @@ import { PiHandCoinsDuotone, PiUsersThreeDuotone } from "react-icons/pi";
 import { useAuthStore } from "../../store/authStore";
 import Button from "@/components/ui/Button";
 import StatCard from "@/components/ui/StatCard";
+import SectionCard from "@/components/ui/SectionCard";
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -93,7 +94,7 @@ const PayrollBarChart = () => {
           {payrollBars.map((entry, i) => (
             <Cell
               key={i}
-              fill={i === lastIdx ? "url(#barGradientActive)" : "#e0e7ff"}
+              fill={i === lastIdx ? "url(#barGradientActive)" : "#16a34a"}
             />
           ))}
         </Bar>
@@ -168,33 +169,7 @@ const DonutChart = () => {
   );
 };
 
-/* ─── SECTION CARD ──────────────────────────────────── */
-const Card = ({ title, sub, action, badge, children, className = "" }) => (
-  <div className={`bg-white rounded-3xl border border-gray-100 shadow-sm ${className}`}>
-    {(title || action || badge) && (
-      <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-3">
-          <h3 className="font-bold text-slate-800">{title}</h3>
-          {sub && (
-            <>
-              <div className="w-px h-4 bg-gray-200" />
-              <p className="text-sm text-slate-500">{sub}</p>
-            </>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {badge}
-          {action && (
-            <button className="flex items-center gap-0.5 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors">
-              {action} <FiChevronRight className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
-    )}
-    <div className="px-6 py-5">{children}</div>
-  </div>
-);
+
 
 /* ─── TOAST ─────────────────────────────────────────── */
 const ToastContainer = ({ toasts }) => (
@@ -371,7 +346,7 @@ export default function DashboardPage() {
           <div className="stagger-1">
             <StatCard
               icon={PiUsersThreeDuotone}
-              iconColor="#2563eb"
+              iconColor="#101828"
               label="Total Employees"
               value="247"
               sub="Active headcount"
@@ -381,7 +356,7 @@ export default function DashboardPage() {
           <div className="stagger-2">
             <StatCard
               icon={TbBuildingSkyscraper}
-              iconColor="#0891b2"
+              iconColor="#101828"
               label="Departments"
               value="12"
               sub="Active units"
@@ -390,7 +365,7 @@ export default function DashboardPage() {
           <div className="stagger-3">
             <StatCard
               icon={TbMoneybag}
-              iconColor="#059669"
+              iconColor="#101828"
               label="Monthly Payroll"
               value="KES 52.4M"
               sub="March 2025"
@@ -451,7 +426,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <Card title="Payroll Cost by Department" sub="Monthly gross — March 2025" className="lg:col-span-3">
+          <SectionCard title="Payroll Cost by Department" sub="Monthly gross — March 2025" className="lg:col-span-3">
             <div className="flex flex-col gap-2.5">
               {departmentPayroll.map((d, i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -466,16 +441,16 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </SectionCard>
         </div>
 
         {/* ── WORKFORCE + PAYROLL BAR CHART ─────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <Card title="Workforce Breakdown" sub="By employment type" className="lg:col-span-1">
+          <SectionCard title="Workforce Breakdown" sub="By employment type" className="lg:col-span-1">
             <DonutChart />
-          </Card>
+          </SectionCard>
 
-          <Card
+          <SectionCard  
             title="Payroll Disbursements"
             sub="Monthly totals — last 8 months"
             className="lg:col-span-2"
@@ -489,14 +464,14 @@ export default function DashboardPage() {
               <span className="text-sm font-medium text-slate-300">Values in KES millions</span>
               <span className="text-sm font-semibold text-primary-500">Mar 2025: KES 52.4M ↑</span>
             </div>
-          </Card>
+          </SectionCard>
         </div>
 
         {/* ── APPROVALS + ACTIVITY ──────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
           {/* Approval Queue */}
-          <Card
+          <SectionCard
             title="Approval Queue" sub="Loans & expenses" action="View all"
             badge={<span className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full">{queue.length} pending</span>}
             className="lg:col-span-2"
@@ -537,10 +512,10 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </SectionCard>
 
           {/* Activity Feed */}
-          <Card title="Recent Activity" sub="Live system events" action="View all" className="lg:col-span-3">
+          <SectionCard title="Recent Activity" sub="Live system events" action="View all" className="lg:col-span-3">
             <div className="flex flex-col gap-0.5">
               {activityLog.map((a, i) => {
                 const Icon = a.icon;
@@ -564,7 +539,7 @@ export default function DashboardPage() {
                 );
               })}
             </div>
-          </Card>
+          </SectionCard>
         </div>
 
       </div>

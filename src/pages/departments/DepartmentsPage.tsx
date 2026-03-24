@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiUser, FiSearch } from "react-icons/fi";
+import { FiPlus, FiUser, FiSearch, FiRefreshCw, FiClock } from "react-icons/fi";
 import DataTable from "../../components/ui/DataTable";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -11,7 +11,8 @@ import NotificationModal, { NotificationType } from "../../components/ui/Notific
 import type { Department } from "../../types/department";
 import type { Employee } from "../../types/employee";
 import { PiUsersThreeDuotone } from "react-icons/pi";
-import { TbEdit, TbTrash,  } from "react-icons/tb";
+import { TbBuildingSkyscraper, TbEdit, TbMoneybag, TbTrash, } from "react-icons/tb";
+import StatCard from "@/components/ui/StatCard";
 
 const DepartmentsPage: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -28,6 +29,10 @@ const DepartmentsPage: React.FC = () => {
     message: string;
   } | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const totalEmployees = departments.reduce((sum, dept) => sum + (dept.employees?.length || 0), 0);
+  const activeDepartments = departments.filter((dept) => dept.isActive).length;
+  const inactiveDepartments = departments.length - activeDepartments;
 
   useEffect(() => {
     fetchDepartments();
@@ -95,12 +100,32 @@ const DepartmentsPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <Button
-          onClick={handleCreate}
-          leftIcon={<FiPlus className="w-4 h-4" />}
-        >
-          Add New Department
-        </Button>
+
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={fetchDepartments}
+            className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
+            title="Refresh"
+          >
+            <FiRefreshCw className={`w-4 h-4  ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <Button
+            className="py-2 px-6"
+            rounded="xl"
+            size="sm"
+            onClick={handleCreate}
+            leftIcon={<FiPlus className="w-4 h-4" />}
+          >
+            Add New Department
+          </Button>
+        </div>
+      </div>
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={TbBuildingSkyscraper} label="Total Departments" value={departments.length} sub="All units" />
+        <StatCard icon={PiUsersThreeDuotone} label="Total Employees" value={totalEmployees} sub="Across departments" />
+        <StatCard icon={TbMoneybag} label="Active Departments" value={activeDepartments} sub="Currently operational" />
+        <StatCard icon={FiClock} label="Inactive Departments" value={inactiveDepartments} sub="Need review" />
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
@@ -116,151 +141,150 @@ const DepartmentsPage: React.FC = () => {
         </div>
         <div className="p-2">
           <DataTable
-          columns={[
-            {
-              header: "Name",
-              cell: (dept: Department) => (
-                <div>
-                  <div className="font-medium text-[0.95rem] text-gray-900">
-                    {dept.name}
-                  </div>
-                  {dept.code && (
-                    <div className="text-[0.78rem] text-gray-600">
-                      Code: {dept.code}
+            columns={[
+              {
+                header: "Name",
+                cell: (dept: Department) => (
+                  <div>
+                    <div className="font-medium text-[0.95rem] text-gray-900">
+                      {dept.name}
                     </div>
-                  )}
-                </div>
-              ),
-            },
-            {
-              header: "Manager",
-              cell: (dept: Department) => {
-                const getPhotoUrl = (photoUrl?: string) => {
-                  if (!photoUrl) return null;
-                  // If it's already a full URL, return as is
-                  if (photoUrl.startsWith("http")) return photoUrl;
-                  // Otherwise, construct the full URL
-                  const baseURL =
-                    api.defaults.baseURL?.replace("/api", "") || "";
-                  return `${baseURL}/uploads/${photoUrl}`;
-                };
-                return dept.manager ? (
-                  <div className="flex items-center gap-2">
-                    {(() => {
-                      const photoUrl = getPhotoUrl(dept.manager.photoUrl);
-                      return photoUrl ? (
-                        <img
-                          src={photoUrl}
-                          alt={`${dept.manager.firstName} ${dept.manager.lastName}`}
-                          className="w-9 h-9 rounded-full object-cover"
-                          onError={(e) => {
-                            // Fallback to initials if image fails to load
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            const parent = target.parentElement;
-                            if (parent) {
-                              const fallback = document.createElement("div");
-                              fallback.className =
-                                "w-9 h-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-bold italic text-sm";
-                              fallback.textContent = `${dept.manager?.firstName?.charAt(0) || ""}${dept.manager?.lastName?.charAt(0) || ""}`;
-                              parent.appendChild(fallback);
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-bold italic text-sm">
-                          {dept.manager.firstName.charAt(0)}
-                          {dept.manager.lastName.charAt(0)}
-                        </div>
-                      );
-                    })()}
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {dept.manager.firstName} {dept.manager.lastName}
+                    {dept.code && (
+                      <div className="text-[0.78rem] text-gray-600">
+                        Code: {dept.code}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {dept.manager.jobTitle}
-                      </div>
-                    </div>
+                    )}
                   </div>
-                ) : (
-                  <span className="text-gray-400 italic">No Manager</span>
-                );
+                ),
               },
-            },
-            {
-              header: "Parent Department",
-              cell: (dept: Department) => (
-                <span className="text-gray-600">
-                  {dept.parentDepartment
-                    ? dept.parentDepartment.name
-                    : "Top Level"}
-                </span>
-              ),
-            },
-            {
-              header: "Employees",
-              cell: (dept: Department) => (
-                <div className="flex items-center gap-1 text-gray-600">
-                  <PiUsersThreeDuotone className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    {dept.employees?.length || 0}
+              {
+                header: "Manager",
+                cell: (dept: Department) => {
+                  const getPhotoUrl = (photoUrl?: string) => {
+                    if (!photoUrl) return null;
+                    // If it's already a full URL, return as is
+                    if (photoUrl.startsWith("http")) return photoUrl;
+                    // Otherwise, construct the full URL
+                    const baseURL =
+                      api.defaults.baseURL?.replace("/api", "") || "";
+                    return `${baseURL}/uploads/${photoUrl}`;
+                  };
+                  return dept.manager ? (
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const photoUrl = getPhotoUrl(dept.manager.photoUrl);
+                        return photoUrl ? (
+                          <img
+                            src={photoUrl}
+                            alt={`${dept.manager.firstName} ${dept.manager.lastName}`}
+                            className="w-9 h-9 rounded-full object-cover"
+                            onError={(e) => {
+                              // Fallback to initials if image fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                              const parent = target.parentElement;
+                              if (parent) {
+                                const fallback = document.createElement("div");
+                                fallback.className =
+                                  "w-9 h-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-bold italic text-sm";
+                                fallback.textContent = `${dept.manager?.firstName?.charAt(0) || ""}${dept.manager?.lastName?.charAt(0) || ""}`;
+                                parent.appendChild(fallback);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700 font-bold italic text-sm">
+                            {dept.manager.firstName.charAt(0)}
+                            {dept.manager.lastName.charAt(0)}
+                          </div>
+                        );
+                      })()}
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {dept.manager.firstName} {dept.manager.lastName}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {dept.manager.jobTitle}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400 italic">No Manager</span>
+                  );
+                },
+              },
+              {
+                header: "Parent Department",
+                cell: (dept: Department) => (
+                  <span className="text-gray-600">
+                    {dept.parentDepartment
+                      ? dept.parentDepartment.name
+                      : "Top Level"}
                   </span>
-                </div>
-              ),
-            },
-            {
-              header: "Status",
-              cell: (dept: Department) => (
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    dept.isActive
+                ),
+              },
+              {
+                header: "Employees",
+                cell: (dept: Department) => (
+                  <div className="flex items-center gap-1 text-gray-600">
+                    <PiUsersThreeDuotone className="w-4 h-4" />
+                    <span className="text-sm font-medium">
+                      {dept.employees?.length || 0}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                header: "Status",
+                cell: (dept: Department) => (
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${dept.isActive
                       ? "bg-green-100 text-green-800"
                       : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {dept.isActive ? "Active" : "Inactive"}
-                </span>
-              ),
-            },
-            {
-              header: "Created",
-              cell: (dept: Department) => (
-                <span className="text-sm text-gray-600">
-                  {new Date(dept.createdAt).toLocaleDateString()}
-                </span>
-              ),
-            },
-            {
-              header: "Actions",
-              cell: (dept: Department) => (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(dept);
-                    }}
-                    className="flex items-center gap-1 p-2 text-[0.8rem] text-blue-600 hover:text-blue-800 hover:cursor-pointer underline underline-offset-4 transition-colors"
-                    title="Edit department"
+                      }`}
                   >
-                    <TbEdit className="w-4 h-4" />
-                    <span>Edit Dpt</span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(dept.id);
-                    }}
-                    className="flex items-center gap-1 p-2 text-[0.8rem] text-red-600 hover:text-red-800 transition-colors"
-                    title="Delete department"
-                  >
-                    <TbTrash className="w-4 h-4" />
-                    <span>Delete</span>
-                  </button>
-                </div>
-              ),
-            },
-          ]}
+                    {dept.isActive ? "Active" : "Inactive"}
+                  </span>
+                ),
+              },
+              {
+                header: "Created",
+                cell: (dept: Department) => (
+                  <span className="text-sm text-gray-600">
+                    {new Date(dept.createdAt).toLocaleDateString()}
+                  </span>
+                ),
+              },
+              {
+                header: "Actions",
+                cell: (dept: Department) => (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(dept);
+                      }}
+                      className="flex items-center gap-1 p-2 text-[0.8rem] text-blue-600 hover:text-blue-800 hover:cursor-pointer underline underline-offset-4 transition-colors"
+                      title="Edit department"
+                    >
+                      <TbEdit className="w-4 h-4" />
+                      <span>Edit Dpt</span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(dept.id);
+                      }}
+                      className="flex items-center gap-1 p-2 text-[0.8rem] text-red-600 hover:text-red-800 transition-colors"
+                      title="Delete department"
+                    >
+                      <TbTrash className="w-4 h-4" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                ),
+              },
+            ]}
             rows={departments}
             totalItems={departments.length}
             startIndex={departments.length > 0 ? 1 : 0}

@@ -5,6 +5,7 @@ import {
   FiSearch, FiDollarSign, FiTrash2,
   FiMoreVertical, FiDownload, FiUserCheck, FiUserX,
   FiX, FiRefreshCw,
+  FiClock,
 } from "react-icons/fi";
 import { PiUserDuotone, PiUserPlusDuotone, PiUsersThreeDuotone } from "react-icons/pi";
 import api from "../../services/api";
@@ -17,7 +18,8 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import DataTable from "@/components/ui/DataTable";
-import { TbEdit, TbMoneybag } from "react-icons/tb";
+import { TbBuildingSkyscraper, TbEdit, TbMoneybag } from "react-icons/tb";
+import StatCard from "@/components/ui/StatCard";
 
 /* ── status config ── */
 const STATUS_MAP: Record<string, { bg: string; text: string; dot: string }> = {
@@ -371,6 +373,9 @@ const EmployeesPage: React.FC = () => {
               <FiRefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
             </button>
             <Button
+              rounded="xl"
+              size="sm"
+              className="py-2 px-6"
               onClick={() => { setEditEmployee(null); setShowFormDrawer(true); }}
               leftIcon={<PiUserPlusDuotone className="w-5 h-5" />}
             >
@@ -378,6 +383,14 @@ const EmployeesPage: React.FC = () => {
             </Button>
 
           </div>
+        </div>
+
+        {/* Stats cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard icon={PiUsersThreeDuotone} label="Total Employees" value={totalItems} sub="All records" />
+          <StatCard icon={TbBuildingSkyscraper} label="Departments" value={departments.length} sub="Active structure" />
+          <StatCard icon={TbMoneybag} label="On Probation" value={employees.filter(e => e.status === "probation").length} sub="Needs close follow-up" />
+          <StatCard icon={FiClock} label="Suspended/Terminated" value={employees.filter(e => e.status === "suspended" || e.status === "terminated").length} sub="Pending HR action" />
         </div>
 
         {/* ── Main card ── */}

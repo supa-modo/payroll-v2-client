@@ -38,3 +38,11 @@ export function formatPercentage(value: number | string): string {
   return `${num.toFixed(2)}%`;
 }
 
+export function formatCompact(value: number): string {
+  return new Intl.NumberFormat("en-KE", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+}
+
+export function formatShortDate(date: string): string {
+  return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+

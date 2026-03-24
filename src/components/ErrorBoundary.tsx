@@ -56,7 +56,7 @@ class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="max-w-lg w-full bg-white rounded-3xl shadow-lg p-8 text-center">
             <div className="flex justify-center mb-4">
               <FiAlertCircle className="w-16 h-16 text-red-500" />
             </div>
@@ -81,7 +81,7 @@ class ErrorBoundary extends Component<Props, State> {
               <Button onClick={this.handleReset}>Go to Dashboard</Button>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50"
               >
                 Refresh Page
               </button>
